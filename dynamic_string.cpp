@@ -3,29 +3,61 @@
 using namespace std;
 #define K 3 //user define parameter
 
-class genome
-{
-  string reference;
-  unordered_map<string,list<int>> m;
-public:
-  
-  void get_input();
-  void construct_hash();
-  void display_hash();
-  void display_genome();
-  float get_load_factor();
-  void display_load();
-};
+string alphabet="AGCT"; //#used for generating random string
+
 
 class utility
 {
 public:
   void ignore_first_line();
+  bool is_valid_input(int,int,int); //#last arg should be uint; cant compare
+  string generate_random_string(int);
+  int get_snp_begin(int);
+  int get_snp_end(int,int);
+  //string generate_modified_substr(int,string);
 };
-
-void genome::display_genome()
+utility u;
+/*
+string utility::generate_modified_substr(int snp_begin,string new_string)
 {
-  cout<<reference<<endl;
+  
+}
+*/
+int utility::get_snp_begin(int pos)
+{
+  return (pos-K+1)<0?0:(pos-K+1);
+}
+int utility::get_snp_end(int pos,int len)
+{
+  return (pos+len+K-1)>len?len:(pos+len+K-1);
+}
+string utility::generate_random_string(int len)
+{
+  string random;
+  for(int i=0;i<len;i++)
+  {
+    random+=alphabet[i%(alphabet.size())]; //*not really random :)
+  }
+  return random;
+}
+bool utility::is_valid_input(int pos,int len,int max_len)
+{
+  if(pos<0)
+  {
+    cout<<"Cant insert a neg pos"<<endl;
+    return false;
+  }
+  if(len<=0)
+  {
+    cout<<"Min len =1"<<endl;
+    return false;
+  }
+  if((pos+len-1)>=max_len) 
+  {
+    cout<<"insertion out of bounds!"<<endl;
+    return false;
+  }
+  return true;
 }
 void utility::ignore_first_line()
 {
@@ -33,7 +65,33 @@ void utility::ignore_first_line()
   getline(cin,input);
 }
 
-utility u;
+
+class genome
+{
+  string reference;
+  unordered_map<string,list<int>> m;
+public:
+  int get_length();
+  void get_input();
+  void construct_hash();
+  void display_hash();
+  void display_genome();
+  float get_load_factor();
+  void display_load();
+  bool snp_at(int,int,uint);
+  void remove_kmer_from_hash_at(int,string);
+  void add_kmer_from_hash_at(int,string);
+};
+
+void genome::display_genome()
+{
+  cout<<reference<<endl;
+}
+
+int genome::get_length()
+{
+  return reference.length();
+}
 
 void genome::get_input()
 {
@@ -84,6 +142,18 @@ void genome::construct_hash()
   
 }
 */
+
+void genome::remove_kmer_from_hash_at(int i,string curr_kmer)
+{
+  m[curr_kmer].remove(i); //#need to define own erase function
+  if(m[curr_kmer].size()==0)
+    m.erase(curr_kmer);
+  
+}
+void genome::add_kmer_from_hash_at(int i,string new_kmer)
+{
+  m[new_kmer].push_back(i);
+}
 void genome::display_hash()
 {
   for(auto it=m.begin();it!=m.end();it++)
@@ -109,15 +179,84 @@ void genome::display_load()
   std::cout << "max_load_factor = " << m.max_load_factor() << std::endl;
   
 }
+
+bool genome::snp_at(int pos,int len,uint max_len)
+{
+  //utility u;
+  if(!u.is_valid_input(pos,len,reference.length())) //checks positions to be modified are valid
+    return false; 
+  string new_string = u.generate_random_string(len);
+  
+  //handling edge cases:
+  int snp_begin = u.get_snp_begin(pos); 
+  int snp_end = u.get_snp_end(pos,reference.length());
+  
+  //cout<<snp_begin<<endl;
+  
+  //string modified_reference_substr=u.generate_modified_substr(snp_begin,pos,new_string);
+  string modified_reference_substr(reference.begin()+snp_begin,reference.begin()+pos);
+  modified_reference_substr+=new_string;
+  string temp(reference.begin()+pos+len,reference.begin()+snp_end);
+  modified_reference_substr+=temp;
+  for(int i=snp_begin;i<(snp_end-(K-1));i++)
+  {
+    string curr_kmer(reference.begin()+i,reference.begin()+i+K);
+    string new_kmer(modified_reference_substr.begin()+(i-snp_begin),modified_reference_substr.begin()+(i-snp_begin+K));
+    remove_kmer_from_hash_at(i,curr_kmer);
+    add_kmer_from_hash_at(i,new_kmer);
+  }
+  //updating the reference itself
+  for(int i=pos;i<pos+len;i++)
+  {
+    reference[i] = new_string[i-pos];
+  }
+  cout<<"Generated string: "<<new_string<<"\t"<<"inserted at: "<<pos<<endl;
+  return true;
+}
+
 int main()
 {
   genome g;
   
   g.get_input();
-  g.display_genome();
   g.construct_hash();
+  
+  g.display_genome();
+  g.display_hash();
+  
+  if(!g.snp_at(1,4,g.get_length()))
+    cout<<"insert failed"<<endl;
+  
+  g.display_genome();
+  g.display_hash();
+  
+  if(!g.snp_at(5,1,g.get_length()))
+    cout<<"insert failed"<<endl;
+  
+  g.display_genome();
+  g.display_hash();
+  
+  if(!g.snp_at(5,3,g.get_length()))
+    cout<<"insert failed"<<endl;
+  
+  g.display_genome();
+  g.display_hash();
+  
+  if(!g.snp_at(2,5,g.get_length()))
+    cout<<"insert failed"<<endl;
+  
+  g.display_genome();
+  g.display_hash();
+  /*if(!g.snp_at(1,7,g.get_length()))
+    cout<<"insert failed"<<endl;
+  if(!g.snp_at(1,0,g.get_length()))
+    cout<<"insert failed"<<endl;
+  if(!g.snp_at(-1,1,g.get_length()))
+    cout<<"insert failed"<<endl;
+  */
+  /*g.construct_hash();
   g.display_load();
   cout << "load_factor = " << g.get_load_factor() << std::endl;
-  g.display_hash();
+  g.display_hash();*/
   return 0;
 }

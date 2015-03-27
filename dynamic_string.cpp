@@ -81,6 +81,7 @@ public:
   bool snp_at(int,int,uint);
   void remove_kmer_from_hash_at(int,string);
   void add_kmer_from_hash_at(int,string);
+  std::list<int> find(std::string); 
 };
 
 void genome::display_genome()
@@ -95,7 +96,7 @@ int genome::get_length()
 
 void genome::get_input()
 {
-  u.ignore_first_line(); 
+  u.ignore_first_line();
   string input;
   while(getline(cin,input)){
     reference+=input;
@@ -214,6 +215,59 @@ bool genome::snp_at(int pos,int len,uint max_len)
   return true;
 }
 
+/*
+This function searches the hash table to find the read
+If the length of the string is greater than k, 
+k-mers of the read are generated and 
+*/
+std::list<int> genome::find(string read){
+
+	std::list<int> pos_prev;
+	std::list<int> pos_curr;
+
+	//Look for the first K-length substring of the read
+	std::string read_kmer = read.substr(0,K); 
+	auto search = m.find(read_kmer);
+    if(search != m.end()) {
+		pos_prev = search->second;
+	} else {
+		std::cout<< read << ": Not Found!"<<std::endl;
+		return pos_prev;
+	}
+	int pos = 1;
+	//For every k-mer after that, check if it extends from the previous k-mer
+	for(auto iter=read.begin()+1; iter!=read.end()-K+1; iter++){
+    	read_kmer = read.substr(pos,pos+K-1);
+    	search = m.find(read_kmer); 
+	    if(search != m.end()) { //If the k-mer is found, check if it can be extended from any of the previous k-mers		
+			pos_curr = search->second;
+
+			auto iter_p = pos_curr.begin();
+			while(iter_p!=pos_curr.end()){
+				auto curr = iter_p;
+				++iter_p;
+				//If you cannot extend from one of the earlier k-mers, remove that position
+				if(std::find(pos_prev.begin(), pos_prev.end(),*curr-1)==pos_prev.end()){
+					pos_curr.erase(curr);
+				}
+			}
+		} 		    
+		pos_prev = pos_curr;
+		pos_curr.clear();
+		pos++;
+  	}
+
+ 	int buf = read.length()-K;
+  	for(auto iter=pos_prev.begin(); iter!=pos_prev.end(); iter++){
+  		*iter -= buf;
+  		std::cout<<"Found at: " << *iter << std::endl;
+  	}
+
+  	return pos_prev;
+}
+
+
+
 int main()
 {
   genome g;
@@ -223,7 +277,19 @@ int main()
   
   g.display_genome();
   g.display_hash();
+
+  cout<<"Finding ATT... \n";
+  g.find("ATT");
+
+  cout<<"Finding TAG... \n";
+  g.find("TAG");
   
+  cout<<"Finding TAGC... \n";
+  g.find("TAGC");
+
+  cout<<"Finding TAGCT... \n";
+  g.find("TAGCT");
+
   if(!g.snp_at(1,4,g.get_length()))
     cout<<"insert failed"<<endl;
   
@@ -247,6 +313,9 @@ int main()
   
   g.display_genome();
   g.display_hash();
+
+
+
   /*if(!g.snp_at(1,7,g.get_length()))
     cout<<"insert failed"<<endl;
   if(!g.snp_at(1,0,g.get_length()))

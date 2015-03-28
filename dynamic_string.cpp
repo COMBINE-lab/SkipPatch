@@ -299,8 +299,6 @@ std::list<int> genome::find(string read){
 
 std::list<int> find_substr(std::string str, std::string substr){
 
-
-    cout<<"HELLO"<<endl;
     list<int> positions;
     int pos = str.find(substr, 0);
     while(pos != -1)
@@ -324,7 +322,7 @@ void test_search(){
 
     std::vector<std::string> reads {"ATT", "TAG", "TAGC", "TAGCT","TAGCTAGC","CCTAGCT", "ATTAGCTAGCCTAGCT","TTAGCTAGCCTAGC"};
     for(std::string read: reads){
-        assert(g.find(read)==find_substr(reference,read));        
+        assert(g.find(read)==find_substr(reference,read));
     }
    
     std::cout<<"Passed All Tests!"<<std::endl;

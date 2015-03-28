@@ -1,14 +1,16 @@
-CC	= g++
-CFLAGS = -c -Wall
+CC	= g++ 
+CFLAGS = -c -Wall -Werror -fmax-errors=3
 LIBARG	= -g -std=c++11 
-#INC = -I $()
-TARGET	= dynamic_string
+INCLUDE = -I .
+TARGET	= main genome utils test
 SRC	= $(addsuffix .cpp, $(TARGET))
 
 all: $(TARGET)
 
 $(TARGET): $(SRC)
-	$(CC) $(SRC) $(LIBARG) -o $@
+	$(CC) $(LIBARG) $(SRC) $(INCLUDE) -o $@
 
 clean:
 	rm -f $(TARGET)
+
+

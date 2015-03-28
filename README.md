@@ -2,14 +2,19 @@ Dynamically Updatable Index for Indexed Text Search
 ---------------------------------------------------
 
 How to Run:
+
 1. Place the following files in a folder:
-	dynamic_string.cpp
-	input.txt
+
+	main.cpp
+	genome.cpp
+	test.cpp
+	utils.cpp
+	data/input.txt
 	Makefile
 
 2. Run "make" on your terminal from the this folder
 
-3. Run "./dynamic_string < input.txt" from your terminal
+3. Run "./main < data/input.txt" from your terminal
 	
 
 

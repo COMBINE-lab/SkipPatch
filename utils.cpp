@@ -19,7 +19,7 @@ void print_time_elapsed(std::string desc, struct timeval* start, struct timeval*
     /*
     struct timeval {
         time_t      tv_sec;
-        suseconds_t tv_usec;    
+        suseconds_t tv_usec;      
     }*/
     struct timeval elapsed;
     

@@ -4,6 +4,11 @@
 #include <string>
 #include <cassert>
 
+#include <ctime>
+#include <time.h>
+#include <sys/resource.h>
+#include <sys/time.h>
+
 #include "test.h"
 #include "genome.h"
 #include "utils.h"
@@ -28,3 +33,4 @@ void test_search(){
     std::cout<<"Passed All Tests!"<<std::endl;
 
 }
+

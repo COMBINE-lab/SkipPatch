@@ -70,8 +70,9 @@ string generate_random_string(long len){
   string random;
   for(long i=0;i<len;i++)
   {
-    random+=alphabet[i%(alphabet.size())]; //*not really random :)
+    random+=alphabet[i%(alphabet.size())]; 
   }
+  random_shuffle(random.begin(),random.end()); //*now really random :)
   return random;
 }
 

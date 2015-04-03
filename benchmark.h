@@ -6,6 +6,8 @@
 #include "utils.h"
 
 std::vector<std::pair<long,char> > generateRandomInserts(long);
-void benchmarkInsert(std::string);
+void benchmark();
+void benchmarkSearch(genome);
+void benchmarkSNP(genome);
 
 #endif

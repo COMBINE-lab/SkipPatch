@@ -6,7 +6,8 @@
 #include <time.h>
 #include <sys/resource.h>
 #include <sys/time.h>
-
+#include <bits/stdc++.h>
+#include "utils.h"
 void print_time_elapsed(std::string, struct timeval*, struct timeval*);
 void ignore_first_line();
 bool is_valid_input(long,long,long);

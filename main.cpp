@@ -40,7 +40,7 @@ int main(){
 	test_search();
 	*/
 
-	benchmarkInsert("snp's");
+	benchmark();
 	
 	return 0;
 }

@@ -136,7 +136,9 @@ std::list<long> genome::find(string read){
     if(search != m.end()) {
 		pos_prev = search->second;
 	} else {
+		#ifndef BENCHMARK
 		std::cout<< read << ": Not Found!"<<std::endl;
+		#endif
 		return pos_prev;
 	}
 	long pos = 1;

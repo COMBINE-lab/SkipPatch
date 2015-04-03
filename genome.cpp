@@ -7,7 +7,7 @@
 
 #include "genome.h"
 #include "utils.h"
-
+#define BENCHMARK 1
 using namespace std;
 
 void genome::get_input()
@@ -85,23 +85,21 @@ void genome::add_kmer_from_hash_at(long i,string new_kmer)
 bool genome::snp_at(long pos,long len,long max_len)
 {
   if(!is_valid_input(pos,len,reference.length())) //checks positions to be modified are valid
-    return false;
+    {
+	cout<<"Insertion at "<<pos<<" of len "<<len<<" failed"<<endl;
+   	 return false;
+	}
 
   string new_string = generate_random_string(len);
-  cout<<"1"<<endl;
   //handling edge cases:
   long snp_begin = (pos-K+1)<0?0:(pos-K+1); 
   long snp_end = (pos+len+K-1)>max_len?max_len:(pos+len+K-1);
-  cout<<"2 "<<snp_end<<" "<<K<<" "<<pos<<" "<<len<<endl;
   //cout<<snp_begin<<endl;
   
   //string modified_reference_substr=generate_modified_substr(snp_begin,pos,new_string);
   string modified_reference_substr(reference.begin()+snp_begin,reference.begin()+pos);
-  cout<<"3"<<endl;
   modified_reference_substr+=new_string;
-  cout<<"4"<<endl;
   string temp(reference.begin()+pos+len,reference.begin()+snp_end);
-  cout<<"5"<<endl;
   modified_reference_substr+=temp;
   for(long i=snp_begin;i<(snp_end-(K-1));i++)
   {
@@ -110,13 +108,15 @@ bool genome::snp_at(long pos,long len,long max_len)
     remove_kmer_from_hash_at(i,curr_kmer);
     add_kmer_from_hash_at(i,new_kmer);
   }
-  cout<<"6"<<endl;
   //updating the reference itself
   for(long i=pos;i<pos+len;i++)
   {
     reference[i] = new_string[i-pos];
   }
-  cout<<"Generated string: "<<new_string<<"\t"<<"inserted at: "<<pos<<endl;
+  #ifndef BENCHMARK
+    cout<<"Generated string: "<<new_string<<"\t"<<"inserted at: "<<pos<<endl;
+  #endif
+  
   return true;
 }
 

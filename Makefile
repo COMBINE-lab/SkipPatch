@@ -5,7 +5,7 @@ INCLUDE = -I .
 TARGET	= main genome utils benchmark test
 SRC	= $(addsuffix .cpp, $(TARGET))
 
-all: $(TARGET)
+#all: $(TARGET)
 
 $(TARGET): $(SRC)
 	$(CC) $(LIBARG) $(SRC) $(INCLUDE) -o $@

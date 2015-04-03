@@ -1,17 +1,4 @@
-#include <iostream>
-#include <fstream>
-
-#include <list>
-#include <vector>
-#include <string>
-
-#include <ctime>
-#include <time.h>
-#include <sys/resource.h>
-#include <sys/time.h>
-
-#include "genome.h"
-#include "utils.h"
+#include "benchmark.h"
 
 #define TESTS 100
 
@@ -39,24 +26,25 @@ void benchmarkInsert(std::string testName){
     struct timezone tzp;
 
     //Open test file
-    std::fstream referenceFile;
+    /*std::fstream referenceFile;
     referenceFile.open("data/input.txt");
     if( !referenceFile || referenceFile.eof() ){ 
         std::cout << "Invalid Reference Sequence File.\n"; exit(2); 
-    }
-
+    }*/
     genome g;
-    std::string reference;
-    referenceFile >> reference;
+    g.get_input();
+    /*std::string reference;
+    referenceFile >> reference;*/
     g.construct_hash();
 
-    std::vector<std::pair<long,char> > random = generateRandomInserts(reference.length());
+    std::vector<std::pair<long,char> > random = generateRandomInserts(g.get_length());
 
     gettimeofday(&start, &tzp);
     
     for(std::vector<std::pair<long,char> >::iterator i=random.begin(); i!=random.end(); i++){
         long position = i->first;
         char character = i->second;
+	g.snp_at(position,1,g.get_length());
         //g.snp_at(); //Insert function here..
     }
 

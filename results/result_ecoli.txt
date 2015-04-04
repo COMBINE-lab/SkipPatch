@@ -1,0 +1,7 @@
+ constructing hash:  Total Time Elapsed = 7.39628
+ for 1000 snips 	snips:  Total Time Elapsed = 0.051656
+ for 10 of len: 15	search:  Total Time Elapsed = 8.3e-05
+ for 10 of len: 25	search:  Total Time Elapsed = 4.7e-05
+ for 10 of len: 35	search:  Total Time Elapsed = 4.8e-05
+ for 10 of len: 70	search:  Total Time Elapsed = 8.8e-05
+ for 10 of len: 100	search:  Total Time Elapsed = 0.000119

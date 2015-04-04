@@ -1,6 +1,6 @@
 #include "benchmark.h"
 
-#define TESTS 100
+#define TESTS 1000
 std::vector<std::pair<long,char> > generateRandomInserts(long sequenceLength){
 
     std::srand(std::time(0)); //use current time as seed for random generator
@@ -18,7 +18,7 @@ std::vector<std::pair<long,char> > generateRandomInserts(long sequenceLength){
     return edit;
 }   
 
-void benchmarkSearch(genome g,int num_patterns,int pattern_len){
+void benchmarkSearch(genome &g,int num_patterns,int pattern_len){
   
   struct timeval start, end;
   struct timezone tzp;
@@ -32,7 +32,7 @@ void benchmarkSearch(genome g,int num_patterns,int pattern_len){
   print_time_elapsed("search: ", &start, &end);
 }
 
-void benchmarkSNP(genome g)
+void benchmarkSNP(genome &g)
 {
     struct timeval start, end;
     struct timezone tzp;
@@ -44,7 +44,7 @@ void benchmarkSNP(genome g)
     for(std::vector<std::pair<long,char> >::iterator i=random.begin(); i!=random.end(); i++){
         long position = i->first;
         char character = i->second;
-	g.snp_at(position,1,g.get_length());
+	g.snp_at(position,1);
     }
     gettimeofday(&end, &tzp);
     cout<<" for "<<TESTS<<" snips \t";
@@ -86,9 +86,10 @@ void benchmark(){
     }
     gettimeofday(&end, &tzp);
     print_time_elapsed("snips: ", &start, &end);*/
-    
-    benchmarkSearch(g,10,2);
-    benchmarkSearch(g,10,2);
-    benchmarkSearch(g,10,2);
-    benchmarkSearch(g,10,2);
+    /*
+    benchmarkSearch(g,10,15);
+    benchmarkSearch(g,10,25);
+    benchmarkSearch(g,10,35);
+    benchmarkSearch(g,10,70);
+    benchmarkSearch(g,10,100);*/
 }

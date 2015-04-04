@@ -31,7 +31,8 @@ public:
     void remove_kmer_from_hash_at(long,string);
     void add_kmer_from_hash_at(long,string);
 
-    bool snp_at(long,long,long);
+    
+    bool snp_at(long a,long b,string str="");
     
     std::list<long> find(std::string); 
 };

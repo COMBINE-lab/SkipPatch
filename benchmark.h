@@ -7,7 +7,7 @@
 
 std::vector<std::pair<long,char> > generateRandomInserts(long);
 void benchmark();
-void benchmarkSearch(genome);
-void benchmarkSNP(genome);
+void benchmarkSearch(genome &,int,int);
+void benchmarkSNP(genome&);
 
 #endif

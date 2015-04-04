@@ -7,7 +7,8 @@
 
 #include "genome.h"
 #include "utils.h"
-#define BENCHMARK 1
+//#define BENCHMARK 0
+//#define DEBUG 0
 using namespace std;
 
 void genome::get_input()
@@ -18,6 +19,9 @@ void genome::get_input()
     reference+=input;
     input.clear();
   }
+#ifdef DEBUG
+cout<<"Input taken! "<<endl;
+#endif
 }
 
 void genome::set_reference(std::string input){
@@ -31,7 +35,7 @@ long genome::get_length()
 
 void genome::construct_hash()
 {
-  for(auto it=reference.begin();it!=reference.end()-K+1;it++)
+  for(auto it=reference.begin();it<=reference.end()-K+1;it++)
   {
     string temp(it,it+K);
     m[temp].push_back(it-reference.begin());
@@ -82,15 +86,25 @@ void genome::add_kmer_from_hash_at(long i,string new_kmer)
   m[new_kmer].push_back(i);
 }
 
-bool genome::snp_at(long pos,long len,long max_len)
+bool genome::snp_at(long pos,long len,string deflt /* ="" */)
 {
+  long max_len=reference.length();
   if(!is_valid_input(pos,len,reference.length())) //checks positions to be modified are valid
     {
 	cout<<"Insertion at "<<pos<<" of len "<<len<<" failed"<<endl;
    	 return false;
 	}
+#ifdef DEBUG
+cout<<"Input is valid"<<len<<endl;
+#endif
 
-  string new_string = generate_random_string(len);
+  string new_string(deflt.begin(),deflt.end());
+  if(new_string=="")
+  	new_string = generate_random_string(len);
+  len = new_string.length();
+#ifdef DEBUG
+cout<<"len  = "<<len<<endl;
+#endif
   //handling edge cases:
   long snp_begin = (pos-K+1)<0?0:(pos-K+1); 
   long snp_end = (pos+len+K-1)>max_len?max_len:(pos+len+K-1);
@@ -101,6 +115,13 @@ bool genome::snp_at(long pos,long len,long max_len)
   modified_reference_substr+=new_string;
   string temp(reference.begin()+pos+len,reference.begin()+snp_end);
   modified_reference_substr+=temp;
+/*
+struct timeval start, end;
+    struct timezone tzp;
+
+  //  std::vector<std::pair<long,char> > random = generateRandomInserts(g.get_length());
+
+    gettimeofday(&start, &tzp);*/
   for(long i=snp_begin;i<(snp_end-(K-1));i++)
   {
     string curr_kmer(reference.begin()+i,reference.begin()+i+K);
@@ -108,6 +129,10 @@ bool genome::snp_at(long pos,long len,long max_len)
     remove_kmer_from_hash_at(i,curr_kmer);
     add_kmer_from_hash_at(i,new_kmer);
   }
+/*  gettimeofday(&end, &tzp);
+  //  cout<<" for "<<TESTS<<" snips \t";
+    print_time_elapsed("snips: ", &start, &end);
+*/
   //updating the reference itself
   for(long i=pos;i<pos+len;i++)
   {

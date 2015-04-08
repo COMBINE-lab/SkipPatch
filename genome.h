@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define K 3 //user define parameter
+#define K 20 //user define parameter
 
 class genome {
 

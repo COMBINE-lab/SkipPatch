@@ -7,7 +7,7 @@
 using namespace std;
 
 int main(){
-	
+/*	
 	genome g;
 
 	g.get_input();
@@ -25,7 +25,7 @@ cout<<"After hash"<<endl;
 	g.display_hash();
 	g.find("CCC");
 //	test_search();
-/*
+
 	g.snp_at(1,10,g.get_length());
 	
 	g.display_genome();
@@ -48,7 +48,7 @@ cout<<"After hash"<<endl;
 	test_search();
 	*/
 
-	//benchmark();
+	benchmark();
 	
 	return 0;
 }

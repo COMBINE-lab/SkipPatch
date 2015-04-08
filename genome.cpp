@@ -7,7 +7,7 @@
 
 #include "genome.h"
 #include "utils.h"
-//#define BENCHMARK 0
+#define BENCHMARK 0
 //#define DEBUG 0
 using namespace std;
 

@@ -1,6 +1,6 @@
 #include "benchmark.h"
 
-#define TESTS 1000
+#define TESTS 100
 std::vector<std::pair<long,char> > generateRandomInserts(long sequenceLength){
 
     std::srand(std::time(0)); //use current time as seed for random generator
@@ -12,7 +12,7 @@ std::vector<std::pair<long,char> > generateRandomInserts(long sequenceLength){
     for(int i=0; i<TESTS; i++){
         long randomP = (std::rand() % sequenceLength);   
         int randomA = (std::rand() % alphabet.size());  
-        edit.push_back(std::make_pair(randomP,alphabet[randomA]));
+        edit[i]=std::make_pair(randomP,alphabet[randomA]);
     }   
 
     return edit;

@@ -5,9 +5,10 @@
 #include "genome.h"
 #include "utils.h"
 
-std::vector<std::pair<long,char> > generateRandomInserts(long);
-void benchmark();
-void benchmarkSearch(genome &,int,int);
-void benchmarkSNP(genome&);
+void benchmark(genome &);
+
+void benchmark_search(genome &, int, int);
+
+void benchmark_snp(genome &);
 
 #endif

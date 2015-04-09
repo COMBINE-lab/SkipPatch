@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <list>
 #include <unordered_map>
 #include <time.h>
 #include <sys/resource.h>
@@ -30,7 +29,7 @@ void print_time_elapsed(std::string desc, struct timeval* start, struct timeval*
     elapsed.tv_usec = end->tv_usec - start->tv_usec;
     elapsed.tv_sec  = end->tv_sec  - start->tv_sec;
     float time_elapsed = (elapsed.tv_sec*1000000 + elapsed.tv_usec)/1000000.f;
-    std::cout << desc << " Total Time Elapsed = " << time_elapsed << std::endl;
+    std::cout << desc << " Total Time Elapsed = " << time_elapsed << " seconds" <<std::endl;
 
     return;
 }
@@ -76,10 +75,10 @@ string generate_random_string(long len){
   return random;
 }
 
-/* Returns the list of positions of the 'substr' occurring in 'str' */
-std::list<long> find_substr(std::string str, std::string substr){
+/* Returns the vector of positions of the 'substr' occurring in 'str' */
+std::vector<long> find_substr(std::string str, std::string substr){
 
-    list<long> positions;
+    vector<long> positions;
     long pos = str.find(substr, 0);
     while(pos != -1)
     {   
@@ -90,19 +89,18 @@ std::list<long> find_substr(std::string str, std::string substr){
     return positions;
 }
 
+/*Generate random */
+std::vector<std::pair<long,char>> generate_random_inserts(int insert_count, long sequence_length){
+    
+    char alphabets[] = {'A', 'T', 'C', 'G'};
+    std::vector<char> alphabet (alphabets, alphabets+sizeof(alphabets) / sizeof(char));    
+    std::vector<std::pair<long,char>> random_inserts(insert_count);
 
-std::vector<std::pair<long,char>> generateRandomInserts(long sequenceLength, int test_count){
+    for(int i=0; i<insert_count; i++){
+        long random_pos = (std::rand() % sequence_length);   
+        int random_alphabet = (std::rand() % alphabet.size());  
+        random_inserts[i]=std::make_pair(random_pos,alphabet[random_alphabet]);
+    }   
 
-  std::srand(time(0)); //use current time as seed for random generator
-  
-  std::vector<char> alphabet {'A', 'T', 'C', 'G'};  
-  std::vector< std::pair<long,char>> edit(test_count);
-
-  for(long i=0; i<test_count; i++){
-    long randomP = (std::rand() % sequenceLength); 
-    long randomA = (std::rand() % alphabet.size());  
-    edit.push_back(std::make_pair(randomP,alphabet[randomA]));
-  } 
-
-  return edit;
-} 
+    return random_inserts;
+}   

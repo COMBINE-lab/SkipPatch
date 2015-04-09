@@ -7,15 +7,21 @@
 using namespace std;
 
 int main(){
-/*	
+	
 	genome g;
-
 	g.get_input();
-	cout<<"Before hash"<<endl;
 	g.construct_hash();
-cout<<"After hash"<<endl;
-	g.snp_at(500,2);
-	g.snp_at(1,2);
+
+	test();
+	benchmark(g);
+	
+
+/*	cout<<"Before hash"<<endl;
+	g.construct_hash();
+	cout<<"After hash"<<endl;
+	g.snp_at(500,2
+	//);
+	g.snp_at(1,2);//
 	g.display_genome();
 	g.display_hash();
 
@@ -24,7 +30,7 @@ cout<<"After hash"<<endl;
 	g.display_genome();
 	g.display_hash();
 	g.find("CCC");
-//	test_search();
+	test_search();
 
 	g.snp_at(1,10,g.get_length());
 	
@@ -47,8 +53,6 @@ cout<<"After hash"<<endl;
 	g.display_hash();
 	test_search();
 	*/
-
-	benchmark();
 	
 	return 0;
 }

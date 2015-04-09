@@ -1,5 +1,5 @@
 #include <iostream>
-#include <list>
+#include <vector>
 #include <vector>
 #include <string>
 #include <cassert>
@@ -15,6 +15,12 @@
 
 using namespace std;
 
+void test(){
+
+	test_search();
+
+}
+
 /* Tests if the search for a string of any length in the hash map is working correctly */
 void test_search(){
 
@@ -26,12 +32,14 @@ void test_search(){
     g.construct_hash();
 
     std::vector<std::string> reads {"ATT", "TAG", "TAGC", "TAGCT","TAGCTAGC","CCTAGCT", "ATTAGCTAGCCTAGCT","TTAGCTAGCCTAGC"};
+    
     for(std::string read: reads){
         assert(g.find(read)==find_substr(reference,read));
     }
    
     std::cout<<"Passed All Tests!"<<std::endl;
 
+    return;
 }
 /*
 bool check_hash(const genome &g,long k)
@@ -42,10 +50,10 @@ bool check_hash(const genome &g,long k)
 	for(long i=0;i<k;i++)
 	{
 		string kmer(reference.begin()+i,reference.end()+i+K);
-		list l=m.find(kmer);
+		vector l=m.find(kmer);
 		if(l.isempty())
 		{
-			cout<<"List is empty!!"<<endl;
+			cout<<"vector is empty!!"<<endl;
 			return false;
 		}
 		if(find(l.begin(),l.end(),i)==l.end())

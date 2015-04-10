@@ -8,8 +8,6 @@
 
 #include "utils.h"
 
-using namespace std;
-
 std::string alphabet="AGCT"; //#used for generating random string
 
 /*Print time elapsed in seconds*/
@@ -37,48 +35,50 @@ void print_time_elapsed(std::string desc, struct timeval* start, struct timeval*
 /* Skips reading one like of the input */
 void ignore_first_line()
 {
-  string input;
-  getline(cin,input);
+    std::string input;
+    getline(std::cin,input);
 }
-
 
 /* Checks if the input is valid */
 bool is_valid_input(long pos,long len,long max_len)
 {
-  if(pos<0)
-  {
-    cout<<"Cant insert at a negative position"<<endl;
-    return false;
-  }
-  if(len<=0)
-  {
-    cout<<"Min len = 1"<<endl;
-    return false;
-  }
-  if((pos+len-1)>=max_len) 
-  {
-    cout<<"Insertion out of bounds!"<<endl;
-    return false;
-  }
-  return true;
+    if(pos<0)
+    {
+        std::cout<<"Cant insert at a negative position"<<std::endl;
+        return false;
+    }
+    if(len<=0)
+    {
+        std::cout<<"Min len = 1"<<std::endl;
+        return false;
+    }
+    if((pos+len-1)>=max_len) 
+    {
+        std::cout<<"Insertion out of bounds!"<<std::endl;
+        return false;
+    }
+    return true;
 }
 
 /* Generates a random string (DNA: ATCG) of the given length */
-string generate_random_string(long len){
+std::string generate_random_string(long len){
 
-  string random;
-  for(long i=0;i<len;i++)
-  {
-    random+=alphabet[i%(alphabet.size())]; 
-  }
-  random_shuffle(random.begin(),random.end()); //*now really random :)
-  return random;
+    std::srand(std::time(0)); //use current time as seed for random generator
+
+    std::string random_str;
+    for(long i=0; i<len; i++)
+    {   
+        random_str+=alphabet[std::rand()%(alphabet.size())]; 
+    }
+    random_shuffle(random_str.begin(),random_str.end()); //*now really random :)
+    
+    return random_str;
 }
 
 /* Returns the vector of positions of the 'substr' occurring in 'str' */
 std::vector<long> find_substr(std::string str, std::string substr){
 
-    vector<long> positions;
+    std::vector<long> positions;
     long pos = str.find(substr, 0);
     while(pos != -1)
     {   
@@ -89,17 +89,16 @@ std::vector<long> find_substr(std::string str, std::string substr){
     return positions;
 }
 
-/*Generate random */
+/*Generate "insert_count" random inserts of "sequence_length"*/
 std::vector<std::pair<long,char>> generate_random_inserts(int insert_count, long sequence_length){
     
-    char alphabets[] = {'A', 'T', 'C', 'G'};
-    std::vector<char> alphabet (alphabets, alphabets+sizeof(alphabets) / sizeof(char));    
-    std::vector<std::pair<long,char>> random_inserts(insert_count);
+    std::srand(std::time(0)); //use current time as seed for random generator
 
+    std::vector<std::pair<long,char>> random_inserts(insert_count);
     for(int i=0; i<insert_count; i++){
         long random_pos = (std::rand() % sequence_length);   
-        int random_alphabet = (std::rand() % alphabet.size());  
-        random_inserts[i]=std::make_pair(random_pos,alphabet[random_alphabet]);
+        char random_alphabet = alphabet[(std::rand() % alphabet.size())];
+        random_inserts[i]=std::make_pair(random_pos,random_alphabet);
     }   
 
     return random_inserts;

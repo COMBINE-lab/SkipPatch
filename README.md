@@ -7,16 +7,21 @@ How to Run:
 
 	main.cpp
 	genome.cpp
+	genome.h
+	bechmark.cpp
+	bechmark.h
 	test.cpp
+	test.h
 	utils.cpp
-	data/input.txt
+	utils.h
+	data/input.txt (or some input file)
 	Makefile
 
 2. Run "make" on your terminal from the this folder
 
-3. Run "./main < data/input.txt" from your terminal
+3. Run "./main < ../data/input.txt" from your terminal
 	
-
+(Ensure that the value of k defined in "genome.h" is what you require)
 
 Dependencies:
 C++11

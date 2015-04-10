@@ -1,2 +1,0 @@
- constructing hash:  Total Time Elapsed = 7.34728
- for 100 snips 	snips:  Total Time Elapsed = 0.005391

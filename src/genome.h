@@ -6,17 +6,17 @@
 #include <string>
 #include <unordered_map>
 
-using namespace std;
-
-#define K 3 //user define parameter
+#define K 20 //user defined parameter
 
 class genome {
 
 private:
-    string reference;
-    unordered_map<string,vector<long>> m;
+
+    std::string reference;
+    std::unordered_map<std::string, std::vector<long>> m;
 
 public:
+
     void get_input();
     void set_reference(std::string);
     long get_length();
@@ -28,10 +28,10 @@ public:
     void display_hash();
     void display_load();
     
-    void remove_kmer_from_hash_at(long,string);
-    void add_kmer_from_hash_at(long,string);
+    void remove_kmer_from_hash_at(long, std::string);
+    void add_kmer_from_hash_at(long, std::string);
     
-    bool snp_at(long a,long b,string str="");
+    bool snp_at(long, long, std::string);
     
     std::vector<long> find(std::string); 
 };

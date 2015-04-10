@@ -3,12 +3,25 @@
 
 #define TESTS 100
 
+void benchmark_construction(genome &g){
+
+    //Calculating time elapsed
+    struct timeval start, end;
+    struct timezone tzp;
+
+    gettimeofday(&start, &tzp);
+    g.construct_hash();
+    gettimeofday(&end, &tzp);
+    
+    print_time_elapsed("Constructing Hash: ", &start, &end);
+
+    return;
+}
+
 void benchmark_search(genome &g, int num_patterns, int pattern_len){
   
 	struct timeval start, end;
 	struct timezone tzp;
-
-    std::srand(std::time(0)); //use current time as seed for random generator
 
 	gettimeofday(&start, &tzp);
 	for(int i=0;i<num_patterns;i++){
@@ -26,7 +39,7 @@ void benchmark_snp(genome &g)
 {
     struct timeval start, end;
     struct timezone tzp;
-    
+	
     std::vector<std::pair<long,char>> random = generate_random_inserts(TESTS,g.get_length());
 
     gettimeofday(&start, &tzp);
@@ -34,7 +47,7 @@ void benchmark_snp(genome &g)
     for(std::vector<std::pair<long,char>>::iterator i=random.begin(); i!=random.end(); i++){
         long position = i->first;
         char character = i->second;
-		g.snp_at(position,1);
+		g.snp_at(position,1, std::string(1,character));
     }
     gettimeofday(&end, &tzp);
 
@@ -43,22 +56,6 @@ void benchmark_snp(genome &g)
     
     return;
 }
-
-void benchmark_construction(genome &g){
-
-	//Calculating time elapsed
-    struct timeval start, end;
-    struct timezone tzp;
-
-	gettimeofday(&start, &tzp);
-    g.construct_hash();
-    gettimeofday(&end, &tzp);
-    
-    print_time_elapsed("Constructing Hash: ", &start, &end);
-
-    return;
-}
-
 
 void benchmark(genome &g){
 
@@ -77,10 +74,10 @@ void benchmark(genome &g){
 
 }
 	
-	//Open test file
-    /*	std::fstream referenceFile;
-    referenceFile.open("./../data/input.txt");
-    if( !referenceFile || referenceFile.eof() ){ 
-        std::cout << "Error: Reference Sequence File Not Found.\n"; exit(2); 
-    }*/
+//Open test file
+/*	std::fstream referenceFile;
+referenceFile.open("./../data/input.txt");
+if( !referenceFile || referenceFile.eof() ){ 
+    std::cout << "Error: Reference Sequence File Not Found.\n"; exit(2); 
+}*/
  	

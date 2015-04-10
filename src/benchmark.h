@@ -7,6 +7,8 @@
 
 void benchmark(genome &);
 
+void benchmark_construction(genome &);
+
 void benchmark_search(genome &, int, int);
 
 void benchmark_snp(genome &);

@@ -2,7 +2,6 @@
 #include "utils.h"
 #include "test.h"
 #include "benchmark.h"
-#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -16,7 +15,8 @@ int main(){
 	benchmark(g);
 	
 
-/*	cout<<"Before hash"<<endl;
+/*	
+	cout<<"Before hash"<<endl;
 	g.construct_hash();
 	cout<<"After hash"<<endl;
 	g.snp_at(500,2
@@ -25,12 +25,10 @@ int main(){
 	g.display_genome();
 	g.display_hash();
 
-	
 	g.snp_at(3,2,"CCC");
 	g.display_genome();
 	g.display_hash();
 	g.find("CCC");
-	test_search();
 
 	g.snp_at(1,10,g.get_length());
 	
@@ -51,8 +49,7 @@ int main(){
 
 	g.display_genome();
 	g.display_hash();
-	test_search();
-	*/
+*/
 	
 	return 0;
 }

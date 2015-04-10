@@ -1,19 +1,11 @@
 #include <iostream>
 #include <vector>
-#include <vector>
 #include <string>
 #include <cassert>
-
-#include <ctime>
-#include <time.h>
-#include <sys/resource.h>
-#include <sys/time.h>
 
 #include "test.h"
 #include "genome.h"
 #include "utils.h"
-
-using namespace std;
 
 void test(){
 
@@ -27,20 +19,31 @@ void test_search(){
     std::cout<<std::endl<<"Testing Search.. \t";
 
     genome g;
-    std::string reference = "ATTAGCTAGCCTAGCT"; 
+    std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"; 
     g.set_reference(reference);
     g.construct_hash();
 
-    std::vector<std::string> reads {"ATT", "TAG", "TAGC", "TAGCT","TAGCTAGC","CCTAGCT", "ATTAGCTAGCCTAGCT","TTAGCTAGCCTAGC"};
+    std::vector<std::string> existing_reads {"TGATCGATCGATCGCAGATCGA", "ATTAGCTAGCCTAGCTAGTA", "CCCCCTATCATCATCATCTACTACAT", 
+    											"GTAGATGGATCTCCCCCTATCATCAT", "TGGATCTCCCCCTATCATCA", "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACT",
+			    								"ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"};
     
-    for(std::string read: reads){
+    for(std::string read: existing_reads){
         assert(g.find(read)==find_substr(reference,read));
     }
-   
+
+    std::vector<std::string> non_existent_reads {"TGATCGATCGATCGCAGATCGAA", "ATTAGCTAGTTTAGCTAGTA", "CCCCCTATCATTCATCTACTACATC", 
+    												"GTAGATGGATCTCCCCTATCATCAT", "TGGATCTCCCCCTATCATCAAT", "ATTAGCTAGCTAGCTAGTAGATGGATCTCCCTATCATCTCATCTACT",
+			    									"ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGC"};	
+
+    for(std::string read: non_existent_reads){
+        assert(g.find(read).size()==0);
+    }
+
     std::cout<<"Passed All Tests!"<<std::endl;
 
     return;
 }
+
 /*
 bool check_hash(const genome &g,long k)
 {
@@ -81,6 +84,5 @@ bool test_hash()
 	//invaled cases
 	
 	//somewhere in the middle
-	
 	
 }*/

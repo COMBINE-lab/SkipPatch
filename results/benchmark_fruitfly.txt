@@ -1,0 +1,10 @@
+
+Testing Search.. 	Passed All Tests!
+BENCHMARKING START
+Constructing Hash:  Total Time Elapsed = 158.11 seconds
+Inserting 100 SNPs at random locations...	 Total Time Elapsed = 0.014659 seconds
+Searching 100 patterns of length 25...	 Total Time Elapsed = 0.000457 seconds
+Searching 100 patterns of length 35...	 Total Time Elapsed = 0.000555 seconds
+Searching 100 patterns of length 70...	 Total Time Elapsed = 0.00091 seconds
+Searching 100 patterns of length 100...	 Total Time Elapsed = 0.001214 seconds
+BENCHMARKING END

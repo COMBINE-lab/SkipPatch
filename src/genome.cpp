@@ -11,7 +11,7 @@
 
 void genome::get_input()
 {
-    ignore_first_line();
+    //ignore_first_line();
     std::string input;
     while(getline(std::cin, input)){
         reference+=input;
@@ -73,7 +73,7 @@ void genome::remove_kmer_from_hash_at(long position_to_remove, std::string curr_
     std::vector<long> positions = m[curr_kmer];
     positions.erase(std::remove(positions.begin(), positions.end(), position_to_remove), positions.end());
     
-    std::cout<<"genome::remove_kmer_from_hash_at\t"<<curr_kmer<<"\t"<<positions.size()<<std::endl;
+    //std::cout<<"genome::remove_kmer_from_hash_at\t"<<curr_kmer<<"\t"<<positions.size()<<std::endl;
 
     //Having a very long "vector/list" of positions (~1 million) causes a bottleneck here
     //Approximately takes 0.5 seconds to execute this line "once" if the length of "positions" is 1 million

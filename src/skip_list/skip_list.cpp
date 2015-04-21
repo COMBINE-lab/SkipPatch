@@ -69,8 +69,9 @@ node* skip_list::find_prev(long val)
   return temp;
 }
 
-node* skip_list::find_and_update_prev(long val,long offset)
+node* skip_list::find_and_update_prev(long val,string str)
 {
+  long offset = str.length();
   node *temp=head;
   
   while(temp)
@@ -175,19 +176,34 @@ void skip_list::insert(long val,long offset)
 }
 //delete this:
 
-void skip_list::insert_and_update(long val,long offset)
+void skip_list::insert_and_update(long val,unsigned long pos,string str)
 {
   //find place to insert
-  node *prev = find_and_update_prev(val,offset);
-  
+  node *prev = find_and_update_prev(val,str);
+  long offset = str.length();
   if(prev->next->val==val) //if the value already exists
   {
     //update the offset pointers.. 
+    if((prev->next->str).length()<pos)
+    {
+      cout<<"Invalid value.. skip list inconsistent!"<<endl;
+      return;
+    }
+    (prev->next->str).insert(pos,str);
     prev->next->offset+=offset;
   }
   else
   {
+    
+    if(pos>0)
+    {
+      cout<<"Invalid value.. skip list inconsistent!"<<endl;
+      return;
+    }
+    
+    
     node *new_node = new node(val,offset);
+    new_node->str = str;
     new_node->next = prev->next;
     new_node->prev=prev;
     prev->next=new_node;
@@ -338,6 +354,7 @@ void skip_list::print_base_level()
   while(temp)
   {
     print_node(temp);
+    cout<<temp->str<<endl;
     temp=temp->next;
   }
   cout<<endl;
@@ -363,9 +380,9 @@ void skip_list:: print_list()
 int main()
 {
 
-  test_skip_list();
+  //test_skip_list();
 
-/*
+
   skip_list s;
   
   /*
@@ -379,23 +396,23 @@ int main()
   s.insert(9,1);
   s.insert(0,1);
   */
-/*  
-  s.insert_and_update(2,1);
+
+  s.insert_and_update(2,0,"A");
      //s.print_list();
-  s.insert_and_update(5,1);
+  s.insert_and_update(5,0,"A");
      //s.print_list();
-  s.insert_and_update(5,1);
+  s.insert_and_update(5,0,"A");
      //s.print_list();
-  s.insert_and_update(6,1);
+  s.insert_and_update(6,0,"A");
      //s.print_list();
-  s.insert_and_update(7,1);
+  s.insert_and_update(7,0,"A");
      //s.print_list();
-  s.insert_and_update(7,1);
+  s.insert_and_update(7,0,"A");
      //s.print_list();
-  s.insert_and_update(9,1);
-  s.insert_and_update(0,1);
-  s.insert_and_update(1,1);
-  s.insert_and_update(1,1);
+  s.insert_and_update(9,0,"A");
+  s.insert_and_update(0,0,"A");
+  s.insert_and_update(1,0,"A");
+  s.insert_and_update(1,0,"A");
   
   cout<<s.get_cumulative_count(100)<<endl; // -1 means it does not exist
   cout<<s.get_cumulative_count(1)<<endl;
@@ -421,7 +438,7 @@ int main()
     s.print_base_level();
     s.print_list();
 
-  */
+  
  
   return 0;
 }

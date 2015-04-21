@@ -1,13 +1,16 @@
+#ifndef SKIP_LIST_H
+#define SKIP_LIST_H
+
 struct node
 {
-  long val,offset;
-  node *next,*down,*prev,*up;
-  node(long i,long o)
-  {
-    val = i;
-    offset = o;
-    next=down=prev=up=NULL;
-  }
+    long val,offset;
+    node *next,*down,*prev,*up;
+    node(long i,long o)
+    {
+        val = i;
+        offset = o;
+        next=down=prev=up=NULL;
+    }
 };
 
 //must use short? instead of long for offset
@@ -19,7 +22,9 @@ private:
    
    int val;
    int index;
+
 public:
+
     skip_list();
     node* get_head();
     node* find(long); //if not found return null, else return the node itself.
@@ -33,3 +38,5 @@ public:
     long get_cumulative_count(long);
     //long get_offset(node*);
 };
+
+#endif

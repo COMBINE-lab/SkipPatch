@@ -1,12 +1,13 @@
 #include <bits/stdc++.h>
 #include "skip_list.h"
+#include "skip_list_test.h"
+
 using namespace std;
 
 //put this in utils
 int coinToss()
 {
-  //return 0;
-   return rand()%2;
+    return rand()%2;
 }
 
 skip_list::skip_list()
@@ -358,22 +359,14 @@ void skip_list:: print_list()
     cout<<endl;
   }
 }
+
 int main()
 {
+
+  test_skip_list();
+
+/*
   skip_list s;
-  node *temp = s.find(2);
-  if(temp)
-    cout<<temp->offset<<endl;
-  else
-    cout<<"not found!"<<endl;
- 
-  //s.insert(2,1);
-  temp = s.find(4);
-  
-  if(temp)
-    cout<<temp->offset<<endl;
-  else
-    cout<<"not found!"<<endl;
   
   /*
   s.insert(2,1);
@@ -386,7 +379,7 @@ int main()
   s.insert(9,1);
   s.insert(0,1);
   */
-  
+/*  
   s.insert_and_update(2,1);
      //s.print_list();
   s.insert_and_update(5,1);
@@ -408,6 +401,7 @@ int main()
   cout<<s.get_cumulative_count(1)<<endl;
   cout<<s.get_cumulative_count(7)<<endl;
   cout<<s.get_cumulative_count(5)<<endl;
+
   node* temp1 = s.find(2);
   if(temp1)
   {  
@@ -426,5 +420,8 @@ int main()
   //cout<<s.index;
     s.print_base_level();
     s.print_list();
+
+  */
+ 
   return 0;
 }

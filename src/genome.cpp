@@ -11,7 +11,7 @@
 
 void genome::get_input()
 {
-    ignore_first_line();
+    //ignore_first_line();
     std::string input;
     while(getline(std::cin, input)){
         reference+=input;
@@ -72,6 +72,9 @@ void genome::remove_kmer_from_hash_at(long position_to_remove, std::string curr_
 
     std::vector<long> positions = m[curr_kmer];
     positions.erase(std::remove(positions.begin(), positions.end(), position_to_remove), positions.end());
+    
+    //std::cout<<"genome::remove_kmer_from_hash_at\t"<<curr_kmer<<"\t"<<positions.size()<<std::endl;
+
     //Having a very long "vector/list" of positions (~1 million) causes a bottleneck here
     //Approximately takes 0.5 seconds to execute this line "once" if the length of "positions" is 1 million
     
@@ -125,12 +128,11 @@ bool genome::snp_at(long pos, long len, std::string new_string)
     {
         std::string curr_kmer(reference.begin()+i,reference.begin()+i+K);
         /*
-        This is to temporarily handle the case when the k-mer is NNNNN..(k)
+        This is to temporarily handle the case when the k-mer is NNNNN..(k), or, contains an 'n' or 'N'
         Since this k-mer exists at several (millions) of locations, "remove_kmer_from_hash" causes a bottleneck, slowing down the update process  
         Temporary fix: Simple ignore the k-mer and return false. Permanent soultion?
         */
-        std::string skip_kmer(K,'N');
-        if(curr_kmer==skip_kmer){
+        if( (curr_kmer.find('n')!=std::string::npos)  || (curr_kmer.find('N')!=std::string::npos) ){
             return false;
         }
         std::string new_kmer(modified_reference_substr.begin()+(i-snp_begin),modified_reference_substr.begin()+(i-snp_begin+K));

@@ -36,6 +36,7 @@ public:
     node *find_and_update_prev(long,string);
     void insert_and_update(long,unsigned long,string);
     long get_cumulative_count(long);
+    void insert_and_update_abs(const long,string);
     //long get_offset(node*);
 };
 

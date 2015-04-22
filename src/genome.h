@@ -6,7 +6,7 @@
 #include <string>
 #include <unordered_map>
 
-#define K 20 //user defined parameter
+#define K 4 //user defined parameter
 
 class genome {
 
@@ -33,6 +33,8 @@ public:
     
     bool snp_at(long, long, std::string);
     
+    void insert_at(std::string, long);
+
     std::vector<long> find(std::string); 
 };
 

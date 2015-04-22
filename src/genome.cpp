@@ -71,10 +71,8 @@ void genome::display_load()
 void genome::remove_kmer_from_hash_at(long position_to_remove, std::string curr_kmer){
 
     std::vector<long> positions = m[curr_kmer];
-    positions.erase(std::remove(positions.begin(), positions.end(), position_to_remove), positions.end());
-    
-    //std::cout<<"genome::remove_kmer_from_hash_at\t"<<curr_kmer<<"\t"<<positions.size()<<std::endl;
-
+    m[curr_kmer].erase(std::remove(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove), m[curr_kmer].end());
+    assert( std::find( m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove) == m[curr_kmer].end() ); //Verifying if the position was actually deleted
     //Having a very long "vector/list" of positions (~1 million) causes a bottleneck here
     //Approximately takes 0.5 seconds to execute this line "once" if the length of "positions" is 1 million
     
@@ -201,4 +199,75 @@ std::vector<long> genome::find(std::string read){
   	}
 
   	return pos_prev;
+}
+
+/*
+
+Inserts a string at the 'insert_pos'. Updates the k-mers which lie in the "region of change" 
+Splits the problem into two segments:
+ - Updating the k-mers which appear before the insertion
+ - Adding the new k-mers which are a result of the insertion 
+
+Working test cases:
+ - Insertions of lengths <K, ==K, >K
+ - Insertions in locations: (begin,begin+K), (end-K,end), other 
+
+Current limitations (due to unavailability of helper functions)
+1. Assumes that there has been no prior insertion (positions are original genome positions) 
+2. Does not support nested insertions
+3. Supports only single insertion - no handling of overlapping k-mers which might have arisen due to adjacent insertions
+
+*Needs rigorous testing - several test cases to be written*
+
+*/
+
+void genome::insert_at(std::string insertion, long insert_pos){
+
+    std::cout << "Inserting " << insertion << " at " << insert_pos << std::endl; 
+
+    if(insert_pos<0 || insert_pos>reference.length()-1){
+        std::cerr << "Position of insertion out of bounds of length of genome" << std::endl;
+        return;
+    }
+
+    long edit_start = std::max(insert_pos-K+2,(long)0);
+    long edit_end = std::min(insert_pos+K, (long)reference.length()-1);
+
+    //Segment which contains the k-mers which no longer exist 
+    std::string edit_segment = std::string(reference.begin()+edit_start, reference.begin()+edit_end+1);
+
+    //Make a new string of edit_segment + "insertion" to replace the removed k-mers with new k-mers
+    std::string new_segment = std::string(reference.begin()+edit_start, reference.begin()+insert_pos+1)
+                            + insertion 
+                            + std::string(reference.begin()+insert_pos+1, reference.begin()+insert_pos+K);
+    
+    
+    //Replace all the modified k-mers contained in edit_segment from the hashmap
+    for(int i=0; i<K-1; i++){
+        if(i<=insert_pos){ //Check to handle insertions at the beginning of the genome
+            std::string curr_kmer = edit_segment.substr(i,K);
+            std::string new_kmer = new_segment.substr(i,K);
+            //std::cout << "Replacing: " << curr_kmer << " at " << edit_start+i << " with " << new_kmer << std::endl;
+            if(curr_kmer!=new_kmer){
+                if(curr_kmer.length()==K){
+                    remove_kmer_from_hash_at(edit_start+i, curr_kmer);
+                }
+                if(new_kmer.length()==K){
+                    add_kmer_from_hash_at(edit_start+i, new_kmer);
+                }
+            }
+        }
+    }
+
+    //Add the new k-mers generated due to insertion into the hashmap
+    std::string new_kmer_segment = std::string(insertion+reference.substr(insert_pos+1,K-1));
+    if(new_kmer_segment.length()>=K){
+        for(int i=0; i<new_kmer_segment.length()-K+1; i++){
+            std::string new_kmer = new_kmer_segment.substr(i,K);
+            if(new_kmer.length()==K){
+                //std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;
+                add_kmer_from_hash_at(insert_pos, new_kmer);
+            }
+        }
+    }
 }

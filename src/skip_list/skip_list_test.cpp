@@ -9,11 +9,11 @@ void test_find_ordered(){
 
     skip_list s;
 
-    s.insert_and_update(34,1);
-    s.insert_and_update(78,1);
-    s.insert_and_update(144,1);
-    s.insert_and_update(909,1);
-    s.insert_and_update(1209,1);
+    s.insert_and_update(34,0,"AT");
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(1209,0,"CAT");
 
     assert(s.find(78));
     assert(s.find(1209));
@@ -31,11 +31,11 @@ void test_find_unordered(){
 
     skip_list s;
 
-    s.insert_and_update(78,1);
-    s.insert_and_update(1209,1);
-    s.insert_and_update(909,1);
-    s.insert_and_update(144,1);
-    s.insert_and_update(34,1);
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(1209,0,"CAT");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(34,0,"AT");
 
     assert(s.find(34));
     assert(s.find(78));
@@ -60,11 +60,11 @@ void test_find_prev_ordered(){
 
     skip_list s;
 
-    s.insert_and_update(34,1);
-    s.insert_and_update(78,1);
-    s.insert_and_update(144,1);
-    s.insert_and_update(909,1);
-    s.insert_and_update(1209,1);
+    s.insert_and_update(34,0,"AT");
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(1209,0,"CAT");
 
     assert(s.find_prev(34)  -> val == LONG_MIN);
     assert(s.find_prev(78)  -> val == 34);
@@ -85,11 +85,11 @@ void test_find_prev_unordered(){
 
     skip_list s;
 
-    s.insert_and_update(78,1);
-    s.insert_and_update(1209,1);
-    s.insert_and_update(909,1);
-    s.insert_and_update(144,1);
-    s.insert_and_update(34,1);
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(1209,0,"CAT");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(34,0,"AT");
 
     assert(s.find_prev(34)  -> val == LONG_MIN);
     assert(s.find_prev(78)  -> val == 34);
@@ -116,17 +116,17 @@ void test_get_cumulative_count(){
 
     skip_list s;
 
-    s.insert_and_update(78,5);
-    s.insert_and_update(1209,2);
-    s.insert_and_update(909,3);
-    s.insert_and_update(144,1);
-    s.insert_and_update(34,6);
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(1209,0,"CAT");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(34,0,"AT");
 
     assert(s.get_cumulative_count(34)==0);
-    assert(s.get_cumulative_count(78)==6);
-    assert(s.get_cumulative_count(144)==11);
-    assert(s.get_cumulative_count(909)==12);
-    assert(s.get_cumulative_count(1209)==15);
+    assert(s.get_cumulative_count(78)==2);
+    assert(s.get_cumulative_count(144)==3);
+    assert(s.get_cumulative_count(909)==5);
+    assert(s.get_cumulative_count(1209)==9);
 
     assert(s.get_cumulative_count(45)==-1);
     assert(s.get_cumulative_count(238)==-1);
@@ -138,24 +138,24 @@ void test_find_and_update_prev_ordered(){
 
     skip_list s;
 
-    s.insert_and_update(34,1);
-    s.insert_and_update(78,1);
-    s.insert_and_update(144,1);
-    s.insert_and_update(909,1);
-    s.insert_and_update(1209,1);
+    s.insert_and_update(34,0,"AT");
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(1209,0,"CAT");
 
-    assert(s.find_and_update_prev(34,1)  -> val == LONG_MIN);
-    assert(s.find_and_update_prev(78,1)  -> val == 34);
-    assert(s.find_and_update_prev(144,1) -> val == 78);
-    assert(s.find_and_update_prev(909,1) -> val == 144);
-    assert(s.find_and_update_prev(1209,1)-> val == 909);
+    assert(s.find_and_update_prev(34,"ATA")  -> val == LONG_MIN);
+    assert(s.find_and_update_prev(78,"CG")  -> val == 34);
+    assert(s.find_and_update_prev(144,"TGG") -> val == 78);
+    assert(s.find_and_update_prev(909,"ATCGC") -> val == 144);
+    assert(s.find_and_update_prev(1209,"CAAT")-> val == 909);
 
-    assert(s.find_and_update_prev(20,1)  -> val == LONG_MIN);
-    assert(s.find_and_update_prev(50,1)  -> val == 34);
-    assert(s.find_and_update_prev(100,1) -> val == 78);
-    assert(s.find_and_update_prev(150,1) -> val == 144);
-    assert(s.find_and_update_prev(1000,1)-> val == 909);
-    assert(s.find_and_update_prev(1500,1)-> val == 1209);
+    assert(s.find_and_update_prev(20,"A")  -> val == LONG_MIN);
+    assert(s.find_and_update_prev(50,"T")  -> val == 34);
+    assert(s.find_and_update_prev(100,"G") -> val == 78);
+    assert(s.find_and_update_prev(150,"T") -> val == 144);
+    assert(s.find_and_update_prev(1000,"C")-> val == 909);
+    assert(s.find_and_update_prev(1500,"C")-> val == 1209);
 
 }
 
@@ -163,24 +163,24 @@ void test_find_and_update_prev_unordered(){
 
     skip_list s;
 
-    s.insert_and_update(78,1);
-    s.insert_and_update(1209,1);
-    s.insert_and_update(909,1);
-    s.insert_and_update(144,1);
-    s.insert_and_update(34,1);
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(1209,0,"CAT");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(34,0,"AT");
 
-    assert(s.find_and_update_prev(34,1)  -> val == LONG_MIN);
-    assert(s.find_and_update_prev(78,1)  -> val == 34);
-    assert(s.find_and_update_prev(144,1) -> val == 78);
-    assert(s.find_and_update_prev(909,1) -> val == 144);
-    assert(s.find_and_update_prev(1209,1)-> val == 909);
+    assert(s.find_and_update_prev(34,"ATA")  -> val == LONG_MIN);
+    assert(s.find_and_update_prev(78,"CG")  -> val == 34);
+    assert(s.find_and_update_prev(144,"TGG") -> val == 78);
+    assert(s.find_and_update_prev(909,"ATCGC") -> val == 144);
+    assert(s.find_and_update_prev(1209,"CAAT")-> val == 909);
 
-    assert(s.find_and_update_prev(20,1)  -> val == LONG_MIN);
-    assert(s.find_and_update_prev(50,1)  -> val == 34);
-    assert(s.find_and_update_prev(100,1) -> val == 78);
-    assert(s.find_and_update_prev(150,1) -> val == 144);
-    assert(s.find_and_update_prev(1000,1)-> val == 909);
-    assert(s.find_and_update_prev(1500,1)-> val == 1209);
+    assert(s.find_and_update_prev(20,"A")  -> val == LONG_MIN);
+    assert(s.find_and_update_prev(50,"T")  -> val == 34);
+    assert(s.find_and_update_prev(100,"G") -> val == 78);
+    assert(s.find_and_update_prev(150,"T") -> val == 144);
+    assert(s.find_and_update_prev(1000,"C")-> val == 909);
+    assert(s.find_and_update_prev(1500,"C")-> val == 1209);
 
 }
 

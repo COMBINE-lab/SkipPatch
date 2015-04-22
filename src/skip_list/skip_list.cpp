@@ -380,10 +380,10 @@ void skip_list:: print_list()
 int main()
 {
 
-  //test_skip_list();
+  test_skip_list();
 
 
-  skip_list s;
+  //skip_list s;
   
   /*
   s.insert(2,1);
@@ -396,7 +396,7 @@ int main()
   s.insert(9,1);
   s.insert(0,1);
   */
-
+/*
   s.insert_and_update(2,0,"A");
      //s.print_list();
   s.insert_and_update(5,0,"A");
@@ -438,7 +438,7 @@ int main()
     s.print_base_level();
     s.print_list();
 
-  
+  */
  
   return 0;
 }

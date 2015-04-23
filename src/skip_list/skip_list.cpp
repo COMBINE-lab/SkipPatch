@@ -632,7 +632,7 @@ void skip_list:: print_list()
     cout<<endl;
   }
 }
-
+/*
 int main()
 {
 
@@ -641,17 +641,6 @@ int main()
 
   skip_list s;
   
-  /*
-  s.insert(2,1);
-  s.insert(1,1);
-  s.insert(1,1);
-  s.insert(5,1);
-  s.insert(5,1);
-  s.insert(6,1);
-  s.insert(7,1);
-  s.insert(9,1);
-  s.insert(0,1);
-  */
 
   s.insert_and_update(2,0,"A");
      //s.print_list();
@@ -716,4 +705,4 @@ int main()
   
  
   return 0;
-}
+}*/

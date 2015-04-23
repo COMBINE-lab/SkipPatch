@@ -1,11 +1,11 @@
 #ifndef SKIP_LIST_H
 #define SKIP_LIST_H
-using namespace std;
+#include <bits/stdc++.h>
 struct node
 {
     long val,offset;
     node *next,*down,*prev,*up;
-    string str;
+    std::string str;
     node(long i,long o)
     {
         val = i;
@@ -33,10 +33,10 @@ public:
     void print_base_level();
     void print_list();
     void print_node(node*);
-    node *find_and_update_prev(long,string);
-    void insert_and_update(long,unsigned long,string);
+    node *find_and_update_prev(long,std::string);
+    void insert_and_update(long,unsigned long,std::string);
     long get_cumulative_count(long);
-    void insert_and_update_abs(const long,string); //updates given absolute value
+    void insert_and_update_abs(const long,std::string); //updates given absolute value
     void get_prev_node(long,long&,unsigned long&,node**);
     //long get_offset(node*);
 };

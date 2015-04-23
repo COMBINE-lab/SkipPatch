@@ -1,6 +1,7 @@
 #ifndef GENOME_H
 #define GENOME_H
 
+#include "./skip_list/skip_list.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -14,7 +15,7 @@ private:
 
     std::string reference;
     std::unordered_map<std::string, std::vector<long>> m;
-
+    skip_list s;
 public:
 
     void get_input();
@@ -38,6 +39,7 @@ public:
     
     std::vector<long> find(std::string); 
     std::unordered_map<std::string, std::vector<long>> get_hash();
+    skip_list get_skip_list();
     //void check_hash();
 };
 

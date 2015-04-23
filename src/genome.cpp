@@ -6,6 +6,8 @@
 
 #include "genome.h"
 #include "utils.h"
+
+using namespace std;
 //#define BENCHMARK 0
 //#define DEBUG 0
 
@@ -208,6 +210,12 @@ std::vector<long> genome::find(std::string read){
 std::unordered_map<std::string, std::vector<long>> genome :: get_hash()
 {
   return m;
+}
+
+
+skip_list genome :: get_skip_list()
+{
+  return s;
 }
 /*
 

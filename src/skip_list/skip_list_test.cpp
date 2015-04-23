@@ -190,6 +190,28 @@ void test_find_and_update_prev(){
 	test_find_and_update_prev_unordered();
 }
 
+void test_insert_and_update_abs()
+{
+  skip_list s;
+  s.insert_and_update(2,0,"A");
+  s.insert_and_update(5,0,"GC");
+  s.insert_and_update(11,0,"T");
+  s.insert_and_update(13,0,"AG");
+  
+  s.insert_and_update_abs(2,"TT"); //insertion at first node; at the beginning
+  assert(s.find(2)->str=="TTA");
+  s.insert_and_update_abs(5,"G");
+  assert(s.find(2)->str=="TTAG"); //insertion at first node; at the end
+  s.insert_and_update_abs(12,"G");
+  assert(s.find(6)->str=="G"); //insertion at middle node; new node
+  s.insert_and_update_abs(13,"G");
+  assert(s.find(6)->str=="GG"); //insertion at middle node; at the end
+  
+  s.insert_and_update_abs(26,"GG");
+  assert(s.find(15)->str=="GG"); //insertion at middle node; at the end
+  
+  
+}
 void test_skip_list(){
 
     std::cout <<  std::endl << "Testing Skip List.." << std::endl;
@@ -205,7 +227,8 @@ void test_skip_list(){
 
     test_find_and_update_prev();
     std::cout << "test_find_and_update_prev(): Passed All Test Cases!" << std::endl;
-
+    test_insert_and_update_abs();
+    std::cout << "test_find_and_update_prev_abs(): Passed All Test Cases!" << std::endl;
     std::cout << "Skip List: Passed All Test Cases!" << std::endl << std::endl ;
 
 }

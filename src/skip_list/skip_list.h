@@ -27,16 +27,16 @@ public:
 
     skip_list();
     node* get_head();
-    node* find(long); //if not found return null, else return the node itself.
-    node *find_prev(long);
-    void insert(long,long); 
+    node* find(long); //obsolete, only for testing //if not found return null, else return the node itself.
+    node *find_prev(long); //obsolete
+    void insert(long,long); //obsolete
     void print_base_level();
     void print_list();
     void print_node(node*);
     node *find_and_update_prev(long,string);
     void insert_and_update(long,unsigned long,string);
     long get_cumulative_count(long);
-    void insert_and_update_abs(const long,string);
+    void insert_and_update_abs(const long,string); //updates given absolute value
     //long get_offset(node*);
 };
 

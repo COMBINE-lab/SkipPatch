@@ -510,7 +510,54 @@ void skip_list::insert_and_update_abs(const long abs_val,string str)
   }
     
 }
-
+void skip_list::get_prev_node(long abs_val, long &val, unsigned long &pos,node **n)
+{
+  
+  node *temp=head;
+  //node *prev;
+  long cumulative_count=0;
+  pos = 0;val=0;
+  
+  while(temp)
+  {
+  //cout<<"in here! cc = "<<cumulative_count<<" "<<abs_val<<" "<<temp->val<<endl;  
+    if(abs_val>=(temp->next->val+cumulative_count+temp->offset) &&temp->next->val!=LONG_MAX)
+    {
+      cumulative_count+=temp->offset;
+      temp=temp->next;
+    }
+    
+    else	//current val is lesser than next val
+    {
+      if(temp->down)
+      {
+	//temp->offset+=offset;
+	temp=temp->down;
+      }
+      else
+      {
+	//pair<node*,unsigned long> p;
+	if(abs_val<=(temp->val+cumulative_count+temp->offset)) //existing node
+	{
+	  //str = temp->str;
+	  *n = temp->prev;
+	  val = temp->val;
+	  pos = abs_val-cumulative_count-temp->val;
+	  //p.make_pair(temp->prev,val-cumulative_count);
+	  //return p;
+	}
+	else
+	{
+	  *n = temp;
+	  val = abs_val- cumulative_count - temp->offset;
+	  pos = 0;
+	}
+	break;
+      }
+    } 
+  }
+  
+}
 long skip_list::get_cumulative_count(long val)
 {
   long sum=0;
@@ -626,6 +673,21 @@ int main()
   s.insert_and_update_abs(3,"T");
   s.insert_and_update_abs(4,"AC");
   s.insert_and_update_abs(6,"CC");
+  //string str;
+  //long offset;
+  unsigned long pos;
+  long val;
+  node *n;
+  s.get_prev_node(1000,val,pos,&n);
+  if(n->next->val==val)//node exists
+  {
+    cout<<"Node exists! "<<"val "<<val<<" string "<<n->next->str<<" pos "<<pos<<" "<<n->next->val<<endl;
+  }
+  else
+  {
+    cout<<" New node must be created! "<<"val "<<val<<" string "<<n->next->str<<" pos "<<pos<<" "<<n->next->val<<endl;
+  }
+  //cout<<"Got string "<<n->str<<" pos "<<pos<<" "<<n->val<<endl;
   //s.insert_and_update_abs(12,"GG");
   cout<<s.get_cumulative_count(100)<<endl; // -1 means it does not exist
   cout<<s.get_cumulative_count(1)<<endl;

@@ -37,6 +37,7 @@ public:
     void insert_and_update(long,unsigned long,string);
     long get_cumulative_count(long);
     void insert_and_update_abs(const long,string); //updates given absolute value
+    void get_prev_node(long,long&,unsigned long&,node**);
     //long get_offset(node*);
 };
 

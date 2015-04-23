@@ -20,6 +20,7 @@ public:
     void get_input();
     void set_reference(std::string);
     long get_length();
+    std::string get_reference();
         
     void construct_hash();
     float get_load_factor();
@@ -34,8 +35,9 @@ public:
     bool snp_at(long, long, std::string);
     
     void insert_at(std::string, long);
-
+    
     std::vector<long> find(std::string); 
+    void check_hash();
 };
 
 #endif

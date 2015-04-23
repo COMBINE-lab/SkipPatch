@@ -6,5 +6,6 @@
 void test();
 
 void test_search();
+void test_hash();
 
 #endif

@@ -6,11 +6,12 @@
 #include "test.h"
 #include "genome.h"
 #include "utils.h"
-
+using namespace std;
 void test(){
 
 	test_search();
-
+	test_hash();
+	std::cout<<"Passed Search Tests!"<<std::endl;
 }
 
 /* Tests if the search for a string of any length in the hash map is working correctly */
@@ -39,50 +40,72 @@ void test_search(){
         assert(g.find(read).size()==0);
     }
 
-    std::cout<<"Passed All Tests!"<<std::endl;
+    std::cout<<"Passed Search Tests!"<<std::endl;
 
     return;
 }
 
-/*
-bool check_hash(const genome &g,long k)
+
+void genome::check_hash()
 {
-	if(k==0)
-		k=g.geg_length()-K+1;
-	
+	long k = reference.length()-K+1;
+	//cout<<reference<<endl;
 	for(long i=0;i<k;i++)
 	{
-		string kmer(reference.begin()+i,reference.end()+i+K);
-		vector l=m.find(kmer);
-		if(l.isempty())
+		string kmer(reference.begin()+i,reference.begin()+i+K);
+		//cout<<"kmer "<<kmer<<endl;
+		auto pos_it=m.find(kmer);
+		if(pos_it==m.end())
 		{
-			cout<<"vector is empty!!"<<endl;
-			return false;
-		}
-		if(find(l.begin(),l.end(),i)==l.end())
+		  //cout<<"kmer not found!"<<endl;
+		  assert(false);
+		}  
+		else
 		{
-			cout<<"k mer at position "<<i<<" not found!!";
-			return false;
+		  vector<long> pos = pos_it->second;
+		  for(auto it=pos.begin();it!=pos.end();it++)
+		  {
+		    string temp(reference.begin()+*it,reference.begin()+*it+K);
+		  //  cout<<" temp "<<temp<<" pos = "<<*it<<endl;
+		    assert(temp==kmer);
+		  }
 		}
+		//cout<<"assertion true"<<endl;
 	}
-	return true;
+	//return true;
 
 }
-bool test_hash()
+void test_hash()
 {
  	cout<<endl<<"Testing snips..\t";
+	
 	genome g;
-	g.get_input();
+	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"; 
+	g.set_reference(reference);
 	g.construct_hash();
 	//edge cases
-	check_hash(g);
-	g.snp_at(0,2);
-	check_hash(g,K+K);
-	g.snp_at(g.get_length()-K,3);
-	check_hash(g,g.get_length()-K-K,g.get_length());
-
+	//cout<<"Checking hash : "<<g.check_hash();
+	g.snp_at(0,2,"NN");
+	g.check_hash();
+	//cout<<"Checking hash : "<<g.check_hash();
+	g.snp_at(g.get_length()-K,3,"NNN");
+	g.check_hash();
+	
+	g.snp_at(5,3,"NNN");
+	g.check_hash();
+	
+	g.snp_at(17,3,"ASD");
+	g.check_hash();
+	
+	g.snp_at(100,3,"FSA");
+	g.check_hash();
+	
+	g.snp_at(10,3,"GRE");
+	g.check_hash();
+	//cout<<"Checking hash : "<<g.check_hash();
+	std::cout<<"Passed hash Tests! for reference "<<g.get_reference()<<std::endl;
 	//invaled cases
 	
 	//somewhere in the middle
 	
-}*/
+}

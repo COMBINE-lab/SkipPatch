@@ -27,6 +27,10 @@ void genome::set_reference(std::string input)
     reference = input;
 }
 
+std::string genome::get_reference()
+{
+  return reference;
+}
 long genome::get_length()
 {
     return reference.length();
@@ -86,7 +90,7 @@ void genome::add_kmer_from_hash_at(long position, std::string new_kmer)
     m[new_kmer].push_back(position);
 }
 
-//Is it required to pass both the length and the string? Can't we derive the length from the string itself?
+//Is it required to pass both the length and the string? Can't we derive the length from the string itself? - its supposed to be optional - did you change it?
 bool genome::snp_at(long pos, long len, std::string new_string) 
 {
     if(len!=new_string.length()){

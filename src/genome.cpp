@@ -205,6 +205,10 @@ std::vector<long> genome::find(std::string read){
   	return pos_prev;
 }
 
+std::unordered_map<std::string, std::vector<long>> genome :: get_hash()
+{
+  return m;
+}
 /*
 
 Inserts a string at the 'insert_pos'. Updates the k-mers which lie in the "region of change" 

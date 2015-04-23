@@ -45,15 +45,17 @@ void test_search(){
     return;
 }
 
-
-void genome::check_hash()
+void check_hash1(genome g)
 {
+	string reference = g.get_reference();
 	long k = reference.length()-K+1;
 	//cout<<reference<<endl;
+	auto m = g.get_hash();
 	for(long i=0;i<k;i++)
 	{
 		string kmer(reference.begin()+i,reference.begin()+i+K);
 		//cout<<"kmer "<<kmer<<endl;
+		
 		auto pos_it=m.find(kmer);
 		if(pos_it==m.end())
 		{
@@ -86,24 +88,27 @@ void test_hash()
 	//edge cases
 	//cout<<"Checking hash : "<<g.check_hash();
 	g.snp_at(0,2,"NN");
-	g.check_hash();
+	//g.check_hash();
+	check_hash1(g);
 	//cout<<"Checking hash : "<<g.check_hash();
 	g.snp_at(g.get_length()-K,3,"NNN");
-	g.check_hash();
-	
+	//g.check_hash();
+	check_hash1(g);
 	g.snp_at(5,3,"NNN");
-	g.check_hash();
-	
+	//g.check_hash();
+	check_hash1(g);
 	g.snp_at(17,3,"ASD");
-	g.check_hash();
-	
+	//g.check_hash();
+	check_hash1(g);
 	g.snp_at(100,3,"FSA");
-	g.check_hash();
+	//g.check_hash();
+	check_hash1(g);
 	
 	g.snp_at(10,3,"GRE");
-	g.check_hash();
+	//g.check_hash();
 	//cout<<"Checking hash : "<<g.check_hash();
-	std::cout<<"Passed hash Tests! for reference "<<g.get_reference()<<std::endl;
+	check_hash1(g);
+	std::cout<<"Passed hash Tests! "<<std::endl;
 	//invaled cases
 	
 	//somewhere in the middle

@@ -37,7 +37,8 @@ public:
     void insert_at(std::string, long);
     
     std::vector<long> find(std::string); 
-    void check_hash();
+    std::unordered_map<std::string, std::vector<long>> get_hash();
+    //void check_hash();
 };
 
 #endif

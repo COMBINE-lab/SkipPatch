@@ -3,6 +3,8 @@
 #include <string>
 #include <cassert>
 
+#include "./skip_list/skip_list.h"
+#include "./skip_list/skip_list_test.h"
 #include "test.h"
 #include "genome.h"
 #include "utils.h"
@@ -11,6 +13,7 @@ void test(){
 
 	test_search();
 	test_hash();
+	test_insert_at();
 	std::cout<<"Passed Search Tests!"<<std::endl;
 }
 
@@ -113,4 +116,66 @@ void test_hash()
 	
 	//somewhere in the middle
 	
+}
+
+void check_insert_at(genome g,string ins,long abs_val,string &reference)
+{
+  //test if the the skip list has been updated..
+	skip_list s = g.get_skip_list(); //*define this
+	//get_prev_node(abs_val,genome_val,offset,&prev);
+	check_skip_list_node(s,abs_val,ins); //*include skip list test
+	
+	//now check the hash
+	auto m = g.get_hash();
+	
+	//update the reference and construct hash for the same
+	reference.insert(abs_val,ins);
+	genome g_temp;
+	g_temp.set_reference(reference);
+	g_temp.construct_hash();
+	
+	//the two hashes must be equal
+	auto m_temp = g_temp.get_hash();
+	assert(m_temp==m);
+	
+}
+void test_insert_at()
+{
+
+ 	cout<<endl<<"Testing insertions..\t";
+	
+	genome g;
+	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"; 
+	g.set_reference(reference);
+	g.construct_hash();
+	
+	//edge cases
+	//cout<<"Checking hash : "<<g.check_hash();
+	long abs_val = 7;string ins = "TT";
+	long genome_val;unsigned long offset;node *prev;
+	g.insert_at(ins, abs_val);
+	check_insert_at(g,ins,abs_val,reference);
+	
+	//should make this at random positions.. 
+	abs_val=10;
+	g.insert_at(ins, abs_val);
+	check_insert_at(g,ins,abs_val,reference);
+	
+	abs_val=1;
+	g.insert_at(ins, abs_val);
+	check_insert_at(g,ins,abs_val,reference);
+	
+	abs_val=17;
+	g.insert_at(ins, abs_val);
+	check_insert_at(g,ins,abs_val,reference);
+	
+	g.snp_at(0,2,"NN");
+	//g.check_hash();
+	check_hash1(g);
+	//cout<<"Checking hash : "<<g.check_hash();
+	g.snp_at(g.get_length()-K,3,"NNN");
+	//g.check_hash();
+	check_hash1(g);
+	g.snp_at(5,3,"NNN");  
+	std::cout<<"Passed insert_at Tests! "<<std::endl;
 }

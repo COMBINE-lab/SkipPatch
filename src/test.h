@@ -7,5 +7,5 @@ void test();
 
 void test_search();
 void test_hash();
-
+void test_insert_at();
 #endif

@@ -6,6 +6,7 @@
 void test();
 
 void test_search();
+//void test_search1();
 void test_hash();
 void test_insert_at();
 #endif

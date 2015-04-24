@@ -12,13 +12,13 @@ using namespace std;
 void test(){
 
 	test_search();
-	test_hash();
-	test_insert_at();
-	std::cout<<"Passed Search Tests!"<<std::endl;
+	//test_hash();
+	//test_insert_at();
+	std::cout<<"Passed Tests!"<<std::endl;
 }
 
 /* Tests if the search for a string of any length in the hash map is working correctly */
-void test_search(){
+/*void test_search(){
 
     std::cout<<std::endl<<"Testing Search.. \t";
 
@@ -43,6 +43,97 @@ void test_search(){
         assert(g.find(read).size()==0);
     }
 
+    std::cout<<"Passed Search Tests!"<<std::endl;
+
+    return;
+}*/
+
+void check_insert_at(genome g,string ins,long abs_val,string &reference)
+{
+  //test if the the skip list has been updated..
+	skip_list s = g.get_skip_list(); //*define this
+	//get_prev_node(abs_val,genome_val,offset,&prev);
+	check_skip_list_node(s,abs_val,ins); //*include skip list test
+	
+	//now check the hash
+	auto m = g.get_hash();
+	
+	//update the reference and construct hash for the same
+	reference.insert(abs_val,ins);
+	genome g_temp;
+	g_temp.set_reference(reference);
+	g_temp.construct_hash();
+	
+	//the two hashes must be equal
+	auto m_temp = g_temp.get_hash();
+	assert(m_temp==m);
+	
+}
+
+void check_search(genome g,string reference)
+{
+  
+    long mylong[] = {1,3,10,14}; //careful.. index+K should be in bounds!
+    std::vector<long> positions (mylong, mylong + sizeof(mylong) / sizeof(long) );
+    
+    std::vector<std::string> existing_reads;
+    
+    for(auto it = positions.begin();it!=positions.end();it++)
+    {
+      int kmer_len=0;
+      if((*it)%2==0)
+	kmer_len = K+5;
+      else
+	kmer_len = K+6;
+	
+      string temp(reference,*it,kmer_len);
+      existing_reads.push_back(temp);
+      
+    }
+    
+    for(std::string read: existing_reads){
+        assert(g.find(read)==find_substr(reference,read));
+	cout<<"assert passed"<<endl;
+    }
+    
+    //non_existent_reads
+    for(auto it=existing_reads.begin();it!=existing_reads.end();it++)
+    {
+      *it = *it+"ZZ";
+    }
+    
+
+    for(std::string read:existing_reads){
+        assert(g.find(read).size()==0);
+	//cout<<"assert passed!"<<endl;
+    }
+
+}
+void test_search(){
+
+    std::cout<<std::endl<<"Testing Search.. \t";
+
+    genome g;
+    std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGAATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"; 
+    g.set_reference(reference);
+    g.construct_hash();
+    
+    check_search(g,reference);
+    
+    long abs_val = 7;string ins = "TT";
+    long genome_val;unsigned long offset;node *prev;
+	
+    check_insert_at(g,ins,abs_val,reference);
+    check_search(g,reference);
+    
+    abs_val=10;
+    check_insert_at(g,ins,abs_val,reference);
+    check_search(g,reference);
+    
+    abs_val=1;
+    check_insert_at(g,ins,abs_val,reference);
+    check_search(g,reference);
+    
     std::cout<<"Passed Search Tests!"<<std::endl;
 
     return;
@@ -118,27 +209,6 @@ void test_hash()
 	
 }
 
-void check_insert_at(genome g,string ins,long abs_val,string &reference)
-{
-  //test if the the skip list has been updated..
-	skip_list s = g.get_skip_list(); //*define this
-	//get_prev_node(abs_val,genome_val,offset,&prev);
-	check_skip_list_node(s,abs_val,ins); //*include skip list test
-	
-	//now check the hash
-	auto m = g.get_hash();
-	
-	//update the reference and construct hash for the same
-	reference.insert(abs_val,ins);
-	genome g_temp;
-	g_temp.set_reference(reference);
-	g_temp.construct_hash();
-	
-	//the two hashes must be equal
-	auto m_temp = g_temp.get_hash();
-	assert(m_temp==m);
-	
-}
 void test_insert_at()
 {
 

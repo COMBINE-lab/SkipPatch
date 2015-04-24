@@ -41,27 +41,48 @@ void test_hash(genome g)
 void check_insert_at(genome g, string ins, long abs_val, string &reference)
 {
   	//test if the the skip list has been updated..
-	skip_list s = g.get_skip_list(); //*define this
-	check_skip_list_node(s, abs_val, ins); //*include skip list test
+	skip_list s = g.get_skip_list();
+	check_skip_list_node(s, abs_val, ins); 
 
 	//check if the reference has been updated
 	reference.insert(abs_val+1,ins);
 	assert(reference == g.get_updated_reference());
 
-	/* 
-	*****The hash of both the strings won't be the same because 
+	
+	/*The hash of both the strings won't be the same because 
 	when you construct the hash based on the updated reference, 
 	the positions in the new hash are "virtual positions", and won't be the same as the "genome positions"
+	-- yeah, im doing a translation now.
+	*/
 	
 	//now check the hash
 	//update the reference and construct hash for the same
 	genome g_temp;
-	g_temp.set_reference(updated_ref);
-	g_temp.construct_hash();	
-
-	//the two hashes must be equal
-	assert(g_temp.get_hash() == g.get_hash());
-	*/
+	g_temp.set_reference(reference);
+	g_temp.construct_hash();
+	auto m_temp = g_temp.get_hash();
+	auto m_genome = g.get_hash();      
+	for(auto it = m_temp.begin();it!=m_temp.end();it++)
+	{
+	  for(auto row_it = (it->second).begin();row_it!=(it->second).end();row_it++)
+	  {
+	    //translate from abs to genome pos:
+		    
+	    unsigned long pos;
+	    long val;
+	    node *n;
+	    
+	    s.get_prev_node(*row_it,val,pos,&n);
+	    
+	    *row_it=val;
+	  }
+	  sort(it->second.begin(),it->second.end());
+	  sort(m_genome[it->first].begin(),m_genome[it->first].end());
+	  assert(it->second==m_genome[it->first]);
+	  
+	}
+	
+	
 }
 
 /* Tests if the search for a string of any length in the hash map is working correctly */
@@ -115,7 +136,25 @@ void check_search(genome g, string reference)
     }
 
     for(std::string read: existing_reads){
-    	assert(g.find(read)==find_substr(g.get_updated_reference(),read)); 
+    	//assert(g.find(read)==find_substr(g.get_updated_reference(),read)); 
+    	auto temp1 = g.find(read);
+	auto temp2 = find_substr(reference,read);
+	cout<<"The reference is "<<reference<<endl;
+	cout<<"The reference is "<<g.get_updated_reference()<<endl;
+	cout<<"Current read is "<<read<<endl;
+	cout<<"This should  be at ";
+	
+	for(auto it = temp2.begin();it!=temp2.end();it++)
+	  cout<<*it<<"\t";
+	cout<<endl;
+	cout<<"This is at ";
+	for(auto it = temp1.begin();it!=temp1.end();it++)
+	  cout<<*it<<"\t";
+	cout<<endl;
+	
+    	sort(temp1.begin(),temp1.end());
+	sort(temp2.begin(),temp2.end());
+	assert(temp1==temp2);
     }
     
     //non_existent_reads
@@ -140,15 +179,18 @@ void test_search_dynamic_reference(){
     string ins = "ATCG";
     long genome_val;unsigned long offset;node *prev;
 
-	long abs_val = 7;
+    long abs_val = 7;
+    g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
     
     abs_val=56;
+    g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
     
     abs_val=37;
+    g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
 
@@ -217,7 +259,7 @@ void test_insert_at()
 		//Randomize? 
 		//For now, they're spaced in such a way that the edit areas of two insertions don't overlap
 		//No nested insertions supported yet
-		std::vector<long> positions {g.get_length()-1,0,15,31,40};
+		std::vector<long> positions {15,g.get_length()-1,31,40};
 
 		for(long p: positions){
 			g.insert_at(ins, p);

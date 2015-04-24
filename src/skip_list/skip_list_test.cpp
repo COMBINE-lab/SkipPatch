@@ -216,7 +216,7 @@ void test_insert_and_update_abs()
 }
 
 
-void check_skip_list_node(skip_list s,const long &index,const string &ins) //checks wether the string at some absolute index is same as ins
+void check_skip_list_node(skip_list s,const long &index,const string &ins) //checks wether the string at some absolute index(which has an insertion) is same as ins
 {
   
     unsigned long pos;
@@ -228,17 +228,7 @@ void check_skip_list_node(skip_list s,const long &index,const string &ins) //che
     //check_skip_list_node(s,2,"TT");
     s.get_prev_node(index,val,pos,&n);
     str = n->next->str;
-    if(n->next->val==val)//node exists
-    {
-        assert(str.substr(pos,pos+ins.length())==ins);
-        //cout<<"Node exists! "<<"val "<<val<<" string "<<n->next->str<<" pos "<<pos<<" "<<n->next->val<<endl;
-    }
-    else
-    {
-        assert(str.substr(pos,pos+ins.length())==ins);
-        //cout<<" New node must be created! "<<"val "<<val<<" string "<<n->next->str<<" pos "<<pos<<" "<<n->next->val<<endl;
-    }
-  //str.clear();
+    assert(str.substr(pos,pos+ins.length())==ins);
 }
 
 void test_get_prev_node()

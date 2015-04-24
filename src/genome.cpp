@@ -142,7 +142,7 @@ long genome::get_genome_position_from_virtual_position(long virtual_position)
     return genome_position;
 }
 
-long genome::get_virtual_position_from_genome_position(long genome_position)
+long genome::get_virtual_position_from_genome_position(long genome_position) //arguement must be a tuple
 {   
     /*
     node* n = s.find_prev(genome_position);
@@ -263,7 +263,7 @@ std::vector<long> genome::find(std::string read){
 
     std::vector<long> pos_absolute;
     for(long pos: pos_prev){
-        pos_absolute.push_back(get_virtual_position_from_genome_position(pos));
+        pos_absolute.push_back(get_virtual_position_from_genome_position(pos)); 
     }
   	return pos_absolute;
     

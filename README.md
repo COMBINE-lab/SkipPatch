@@ -21,7 +21,7 @@ How to Run:
 
 3. Run "./main < ../data/input.txt" from your terminal
 	
-(Ensure that the value of k defined in "genome.h" is what you require)
+(Ensure that the value of k defined in "genome.h" is what you require --- let's make this a parameter)
 
 Dependencies:
 C++11

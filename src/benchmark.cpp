@@ -47,7 +47,7 @@ void benchmark_snp(genome &g)
     for(std::vector<std::pair<long,char>>::iterator i=random.begin(); i!=random.end(); i++){
         long position = i->first;
         char character = i->second;
-		g.snp_at(position,1, std::string(1,character));
+		g.snp_at(position, std::string(1,character));
     }
     gettimeofday(&end, &tzp);
 

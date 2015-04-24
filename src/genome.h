@@ -45,7 +45,7 @@ public:
     void add_kmer_from_hash_at(long, std::string);
         
     //In-place update: Replace the segment in the reference at a particular point with the given variant
-    bool snp_at(long, long, std::string);
+    void snp_at(long, std::string);
     
     //Make an insertion at a given location
     void insert_at(std::string, long);

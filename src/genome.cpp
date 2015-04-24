@@ -133,17 +133,15 @@ void genome::add_kmer_from_hash_at(long position, std::string new_kmer)
 }
 
 //Is it required to pass both the length and the string? Can't we derive the length from the string itself? - its supposed to be optional - did you change it?
-bool genome::snp_at(long pos, long len, std::string new_string) 
+void genome::snp_at(long pos, std::string new_string) 
 {
-    if(len!=new_string.length()){
-        std::cerr << "genome::snp_at \t The length of the new string is not equal to the length of the update specified in the arguments.\n";
-    }
+	long len = new_string.length();
 
     long max_len=reference.length();
     if(!is_valid_input(pos, len, reference.length())) //checks positions to be modified are valid
     {
-        std::cout<<"Insertion at "<<pos<<" of len "<<len<<" failed"<<std::endl;
-    	return false;
+        std::cerr<<"Insertion at "<<pos<<" of len "<<len<<" failed"<<std::endl;
+    	std::exit(-1);
     }
     #ifdef DEBUG
     cout<<"Input is valid"<<len<<std::endl;
@@ -177,7 +175,7 @@ bool genome::snp_at(long pos, long len, std::string new_string)
         Temporary fix: Simple ignore the k-mer and return false. Permanent soultion?
         */
         if( (curr_kmer.find('n')!=std::string::npos)  || (curr_kmer.find('N')!=std::string::npos) ){
-            return false;
+            return;
         }
         std::string new_kmer(modified_reference_substr.begin()+(i-snp_begin),modified_reference_substr.begin()+(i-snp_begin+K));
         remove_kmer_from_hash_at(i,curr_kmer);
@@ -193,7 +191,6 @@ bool genome::snp_at(long pos, long len, std::string new_string)
     std::cout<<"Generated string: "<<new_string<<"\t"<<"Inserted at: "<<pos<<std::endl;
     #endif
 
-    return true;
 }
 
 /*
@@ -227,7 +224,7 @@ std::vector<long> genome::find(std::string read){
             std::vector<long> temp; //Created this temp because deleting from the vector pos_curr was generating a segmentation fault.
             for(auto iter_p=pos_curr.begin(); iter_p!=pos_curr.end(); iter_p++){
                 auto curr = iter_p;
-                if(std::find(pos_prev.begin(),pos_prev.end(),*curr-1) != pos_prev.end()){
+                if(std::find(pos_prev.begin(),pos_prev.end(),*curr-1) != pos_prev.end() || std::find(pos_prev.begin(),pos_prev.end(),*curr) != pos_prev.end()){
                     temp.push_back(*curr);
                 }
             }
@@ -246,8 +243,6 @@ std::vector<long> genome::find(std::string read){
 
   	return pos_prev;
 }
-
-
 
 /*
 Inserts a string at the 'insert_pos'. Updates the k-mers which lie in the "region of change" 
@@ -275,9 +270,9 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
 
     std::cout << "Inserting " << insertion << " at " << insert_pos << std::endl; 
 
-    if(insert_pos<0 || insert_pos>reference.length()-1){
+    if( !is_valid_input(insert_pos, insertion.length(), get_length()) ){
         std::cerr << "Position of insertion out of bounds of length of genome" << std::endl;
-        return;
+        std::exit(-1);
     }
 
     long edit_start = std::max(insert_pos-K+2,(long)0);
@@ -322,6 +317,8 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
     }
 
     //Insert an entry into the skip list 
-    is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
     s.insert_and_update(insert_pos, offset, insertion);
+
+    //Update the bit vector
+    //is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
 }

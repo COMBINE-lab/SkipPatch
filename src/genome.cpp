@@ -132,7 +132,25 @@ void genome::add_kmer_from_hash_at(long position, std::string new_kmer)
     m[new_kmer].push_back(position);
 }
 
-//Is it required to pass both the length and the string? Can't we derive the length from the string itself? - its supposed to be optional - did you change it?
+long genome::get_genome_position_from_virtual_position(long virtual_position)
+{
+    node *n;
+    long genome_position; //genome_position is position in the 'original genome' corresponding to the virtual_position in the 'virtual genome' 
+    unsigned long offset = 0;
+    s.get_prev_node(virtual_position, genome_position, offset, &n); 
+
+    return genome_position;
+}
+
+long genome::get_virtual_position_from_genome_position(long genome_position)
+{
+    node* n = s.find_prev(genome_position);
+    long offset = s.get_cumulative_count(n->val) + (n->str).length();
+    return genome_position+offset;
+    //return s.get_cumulative_count(genome_position);
+}
+
+//Is it required to pass both the length and the string? Can't we derive the length from the string itself? - its supposed to be optional - did you change it? 
 void genome::snp_at(long pos, std::string new_string) 
 {
 	long len = new_string.length();
@@ -241,7 +259,13 @@ std::vector<long> genome::find(std::string read){
   		*iter -= buf;
   	}
 
-  	return pos_prev;
+    std::vector<long> pos_absolute;
+    for(long pos: pos_prev){
+        pos_absolute.push_back(get_virtual_position_from_genome_position(pos));
+    }
+  	return pos_absolute;
+    
+    //return pos_prev;
 }
 
 /*
@@ -263,14 +287,13 @@ Current limitations (due to unavailability of helper functions)
 
 void genome::insert_at(std::string insertion, long insert_pos_abs){
 
-  	node *n;
-	long insert_pos; //insert_pos is position in the 'original genome' corresponding to the insert_pos_abs in the 'virtual genome' 
+	//insert_pos is position in the 'original genome' corresponding to the insert_pos_abs in the 'virtual genome' 
+    long insert_pos = get_genome_position_from_virtual_position(insert_pos_abs); 
 	unsigned long offset = 0;
-	s.get_prev_node(insert_pos_abs, insert_pos, offset, &n); 
 
     std::cout << "Inserting " << insertion << " at " << insert_pos << std::endl; 
 
-    if( !is_valid_input(insert_pos, insertion.length(), get_length()) ){
+    if(insert_pos<0 || insert_pos>get_length()-1){
         std::cerr << "Position of insertion out of bounds of length of genome" << std::endl;
         std::exit(-1);
     }

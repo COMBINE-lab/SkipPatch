@@ -90,43 +90,39 @@ void test_search_static_reference(){
         assert(g.find(read).size()==0);
     }
 
-	cout << "test_search_static_reference(): Complete" << std::endl << std::endl;
+	cout << "test_search_static_reference(): Complete" << std::endl;
 }
 
 
 void check_search(genome g, string reference)
-{
+{	
+	//Randomize
     std::vector<long> positions {1,3,14,21}; //careful.. index+K should be in bounds!
     std::vector<std::string> existing_reads;
     
-    for(auto it = positions.begin(); it!=positions.end(); it++)
+    for(long pos: positions)
     {
     	int kmer_len=0;
-      	if((*it)%2==0){
+      	if((pos)%2==0){
 			kmer_len = K+5;
       	}
       	else{
 			kmer_len = K+6;
 		}
 		
-      	string temp(reference,*it,kmer_len);
+      	string temp(reference,pos,kmer_len);
       	existing_reads.push_back(temp);
-      
     }
-    
+
     for(std::string read: existing_reads){
-    	std::cout << "Searching for: " << read << std::endl;
-        assert(g.find(read)==find_substr(reference,read));
+    	assert(g.find(read)==find_substr(g.get_updated_reference(),read)); 
     }
     
     //non_existent_reads
-    for(auto it=existing_reads.begin();it!=existing_reads.end();it++)
+    for(std::string read: existing_reads)
     {
-      *it = *it+"ZZ";
-    }
-    
-    for(std::string read:existing_reads){
-        assert(g.find(read).size()==0);
+    	read+=std::string("ZZZ");
+    	assert(g.find(read).size()==0);
     }
 }
 
@@ -141,22 +137,22 @@ void test_search_dynamic_reference(){
     
     check_search(g,reference);
     
-    string ins = "TT";
+    string ins = "ATCG";
     long genome_val;unsigned long offset;node *prev;
 
 	long abs_val = 7;
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
     
-    abs_val=10;
+    abs_val=56;
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
     
-    abs_val=21;
+    abs_val=37;
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
 
-    cout << "test_search_dynamic_reference(): Complete" << std::endl << std::endl;    
+    cout << "test_search_dynamic_reference(): Complete" << std::endl;    
 }
 
 void test_search(){
@@ -166,7 +162,7 @@ void test_search(){
 	test_search_static_reference();
 	test_search_dynamic_reference();
 
-	cout << "test_search(): Complete" << std::endl << std::endl;
+	cout << "test_search(): Complete" << std::endl;
 
 }
 
@@ -197,7 +193,7 @@ void test_snp_at()
 	g.snp_at(10,"GTTAA");
 	test_hash(g);
 
-	std::cout <<"snp_at(): Complete!" << std::endl << std::endl;
+	std::cout <<"snp_at(): Complete!" << std::endl;
 	
 	//invaled cases
 	//somewhere in the middle
@@ -229,7 +225,7 @@ void test_insert_at()
 		}
 	}
 
-	cout << "insert_at(): Complete" << std::endl << std::endl;
+	cout << "insert_at(): Complete" << std::endl;
 }
 
 void test(){
@@ -238,7 +234,7 @@ void test(){
 	
 	test_snp_at();
 	test_insert_at();
-	//test_search();
+	test_search();
 	
-	std::cout << "Testing: Complete!" << std::endl << std::endl;
+	std::cout << "Testing: Complete!" << std::endl;
 }

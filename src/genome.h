@@ -43,7 +43,11 @@ public:
     //Modify the hash table to add/remove positions at which a k-mer occurs
     void remove_kmer_from_hash_at(long, std::string);
     void add_kmer_from_hash_at(long, std::string);
-        
+    
+    //Translating positions between the genome and virtual coordinate systems        
+    long get_genome_position_from_virtual_position(long);
+    long get_virtual_position_from_genome_position(long);
+
     //In-place update: Replace the segment in the reference at a particular point with the given variant
     void snp_at(long, std::string);
     

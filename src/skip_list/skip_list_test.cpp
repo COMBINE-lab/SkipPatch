@@ -127,10 +127,13 @@ void test_get_cumulative_count(){
     assert(s.get_cumulative_count(144)==3);
     assert(s.get_cumulative_count(909)==5);
     assert(s.get_cumulative_count(1209)==9);
-
-    assert(s.get_cumulative_count(45)==-1);
-    assert(s.get_cumulative_count(238)==-1);
-    assert(s.get_cumulative_count(900)==-1);
+    
+    assert(s.get_cumulative_count(12)==0);
+    assert(s.get_cumulative_count(238)==5);
+    assert(s.get_cumulative_count(900)==5);
+    assert(s.get_cumulative_count(909)==5);
+    assert(s.get_cumulative_count(910)==9);
+    assert(s.get_cumulative_count(2000)==12);
 
 }
 

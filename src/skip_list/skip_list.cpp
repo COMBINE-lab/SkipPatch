@@ -558,7 +558,7 @@ void skip_list::get_prev_node(long abs_val, long &val, unsigned long &pos,node *
   }
   
 }
-long skip_list::get_cumulative_count(long val)
+long skip_list::get_cumulative_count(long val) //returns the absolute offset for a val in the genome.
 {
   long sum=0;
   node *temp=head;
@@ -583,7 +583,7 @@ long skip_list::get_cumulative_count(long val)
 	if(temp->val==val)
 	  return sum;
 	else
-	  return -1;
+	  return sum+temp->offset;
       }
     } 
   }
@@ -702,7 +702,7 @@ int main()
     s.print_base_level();
     s.print_list();
 
-  
+ 
  
   return 0;
 }*/

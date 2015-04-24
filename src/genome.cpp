@@ -22,6 +22,9 @@ void genome::get_input()
     #ifdef DEBUG
     std::cout<<"Input taken! "<<std::endl;
     #endif
+
+    is_edit.reserve(get_length());
+    std::fill(is_edit.begin(), is_edit.end(), false);
 }
 
 void genome::set_reference(std::string input)
@@ -31,11 +34,48 @@ void genome::set_reference(std::string input)
 
 std::string genome::get_reference()
 {
-  return reference;
+	return reference;
 }
+
+std::string genome::get_updated_reference(){
+
+	std::string updated_reference;
+
+	node *temp=s.get_head();
+  	while(temp->down){
+    	temp=temp->down;
+  	}
+  	temp=temp->next;
+  	
+  	long start=0, end=0;
+
+	while(temp->next)
+  	{
+  		end = (temp->val)+1;
+  		updated_reference+=std::string(reference.begin()+start, reference.begin()+end);
+  		updated_reference+= temp->str;
+   		start = end;
+   		temp=temp->next;
+  	}
+  	updated_reference+=std::string(reference.begin()+start,reference.end());
+
+  	return updated_reference;
+
+}
+
 long genome::get_length()
 {
     return reference.length();
+}
+
+std::unordered_map<std::string, std::vector<long>> genome::get_hash()
+{
+	return m;
+}
+
+skip_list genome::get_skip_list()
+{
+	return s;
 }
 
 void genome::construct_hash()
@@ -187,7 +227,7 @@ std::vector<long> genome::find(std::string read){
             std::vector<long> temp; //Created this temp because deleting from the vector pos_curr was generating a segmentation fault.
             for(auto iter_p=pos_curr.begin(); iter_p!=pos_curr.end(); iter_p++){
                 auto curr = iter_p;
-                if(std::find(pos_prev.begin(), pos_prev.end(), *curr-1) != pos_prev.end()){
+                if(std::find(pos_prev.begin(),pos_prev.end(),*curr-1) != pos_prev.end()){
                     temp.push_back(*curr);
                 }
             }
@@ -207,37 +247,31 @@ std::vector<long> genome::find(std::string read){
   	return pos_prev;
 }
 
-std::unordered_map<std::string, std::vector<long>> genome :: get_hash()
-{
-  return m;
-}
 
 
-skip_list genome :: get_skip_list()
-{
-  return s;
-}
 /*
-
 Inserts a string at the 'insert_pos'. Updates the k-mers which lie in the "region of change" 
 Splits the problem into two segments:
- - Updating the k-mers which appear before the insertion
- - Adding the new k-mers which are a result of the insertion 
+ - Updating the k-mers which begin at a point before the insertion
+ - Adding the new k-mers which are a result of the insertion (begin at a point in the inserted segment)
 
 Working test cases:
  - Insertions of lengths <K, ==K, >K
  - Insertions in locations: (begin,begin+K), (end-K,end), other 
 
 Current limitations (due to unavailability of helper functions)
-1. Assumes that there has been no prior insertion (positions are original genome positions) 
-2. Does not support nested insertions
-3. Supports only single insertion - no handling of overlapping k-mers which might have arisen due to adjacent insertions
+1. Does not support nested insertions
+2. Supports only single insertion - no handling of overlapping k-mers which might have arisen due to adjacent insertions
 
 *Needs rigorous testing - several test cases to be written*
-
 */
 
-void genome::insert_at(std::string insertion, long insert_pos){
+void genome::insert_at(std::string insertion, long insert_pos_abs){
+
+  	node *n;
+	long insert_pos; //insert_pos is position in the 'original genome' corresponding to the insert_pos_abs in the 'virtual genome' 
+	unsigned long offset = 0;
+	s.get_prev_node(insert_pos_abs, insert_pos, offset, &n); 
 
     std::cout << "Inserting " << insertion << " at " << insert_pos << std::endl; 
 
@@ -286,4 +320,8 @@ void genome::insert_at(std::string insertion, long insert_pos){
             }
         }
     }
+
+    //Insert an entry into the skip list 
+    is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
+    s.insert_and_update(insert_pos, offset, insertion);
 }

@@ -143,11 +143,13 @@ long genome::get_genome_position_from_virtual_position(long virtual_position)
 }
 
 long genome::get_virtual_position_from_genome_position(long genome_position)
-{
+{   
+    /*
     node* n = s.find_prev(genome_position);
     long offset = s.get_cumulative_count(n->val) + (n->str).length();
     return genome_position+offset;
-    //return s.get_cumulative_count(genome_position);
+    */
+    return genome_position+s.get_cumulative_count(genome_position);
 }
 
 //Is it required to pass both the length and the string? Can't we derive the length from the string itself? - its supposed to be optional - did you change it? 

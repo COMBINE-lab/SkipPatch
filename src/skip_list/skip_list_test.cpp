@@ -192,23 +192,23 @@ void test_find_and_update_prev(){
 
 void test_insert_and_update_abs()
 {
-  skip_list s;
-  s.insert_and_update(2,0,"A");
-  s.insert_and_update(5,0,"GC");
-  s.insert_and_update(11,0,"T");
-  s.insert_and_update(13,0,"AG");
-  
-  s.insert_and_update_abs(2,"TT"); //insertion at first node; at the beginning
-  assert(s.find(2)->str=="TTA");
-  s.insert_and_update_abs(5,"G");
-  assert(s.find(2)->str=="TTAG"); //insertion at first node; at the end
-  s.insert_and_update_abs(12,"G");
-  assert(s.find(6)->str=="G"); //insertion at middle node; new node
-  s.insert_and_update_abs(13,"G");
-  assert(s.find(6)->str=="GG"); //insertion at middle node; at the end
-  
-  s.insert_and_update_abs(26,"GG");
-  assert(s.find(15)->str=="GG"); //insertion at middle node; at the end
+    skip_list s;
+
+    s.insert_and_update(2,0,"A");
+    s.insert_and_update(5,0,"GC");
+    s.insert_and_update(11,0,"T");
+    s.insert_and_update(13,0,"AG");
+
+    s.insert_and_update_abs(2,"TT");  //insertion at first node; at the beginning
+    assert(s.find(2)->str=="TTA");
+    s.insert_and_update_abs(5,"G");   //insertion at first node; at the end
+    assert(s.find(2)->str=="TTAG"); 
+    s.insert_and_update_abs(12,"G");  //insertion at middle node; new node
+    assert(s.find(6)->str=="G"); 
+    s.insert_and_update_abs(13,"G");  //insertion at middle node; at the end
+    assert(s.find(6)->str=="GG"); 
+    s.insert_and_update_abs(26,"GG");  //insertion at middle node; at the end
+    assert(s.find(15)->str=="GG"); 
 
 }
 
@@ -216,58 +216,59 @@ void test_insert_and_update_abs()
 void check_skip_list_node(skip_list s,const long &index,const string &ins) //checks wether the string at some absolute index is same as ins
 {
   
-  unsigned long pos;
-  long val;
-  node *n;
-  string str;
-  //s.insert_and_update_abs(2,ins); //insertion at first node; at the beginning
-  //assert(s.find(index)->str=="TTA");
-  //check_skip_list_node(s,2,"TT");
-  s.get_prev_node(index,val,pos,&n);
-  str = n->next->str;
-  if(n->next->val==val)//node exists
-  {
-    assert(str.substr(pos,pos+ins.length())==ins);
-    //cout<<"Node exists! "<<"val "<<val<<" string "<<n->next->str<<" pos "<<pos<<" "<<n->next->val<<endl;
-  }
-  else
-  {
-    assert(str.substr(pos,pos+ins.length())==ins);
-    //cout<<" New node must be created! "<<"val "<<val<<" string "<<n->next->str<<" pos "<<pos<<" "<<n->next->val<<endl;
-  }
+    unsigned long pos;
+    long val;
+    node *n;
+    string str;
+    //s.insert_and_update_abs(2,ins); //insertion at first node; at the beginning
+    //assert(s.find(index)->str=="TTA");
+    //check_skip_list_node(s,2,"TT");
+    s.get_prev_node(index,val,pos,&n);
+    str = n->next->str;
+    if(n->next->val==val)//node exists
+    {
+        assert(str.substr(pos,pos+ins.length())==ins);
+        //cout<<"Node exists! "<<"val "<<val<<" string "<<n->next->str<<" pos "<<pos<<" "<<n->next->val<<endl;
+    }
+    else
+    {
+        assert(str.substr(pos,pos+ins.length())==ins);
+        //cout<<" New node must be created! "<<"val "<<val<<" string "<<n->next->str<<" pos "<<pos<<" "<<n->next->val<<endl;
+    }
   //str.clear();
 }
 
 void test_get_prev_node()
 {
-  skip_list s;
-  s.insert_and_update(2,0,"A");
-  s.insert_and_update(5,0,"GC");
-  s.insert_and_update(11,0,"T");
-  s.insert_and_update(13,0,"AG");
-  
-  s.insert_and_update_abs(2,"TT"); //insertion at first node; at the beginning
-  assert(s.find(2)->str=="TTA");
-  check_skip_list_node(s,2,"TT");
-  
-  s.insert_and_update_abs(5,"G");
-  assert(s.find(2)->str=="TTAG"); //insertion at first node; at the end
-  check_skip_list_node(s,5,"G");
-  
-  s.insert_and_update_abs(12,"G");
-  assert(s.find(6)->str=="G"); //insertion at middle node; new node
-  check_skip_list_node(s,12,"G");
-  
-  s.insert_and_update_abs(13,"G");
-  assert(s.find(6)->str=="GG"); //insertion at middle node; at the end
-  check_skip_list_node(s,13,"G");
-  
-  s.insert_and_update_abs(26,"GG");
-  assert(s.find(15)->str=="GG"); //insertion at middle node; at the end
-  check_skip_list_node(s,26,"GG");
-  //check_skip_list_node(s,15,"GGT");
-  
+    skip_list s;
+
+    s.insert_and_update(2,0,"A");
+    s.insert_and_update(5,0,"GC");
+    s.insert_and_update(11,0,"T");
+    s.insert_and_update(13,0,"AG");
+
+    s.insert_and_update_abs(2,"TT");  //insertion at first node; at the beginning
+    assert(s.find(2)->str=="TTA");
+    check_skip_list_node(s,2,"TT");
+
+    s.insert_and_update_abs(5,"G");
+    assert(s.find(2)->str=="TTAG");   //insertion at first node; at the end
+    check_skip_list_node(s,5,"G");
+
+    s.insert_and_update_abs(12,"G");
+    assert(s.find(6)->str=="G");      //insertion at middle node; new node
+    check_skip_list_node(s,12,"G");
+
+    s.insert_and_update_abs(13,"G");
+    assert(s.find(6)->str=="GG");     //insertion at middle node; at the end
+    check_skip_list_node(s,13,"G");
+
+    s.insert_and_update_abs(26,"GG");
+    assert(s.find(15)->str=="GG");    //insertion at middle node; at the end
+    check_skip_list_node(s,26,"GG");
+
 }
+
 void test_skip_list(){
 
     std::cout <<  std::endl << "Testing Skip List.." << std::endl;
@@ -283,9 +284,13 @@ void test_skip_list(){
 
     test_find_and_update_prev();
     std::cout << "test_find_and_update_prev(): Passed All Test Cases!" << std::endl;
+
     test_insert_and_update_abs();
+    std::cout << "test_insert_and_update_abs(): Passed All Test Cases!" << std::endl;
+
     test_get_prev_node();
-    std::cout << "test_find_and_update_prev_abs(): Passed All Test Cases!" << std::endl;
+    std::cout << "test_get_prev_node(): Passed All Test Cases!" << std::endl;
+    
     std::cout << "Skip List: Passed All Test Cases!" << std::endl << std::endl ;
 
 }

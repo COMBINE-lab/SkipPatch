@@ -1,3 +1,4 @@
+#include <utility>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -23,13 +24,13 @@ void genome::get_input()
     std::cout<<"Input taken! "<<std::endl;
     #endif
 
-    is_edit.reserve(get_length());
-    std::fill(is_edit.begin(), is_edit.end(), false);
+    is_edit = std::vector<bool>(get_length(),false);
 }
 
 void genome::set_reference(std::string input)
 {    
     reference = input;
+    is_edit = std::vector<bool>(get_length(),false);
 }
 
 std::string genome::get_reference()
@@ -62,6 +63,31 @@ std::string genome::get_updated_reference(){
   	return updated_reference;
 
 }
+
+std::string genome::get_updated_reference(long start, long right_offset){
+    
+    std::string updated_reference;
+    node* curr_node;
+    long curr_pos = start;
+
+    long ins_len = 0;
+    if(s.find(start)){ //If there was an insertion in the first location 
+         ins_len = s.find(start)->val;
+    }
+
+    while( updated_reference.length() < ins_len+right_offset+K ){
+        
+        updated_reference+=std::string(1,reference[curr_pos]);
+        if(is_edit[curr_pos]){
+            curr_node = s.find(curr_pos);
+            updated_reference+=curr_node->str;
+        }        
+        curr_pos++;
+    }
+
+    return updated_reference;
+}
+
 
 long genome::get_length()
 {
@@ -213,61 +239,78 @@ void genome::snp_at(long pos, std::string new_string)
 
 }
 
+std::vector<std::string> genome::generate_kmers(std::string str)
+{
+    std::vector<std::string> kmers;
+    for(int i=0; i<str.length()-K+1; i++){
+        kmers.push_back(str.substr(i,K));    
+    }
+
+    return kmers;
+}
+
 /*
 Search the hash table to find the read.
 If the length of the string is greater than k, 
 k-mers of the read are generated and mapped to the genome.
 */
-std::vector<long> genome::find(std::string read){
+std::vector<long> genome::search(std::string read){
 
-	std::vector<long> pos_prev;
-	std::vector<long> pos_curr;
+    std::vector<long> positions;
 
-	//Look for the first K-length substring of the read
-	std::string read_kmer = read.substr(0,K); 
-	auto search = m.find(read_kmer);
-    if(search != m.end()) {
-		pos_prev = search->second;
-	} else {
-		return pos_prev;
-	}
-	long pos = 1;
-	//For every k-mer after that, check if it extends from the previous k-mer
-	for(auto iter=read.begin()+1; iter!=read.end()-K+1; iter++){
-    	read_kmer = read.substr(pos,K);
-    	search = m.find(read_kmer); 
+    //An unordered_map containing positions and their "offsets"(distance from the start of the read)
+    std::unordered_map<long, long> pos_prev;
+    std::unordered_map<long, long> pos_curr;
 
-	    if(search != m.end()) { //If the k-mer is found, check if it can be extended from any of the previous k-mers
-			pos_curr = search->second;
+    //Look for the first K-length substring of the read
+    std::string read_kmer = read.substr(0,K); 
+    auto search = m.find(read_kmer);
+    if(search == m.end()){
+        return positions;
+    } 
+    else {
+        for(long p: search->second){
+            pos_prev[p]=0;
+        }
+    }
 
-            //Retain only those positions which you can extend from one of the earlier k-mers 
-            std::vector<long> temp; //Created this temp because deleting from the vector pos_curr was generating a segmentation fault.
-            for(auto iter_p=pos_curr.begin(); iter_p!=pos_curr.end(); iter_p++){
-                auto curr = iter_p;
-                if(std::find(pos_prev.begin(),pos_prev.end(),*curr-1) != pos_prev.end() || std::find(pos_prev.begin(),pos_prev.end(),*curr) != pos_prev.end()){
-                    temp.push_back(*curr);
+    std::vector<std::string> read_kmers = generate_kmers(read);
+    read_kmers.erase(read_kmers.begin());
+
+    for(std::string kmer: read_kmers){
+        search = m.find(kmer);
+
+        if(search!=m.end()){ //If the k-mer is found, check if it can be extended from any of the previous k-mers
+            for(long p: search->second){
+                if(pos_prev.find(p-1)!=pos_prev.end()){ //If it can extend from the previous k-mer (and is not a part of an insertion)
+                    pos_curr[p]=pos_prev[p-1]+1; //Insert the new pos with an offset++     
+                }
+                else if(pos_prev.find(p)!=pos_prev.end()){ //If it can extend, but is a part of an insertion,
+                    pos_curr[p]=pos_prev[p]; //Insert the new position with the same offset
                 }
             }
-            pos_curr = temp;
-            temp.clear();
-		}
-		pos_prev = pos_curr;
-		pos_curr.clear();
-		pos++;
-  	}
-
- 	long buf = read.length()-K;
-  	for(auto iter=pos_prev.begin(); iter!=pos_prev.end(); iter++){
-  		*iter -= buf;
-  	}
-
-    std::vector<long> pos_absolute;
-    for(long pos: pos_prev){
-        pos_absolute.push_back(get_virtual_position_from_genome_position(pos)); 
+        }
+        pos_prev = pos_curr;
+        pos_curr.clear(); 
     }
-  	return pos_absolute;
-    
-    //return pos_prev;
+
+    //For all the positions, subtract the offset (which is different depending on whether or not there was an insertion at one of the positions) 
+    for(auto it=pos_prev.begin(); it!=pos_prev.end(); it++){
+        positions.push_back(it->first-it->second); 
+    }
+
+    //Get virtual positions from genome positions
+    //If the read started from a point within an insertion, reconstruct the required segment of the reference and find where it exactly started from 
+    for(auto it=positions.begin(); it!=positions.end(); it++){            
+        long position_offset = 0; //Used to locate the exact start point if the read started from a point within an insert
+        if(is_edit[*it]){
+            position_offset = get_updated_reference(*it,read.length()).find(read, 0);
+        }
+        *it=get_virtual_position_from_genome_position(*it);
+        *it+=position_offset;
+    }
+
+    return positions;
 }
 
 /*
@@ -292,8 +335,6 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
 	//insert_pos is position in the 'original genome' corresponding to the insert_pos_abs in the 'virtual genome' 
     long insert_pos = get_genome_position_from_virtual_position(insert_pos_abs); 
 	unsigned long offset = 0;
-
-    std::cout << "Inserting " << insertion << " at " << insert_pos << std::endl; 
 
     if(insert_pos<0 || insert_pos>get_length()-1){
         std::cerr << "Position of insertion out of bounds of length of genome" << std::endl;
@@ -345,5 +386,5 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
     s.insert_and_update(insert_pos, offset, insertion);
 
     //Update the bit vector
-    //is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
+    is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
 }

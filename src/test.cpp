@@ -88,27 +88,27 @@ void check_insert_at(genome g, string ins, long abs_val, string &reference)
 /* Tests if the search for a string of any length in the hash map is working correctly */
 void test_search_static_reference(){
 
-	cout << std::endl << "test_search_static_reference(): Start" << std::endl;
+	cout << "test_search_static_reference(): Start" << std::endl;
 
     genome g;
     std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"; 
     g.set_reference(reference);
     g.construct_hash();
 
-    std::vector<std::string> existing_reads {"TGATCGATCGATCGCAGATCGA", "ATTAGCTAGCCTAGCTAGTA", "CCCCCTATCATCATCATCTACTACAT", 
+    std::vector<std::string> existing_reads {"AGCTAGCC","TGATCGATCGATCGCAGATCGA", "ATTAGCTAGCCTAGCTAGTA", "CCCCCTATCATCATCATCTACTACAT", 
     											"GTAGATGGATCTCCCCCTATCATCAT", "TGGATCTCCCCCTATCATCA", "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACT",
 			    								"ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"};
     
     for(std::string read: existing_reads){
-        assert(g.find(read)==find_substr(reference,read));
+        assert(g.search(read)==find_substr(reference,read));
     }
 
-    std::vector<std::string> non_existent_reads {"TGATCGATCGATCGCAGATCGAA", "ATTAGCTAGTTTAGCTAGTA", "CCCCCTATCATTCATCTACTACATC", 
+    std::vector<std::string> non_existent_reads {"TGATCGATCGATCGCAGATCTT", "ATTAGCTAGTTTAGCTAGTA", "CCCCCTATCATTCATCTACTACATC", 
     												"GTAGATGGATCTCCCCTATCATCAT", "TGGATCTCCCCCTATCATCAAT", "ATTAGCTAGCTAGCTAGTAGATGGATCTCCCTATCATCTCATCTACT",
-			    									"ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGC"};	
+			    									"ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCAC"};	
 
     for(std::string read: non_existent_reads){
-        assert(g.find(read).size()==0);
+        assert(g.search(read).size()==0);
     }
 
 	cout << "test_search_static_reference(): Complete" << std::endl;
@@ -136,41 +136,40 @@ void check_search(genome g, string reference)
     }
 
     for(std::string read: existing_reads){
-    	//assert(g.find(read)==find_substr(g.get_updated_reference(),read)); 
-    	auto temp1 = g.find(read);
-	auto temp2 = find_substr(reference,read);
-	cout<<"The reference is "<<reference<<endl;
-	cout<<"The reference is "<<g.get_updated_reference()<<endl;
-	cout<<"Current read is "<<read<<endl;
-	cout<<"This should  be at ";
-	
-	for(auto it = temp2.begin();it!=temp2.end();it++)
-	  cout<<*it<<"\t";
-	cout<<endl;
-	cout<<"This is at ";
-	for(auto it = temp1.begin();it!=temp1.end();it++)
-	  cout<<*it<<"\t";
-	cout<<endl;
-	
-    	sort(temp1.begin(),temp1.end());
-	sort(temp2.begin(),temp2.end());
-	assert(temp1==temp2);
+    	assert(g.search(read)==find_substr(g.get_updated_reference(),read)); 
+		 	
+		 	/* auto temp1 = g.search(read);
+			auto temp2 = find_substr(reference,read);
+			cout<<"The reference is "<<reference<<endl;
+			cout<<"The reference is "<<g.get_updated_reference()<<endl;
+			cout<<"Current read is "<<read<<endl;
+			cout<<"This should  be at ";
+			for(auto it = temp2.begin();it!=temp2.end();it++)
+			  cout<<*it<<"\t";
+			cout<<endl;
+			cout<<"This is at ";
+			for(auto it = temp1.begin();it!=temp1.end();it++)
+			  cout<<*it<<"\t";
+			cout<<endl;
+		    sort(temp1.begin(),temp1.end());
+			sort(temp2.begin(),temp2.end());
+			assert(temp1==temp2);*/
     }
     
     //non_existent_reads
     for(std::string read: existing_reads)
     {
-    	read+=std::string("ZZZ");
-    	assert(g.find(read).size()==0);
+    	read+=std::string("Z");
+    	assert(g.search(read).size()==0);
     }
 }
 
 void test_search_dynamic_reference(){
 
-	cout << std::endl << "test_search_dynamic_reference(): Start" << std::endl;
+	cout << "test_search_dynamic_reference(): Start" << std::endl;
 	
     genome g;
-    std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGAATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"; 
+    std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCAT"; 
     g.set_reference(reference);
     g.construct_hash();
     
@@ -179,17 +178,17 @@ void test_search_dynamic_reference(){
     string ins = "ATCG";
     long genome_val;unsigned long offset;node *prev;
 
-    long abs_val = 7;
+    long abs_val = 0;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
     
-    abs_val=56;
+    abs_val=30;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
-    
-    abs_val=37;
+
+    abs_val=12;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
@@ -204,7 +203,7 @@ void test_search(){
 	test_search_static_reference();
 	test_search_dynamic_reference();
 
-	cout << "test_search(): Complete" << std::endl;
+	cout << "test_search(): Complete" << std::endl << std::endl;
 
 }
 

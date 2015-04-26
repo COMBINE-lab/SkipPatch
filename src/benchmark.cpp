@@ -25,7 +25,7 @@ void benchmark_search(genome &g, int num_patterns, int pattern_len){
 
 	gettimeofday(&start, &tzp);
 	for(int i=0;i<num_patterns;i++){
-		g.find(generate_random_string(pattern_len));
+		g.search(generate_random_string(pattern_len));
 	}
 	gettimeofday(&end, &tzp);
 

@@ -1,11 +1,13 @@
 #ifndef GENOME_H
 #define GENOME_H
 
-#include "./skip_list/skip_list.h"
+#include <utility>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <unordered_map>
+
+#include "./skip_list/skip_list.h"
 
 #define K 4 //user defined parameter
 
@@ -27,6 +29,7 @@ public:
     void set_reference(std::string);
     std::string get_reference();
     std::string get_updated_reference();
+    std::string get_updated_reference(long, long);
     long get_length();
     std::unordered_map<std::string, std::vector<long>> get_hash();
     skip_list get_skip_list();
@@ -39,7 +42,7 @@ public:
     void display_genome();
     void display_hash();
     void display_load();
-    
+
     //Modify the hash table to add/remove positions at which a k-mer occurs
     void remove_kmer_from_hash_at(long, std::string);
     void add_kmer_from_hash_at(long, std::string);
@@ -55,9 +58,10 @@ public:
     void insert_at(std::string, long);
     
     //Search for all the occurrences of a read
-    std::vector<long> find(std::string);
+    std::vector<long> search(std::string);
 
-    //void check_hash();
+    std::vector<std::string> generate_kmers(std::string);
+
 };
 
 #endif

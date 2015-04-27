@@ -189,7 +189,7 @@ void test_search_dynamic_reference(){
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
     
-    abs_val=12;
+    abs_val=42;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);

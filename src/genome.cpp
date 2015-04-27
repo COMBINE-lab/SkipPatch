@@ -375,7 +375,7 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
     //std::cout << "new_segment: " << new_segment << std::endl;
     
     //Replace all the modified k-mers contained in edit_segment from the hashmap
-    for(int i=0; i<K-1+((n->str).length()); i++){
+    for(int i=0; i<edit_segment.length()-K+1; i++){
         if(i<=insert_pos){ //Check to handle insertions at the beginning of the genome
             std::string curr_kmer = edit_segment.substr(i,K);
             std::string new_kmer = new_segment.substr(i,K);

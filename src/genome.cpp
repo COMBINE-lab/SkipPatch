@@ -391,7 +391,6 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
         }
     }
 
-    
     //Add the new k-mers generated due to insertion into the hashmap
     std::string new_kmer_segment = std::string(insertion+reference.substr(insert_pos+1,K-1));
     if(new_kmer_segment.length()>=K){

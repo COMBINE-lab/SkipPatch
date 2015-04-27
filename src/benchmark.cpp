@@ -56,6 +56,28 @@ void benchmark_snp(genome &g)
     
     return;
 }
+void benchmark_insert(genome &g)
+{
+    struct timeval start, end;
+    struct timezone tzp;
+	
+    std::vector<std::pair<long,char>> random = generate_random_inserts(TESTS,g.get_length());
+
+    gettimeofday(&start, &tzp);
+    
+    for(std::vector<std::pair<long,char>>::iterator i=random.begin(); i!=random.end(); i++){
+        long position = i->first;
+        char character = i->second;
+        std::cout << i->first << " ";
+		g.insert_at(std::string(1,character), position);
+    }
+    gettimeofday(&end, &tzp);
+
+	std::string message = "Inserting " + std::to_string(TESTS) + " strings at random locations"+ "...\t";
+    print_time_elapsed(message, &start, &end);
+    
+    return;
+}
 
 void benchmark(genome &g){
 
@@ -64,6 +86,8 @@ void benchmark(genome &g){
 	benchmark_construction(g);
 
     benchmark_snp(g);
+
+    benchmark_insert(g);
 
     benchmark_search(g,TESTS,25);
     benchmark_search(g,TESTS,35);

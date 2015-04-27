@@ -64,11 +64,13 @@ std::string genome::get_updated_reference(){
 
 }
 
-std::string genome::get_updated_reference(long start, long right_offset){
+/*Generated the updated reference sequence segment - including insertions and removing deletions
+  from the positions 'start' to 'start+right_offset' positions of the genome (positions are genome positions)*/
+std::string genome::get_updated_reference(long start, long left_offset, long right_offset){
     
     std::string updated_reference;
     node* curr_node;
-    long curr_pos = start;
+    long curr_pos = start-left_offset;
 
     long ins_len = 0;
     if(s.find(start)){ //If there was an insertion in the first location 
@@ -76,7 +78,6 @@ std::string genome::get_updated_reference(long start, long right_offset){
     }
 
     while( updated_reference.length() < ins_len+right_offset+K ){
-        
         updated_reference+=std::string(1,reference[curr_pos]);
         if(is_edit[curr_pos]){
             curr_node = s.find(curr_pos);
@@ -88,6 +89,23 @@ std::string genome::get_updated_reference(long start, long right_offset){
     return updated_reference;
 }
 
+/*Generated the updated reference sequence segment - including insertions and removing deletions
+  from the positions 'begin' to 'end' of the genome (positions are genome positions)*/
+std::string genome::get_updated_reference(long begin, long end){
+
+    std::string updated_reference;
+    node* curr_node;
+    
+    for(int i=begin; i<=end; i++){
+        updated_reference+=reference[i];
+        if(is_edit[i]){
+            curr_node = s.find(i);
+            updated_reference+=curr_node->str;
+        }
+    }
+
+    return updated_reference;
+}
 
 long genome::get_length()
 {
@@ -168,13 +186,13 @@ long genome::get_genome_position_from_virtual_position(long virtual_position)
     return genome_position;
 }
 
+void genome::get_genome_position_from_virtual_position(long virtual_position, long &genome_position, unsigned long &offset, node **n)
+{
+    s.get_prev_node(virtual_position, genome_position, offset, n); 
+}
+
 long genome::get_virtual_position_from_genome_position(long genome_position) //arguement must be a tuple
 {   
-    /*
-    node* n = s.find_prev(genome_position);
-    long offset = s.get_cumulative_count(n->val) + (n->str).length();
-    return genome_position+offset;
-    */
     return genome_position+s.get_cumulative_count(genome_position);
 }
 
@@ -304,7 +322,7 @@ std::vector<long> genome::search(std::string read){
     for(auto it=positions.begin(); it!=positions.end(); it++){            
         long position_offset = 0; //Used to locate the exact start point if the read started from a point within an insert
         if(is_edit[*it]){
-            position_offset = get_updated_reference(*it,read.length()).find(read, 0);
+            position_offset = get_updated_reference(*it,0,read.length()).find(read, 0);
         }
         *it=get_virtual_position_from_genome_position(*it);
         *it+=position_offset;
@@ -318,47 +336,50 @@ Inserts a string at the 'insert_pos'. Updates the k-mers which lie in the "regio
 Splits the problem into two segments:
  - Updating the k-mers which begin at a point before the insertion
  - Adding the new k-mers which are a result of the insertion (begin at a point in the inserted segment)
-
-Working test cases:
- - Insertions of lengths <K, ==K, >K
- - Insertions in locations: (begin,begin+K), (end-K,end), other 
-
-Current limitations (due to unavailability of helper functions)
-1. Does not support nested insertions
-2. Supports only single insertion - no handling of overlapping k-mers which might have arisen due to adjacent insertions
-
-*Needs rigorous testing - several test cases to be written*
 */
 
 void genome::insert_at(std::string insertion, long insert_pos_abs){
 
-	//insert_pos is position in the 'original genome' corresponding to the insert_pos_abs in the 'virtual genome' 
-    long insert_pos = get_genome_position_from_virtual_position(insert_pos_abs); 
-	unsigned long offset = 0;
+    node *n;
+    long insert_pos; //position in the 'original genome' corresponding to the virtual_position in the 'virtual genome' 
+    unsigned long offset = 0;
+    
+    get_genome_position_from_virtual_position(insert_pos_abs, insert_pos, offset, &n);
+    n=n->next;    
+    //std::cout << "Inserting " << insertion << " at " << insert_pos_abs << ":" << insert_pos << "," << offset << std::endl;    
 
     if(insert_pos<0 || insert_pos>get_length()-1){
         std::cerr << "Position of insertion out of bounds of length of genome" << std::endl;
         std::exit(-1);
     }
 
+    //Update the skip list depending on whether the insertion is nested 
+    std::string nested_insertion = insertion;
+    if(is_edit[insert_pos]){
+        nested_insertion.insert(offset,insertion);
+        n->str = nested_insertion;
+        n->offset +=  insertion.length();
+    } else {
+        s.insert_and_update(insert_pos, offset, insertion); //Insert an entry into the skip list
+        is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
+    }
+
     long edit_start = std::max(insert_pos-K+2,(long)0);
     long edit_end = std::min(insert_pos+K, (long)reference.length()-1);
 
     //Segment which contains the k-mers which no longer exist 
-    std::string edit_segment = std::string(reference.begin()+edit_start, reference.begin()+edit_end+1);
+    std::string edit_segment = get_updated_reference(edit_start, edit_end);
 
     //Make a new string of edit_segment + "insertion" to replace the removed k-mers with new k-mers
-    std::string new_segment = std::string(reference.begin()+edit_start, reference.begin()+insert_pos+1)
+    std::string new_segment = get_updated_reference(edit_start, insert_pos)
                             + insertion 
-                            + std::string(reference.begin()+insert_pos+1, reference.begin()+insert_pos+K);
-    
+                            + get_updated_reference(insert_pos+1, insert_pos+K);
     
     //Replace all the modified k-mers contained in edit_segment from the hashmap
     for(int i=0; i<K-1; i++){
         if(i<=insert_pos){ //Check to handle insertions at the beginning of the genome
             std::string curr_kmer = edit_segment.substr(i,K);
             std::string new_kmer = new_segment.substr(i,K);
-            //std::cout << "Replacing: " << curr_kmer << " at " << edit_start+i << " with " << new_kmer << std::endl;
             if(curr_kmer!=new_kmer){
                 if(curr_kmer.length()==K){
                     remove_kmer_from_hash_at(edit_start+i, curr_kmer);
@@ -381,10 +402,4 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
             }
         }
     }
-
-    //Insert an entry into the skip list 
-    s.insert_and_update(insert_pos, offset, insertion);
-
-    //Update the bit vector
-    is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
 }

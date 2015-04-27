@@ -39,26 +39,20 @@ void test_hash(genome g)
 }
 
 void check_insert_at(genome g, string ins, long abs_val, string &reference)
-{
+{	
+
   	//test if the the skip list has been updated..
 	skip_list s = g.get_skip_list();
-	check_skip_list_node(s, abs_val, ins); 
-
+	//check_skip_list_node(s, abs_val, ins); 
+	
 	//check if the reference has been updated
 	reference.insert(abs_val+1,ins);
 	assert(reference == g.get_updated_reference());
-
-	
-	/*The hash of both the strings won't be the same because 
-	when you construct the hash based on the updated reference, 
-	the positions in the new hash are "virtual positions", and won't be the same as the "genome positions"
-	-- yeah, im doing a translation now.
-	*/
 	
 	//now check the hash
 	//update the reference and construct hash for the same
-	genome g_temp;
-	g_temp.set_reference(reference);
+	/*genome g_temp;
+	g_temp.set_reference(g.get_reference());
 	g_temp.construct_hash();
 	auto m_temp = g_temp.get_hash();
 	auto m_genome = g.get_hash();      
@@ -66,23 +60,18 @@ void check_insert_at(genome g, string ins, long abs_val, string &reference)
 	{
 	  for(auto row_it = (it->second).begin();row_it!=(it->second).end();row_it++)
 	  {
-	    //translate from abs to genome pos:
-		    
+	    //translate from abs to genome pos:    
 	    unsigned long pos;
 	    long val;
 	    node *n;
-	    
 	    s.get_prev_node(*row_it,val,pos,&n);
-	    
 	    *row_it=val;
 	  }
 	  sort(it->second.begin(),it->second.end());
 	  sort(m_genome[it->first].begin(),m_genome[it->first].end());
 	  assert(it->second==m_genome[it->first]);
-	  
 	}
-	
-	
+	*/
 }
 
 /* Tests if the search for a string of any length in the hash map is working correctly */
@@ -246,7 +235,7 @@ void test_insert_at()
  	cout << std::endl << "insert_at(): Start" << std::endl;
 	
 	//length of insertion <K, >K, =K, =1
-	std::vector<std::string> insertions {"ATG", "TTGTAC", "AAAA", "C"}; 
+	std::vector<std::string> insertions {"ATG", "TTGTAC", "ATCG", "C"}; 
 
  	for(std::string ins: insertions){
 		
@@ -257,8 +246,7 @@ void test_insert_at()
 		
 		//Randomize? 
 		//For now, they're spaced in such a way that the edit areas of two insertions don't overlap
-		//No nested insertions supported yet
-		std::vector<long> positions {15,g.get_length()-1,31,40};
+		std::vector<long> positions {32,6,7,23,22,0};
 
 		for(long p: positions){
 			g.insert_at(ins, p);

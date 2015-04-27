@@ -28,11 +28,14 @@ public:
     //Getters and setters
     void set_reference(std::string);
     std::string get_reference();
-    std::string get_updated_reference();
-    std::string get_updated_reference(long, long);
     long get_length();
     std::unordered_map<std::string, std::vector<long>> get_hash();
     skip_list get_skip_list();
+
+    //Generate the updated reference, or a segment of the updated reference
+    std::string get_updated_reference();
+    std::string get_updated_reference(long, long, long);
+    std::string get_updated_reference(long, long);
 
     //Hash table functions
     void construct_hash();
@@ -49,6 +52,7 @@ public:
     
     //Translating positions between the genome and virtual coordinate systems        
     long get_genome_position_from_virtual_position(long);
+    void get_genome_position_from_virtual_position(long, long &, unsigned long &, node**);
     long get_virtual_position_from_genome_position(long);
 
     //In-place update: Replace the segment in the reference at a particular point with the given variant

@@ -141,7 +141,9 @@ void check_search(genome g, string reference)
       	existing_reads.push_back(temp);
     }
 
+    //std::cout << g.get_updated_reference() << std::endl;
     for(std::string read: existing_reads){
+    	//std::cout << "Read " << read << std::endl;
     	assert(g.search(read)==find_substr(g.get_updated_reference(),read)); 
 		 	
 		 	/* auto temp1 = g.search(read);
@@ -181,7 +183,7 @@ void test_search_dynamic_reference(){
     
     check_search(g,reference);
     
-    string ins = "AGATTA";
+    string ins = "AGATC";
     long genome_val;unsigned long offset;node *prev;
 
     long abs_val = 0;
@@ -195,6 +197,11 @@ void test_search_dynamic_reference(){
     check_search(g,reference);
 
     abs_val=30;
+    g.insert_at(ins, abs_val);
+    check_insert_at(g,ins,abs_val,reference);
+    check_search(g,reference);
+
+    abs_val=12;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
@@ -257,12 +264,12 @@ void test_insert_at()
  	for(std::string ins: insertions){
 		
 		genome g;
-		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; //ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT 
+		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
 		g.set_reference(reference);
 		g.construct_hash();
 		
 		//Randomize? 
-		std::vector<long> positions {22,21,7,11,12};
+		std::vector<long> positions {22,21,7,11,12,0};
 
 		for(long p: positions){
 			//std::cout << "B: " << g.get_updated_reference() << std::endl;

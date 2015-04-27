@@ -357,6 +357,10 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
     std::string nested_insertion;
     if(is_edit[insert_pos]){
         nested_insertion=n->str;
+        if(offset > nested_insertion.length()){
+        	std::cerr << "Nested Insertions: Offset greater than size of insertion: " << n->str << " " << offset << " " << insertion << std::endl;
+        	return;
+        }
         nested_insertion.insert(offset,insertion);
         insertion = nested_insertion;
     }
@@ -375,7 +379,7 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
     //std::cout << "new_segment: " << new_segment << std::endl;
     
     //Replace all the modified k-mers contained in edit_segment from the hashmap
-    for(int i=0; i<edit_segment.length()-K+1; i++){
+    for(int i=0; i<edit_segment.length()-K; i++){
         if(i<=insert_pos){ //Check to handle insertions at the beginning of the genome
             std::string curr_kmer = edit_segment.substr(i,K);
             std::string new_kmer = new_segment.substr(i,K);

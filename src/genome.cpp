@@ -354,14 +354,11 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
     }
 
     //Update the skip list depending on whether the insertion is nested 
-    std::string nested_insertion = insertion;
+    std::string nested_insertion;
     if(is_edit[insert_pos]){
+        nested_insertion=n->str;
         nested_insertion.insert(offset,insertion);
-        n->str = nested_insertion;
-        n->offset +=  insertion.length();
-    } else {
-        s.insert_and_update(insert_pos, offset, insertion); //Insert an entry into the skip list
-        is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
+        insertion = nested_insertion;
     }
 
     long edit_start = std::max(insert_pos-K+2,(long)0);
@@ -369,37 +366,50 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
 
     //Segment which contains the k-mers which no longer exist 
     std::string edit_segment = get_updated_reference(edit_start, edit_end);
-
+    //std::cout << "edit_segment: " << edit_segment << std::endl;
+    
     //Make a new string of edit_segment + "insertion" to replace the removed k-mers with new k-mers
-    std::string new_segment = get_updated_reference(edit_start, insert_pos)
+    std::string new_segment = get_updated_reference(edit_start, insert_pos-1) + reference[insert_pos]
                             + insertion 
                             + get_updated_reference(insert_pos+1, insert_pos+K);
+    //std::cout << "new_segment: " << new_segment << std::endl;
     
     //Replace all the modified k-mers contained in edit_segment from the hashmap
-    for(int i=0; i<K-1; i++){
+    for(int i=0; i<K-1+((n->str).length()); i++){
         if(i<=insert_pos){ //Check to handle insertions at the beginning of the genome
             std::string curr_kmer = edit_segment.substr(i,K);
             std::string new_kmer = new_segment.substr(i,K);
             if(curr_kmer!=new_kmer){
+                //std::cout << "Replacing: " << curr_kmer << " with " << new_kmer << " at " << edit_start+i << std::endl;
                 if(curr_kmer.length()==K){
                     remove_kmer_from_hash_at(edit_start+i, curr_kmer);
                 }
-                if(new_kmer.length()==K){
+                if(new_kmer.length()==K && std::count(m[new_kmer].begin(), m[new_kmer].end(), edit_start+i)==0){
                     add_kmer_from_hash_at(edit_start+i, new_kmer);
                 }
             }
         }
     }
 
+    
     //Add the new k-mers generated due to insertion into the hashmap
     std::string new_kmer_segment = std::string(insertion+reference.substr(insert_pos+1,K-1));
     if(new_kmer_segment.length()>=K){
         for(int i=0; i<new_kmer_segment.length()-K+1; i++){
             std::string new_kmer = new_kmer_segment.substr(i,K);
-            if(new_kmer.length()==K){
+            if(new_kmer.length()==K && std::count(m[new_kmer].begin(), m[new_kmer].end(), insert_pos)==0){
                 //std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;
                 add_kmer_from_hash_at(insert_pos, new_kmer);
             }
         }
     }
+
+    if(is_edit[insert_pos]){
+        n->str = nested_insertion;
+        n->offset +=  insertion.length();
+    } else {
+        s.insert_and_update(insert_pos, offset, insertion); //Insert an entry into the skip list
+        is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
+    }
+
 }

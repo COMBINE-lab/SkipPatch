@@ -48,30 +48,47 @@ void check_insert_at(genome g, string ins, long abs_val, string &reference)
 	//check if the reference has been updated
 	reference.insert(abs_val+1,ins);
 	assert(reference == g.get_updated_reference());
+
+/*	std::cout << "Modified Hash: " << std::endl;
+	g.display_hash();
+	std::cout << std::endl; */
 	
+	/*---Something really fishy here---*/
+
 	//now check the hash
 	//update the reference and construct hash for the same
-	/*genome g_temp;
-	g_temp.set_reference(g.get_reference());
+	/*
+	genome g_temp;
+	g_temp.set_reference(reference);
 	g_temp.construct_hash();
+	std::cout << "New Hash: " << std::endl;
+	g_temp.display_hash();
+	std::cout << std::endl;
+
 	auto m_temp = g_temp.get_hash();
 	auto m_genome = g.get_hash();      
-	for(auto it = m_temp.begin();it!=m_temp.end();it++)
-	{
-	  for(auto row_it = (it->second).begin();row_it!=(it->second).end();row_it++)
-	  {
-	    //translate from abs to genome pos:    
-	    unsigned long pos;
-	    long val;
-	    node *n;
-	    s.get_prev_node(*row_it,val,pos,&n);
-	    *row_it=val;
-	  }
-	  sort(it->second.begin(),it->second.end());
-	  sort(m_genome[it->first].begin(),m_genome[it->first].end());
-	  assert(it->second==m_genome[it->first]);
-	}
-	*/
+	for(auto it=g_temp.get_hash().begin(); it!=g_temp.get_hash().end(); it++)
+	{	
+		std::cout << it->first << std::endl;
+	  	for(auto row_it=(it->second).begin(); row_it!=(it->second).end(); row_it++)
+	  	{
+		    //translate from abs to genome pos:    
+		    unsigned long pos;
+		    long val;
+		    node *n;
+		    s.get_prev_node(*row_it,val,pos,&n);
+		    *row_it=val;
+		    std::cout << *row_it << " "; //Prints weird values
+
+	  	} std::cout << std::endl;
+
+		sort(it->second.begin(),it->second.end());
+		sort(m_genome[it->first].begin(), m_genome[it->first].end());
+		std::cout << "The hash should be: " << std::endl;
+		g_temp.display_hash();
+		std::cout << std::endl;
+		//assert(it->second==m_genome[it->first]);
+	}*/
 }
 
 /* Tests if the search for a string of any length in the hash map is working correctly */
@@ -164,7 +181,7 @@ void test_search_dynamic_reference(){
     
     check_search(g,reference);
     
-    string ins = "ATCG";
+    string ins = "AGATTA";
     long genome_val;unsigned long offset;node *prev;
 
     long abs_val = 0;
@@ -172,12 +189,12 @@ void test_search_dynamic_reference(){
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
     
-    abs_val=30;
+    abs_val=12;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
 
-    abs_val=12;
+    abs_val=30;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
@@ -240,16 +257,17 @@ void test_insert_at()
  	for(std::string ins: insertions){
 		
 		genome g;
-		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; //ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT 
 		g.set_reference(reference);
 		g.construct_hash();
 		
 		//Randomize? 
-		//For now, they're spaced in such a way that the edit areas of two insertions don't overlap
-		std::vector<long> positions {32,6,7,23,22,0};
+		std::vector<long> positions {22,21,7,11,12};
 
 		for(long p: positions){
+			//std::cout << "B: " << g.get_updated_reference() << std::endl;
 			g.insert_at(ins, p);
+			//std::cout << "A: " << g.get_updated_reference() << std::endl;
 			check_insert_at(g, ins, p, reference);
 		}
 	}

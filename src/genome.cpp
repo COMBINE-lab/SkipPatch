@@ -24,13 +24,13 @@ void genome::get_input()
     std::cout<<"Input taken! "<<std::endl;
     #endif
 
-    is_edit = std::vector<bool>(get_length(),false);
+    edit = std::vector<bool>(get_length(),false);
 }
 
 void genome::set_reference(std::string input)
 {    
     reference = input;
-    is_edit = std::vector<bool>(get_length(),false);
+    edit = std::vector<bool>(get_length(),false);
 }
 
 std::string genome::get_reference()
@@ -64,50 +64,6 @@ std::string genome::get_updated_reference(){
 
 }
 
-/*Generated the updated reference sequence segment - including insertions and removing deletions
-  from the positions 'start' to 'start+right_offset' positions of the genome (positions are genome positions)*/
-std::string genome::get_updated_reference(long start, long left_offset, long right_offset){
-    
-    std::string updated_reference;
-    node* curr_node;
-    long curr_pos = start-left_offset;
-
-    long ins_len = 0;
-    if(s.find(start)){ //If there was an insertion in the first location 
-         ins_len = s.find(start)->val;
-    }
-
-    while( updated_reference.length() < ins_len+right_offset+K ){ 
-        updated_reference+=std::string(1,reference[curr_pos]); //**
-        if(is_edit[curr_pos]){
-            curr_node = s.find(curr_pos);
-            updated_reference+=curr_node->str;
-        }        
-        curr_pos++;
-    }
-
-    return updated_reference;
-}
-
-/*Generated the updated reference sequence segment - including insertions and removing deletions
-  from the positions 'begin' to 'end' of the genome (positions are genome positions)*/
-/*std::string genome::get_updated_reference(unsigned long val, unsigned long offset, unsigned long len){
-
-    get_prev_node
-    std::string updated_reference;
-    node* curr_node;
-    
-    for(int i=begin; i<=end; i++){
-        updated_reference+=reference[i];
-        if(is_edit[i]){
-            curr_node = s.find(i);
-            updated_reference+=curr_node->str;
-        }
-    }
-
-    return updated_reference;
-}
-*/
 long genome::get_length()
 {
     return reference.length();
@@ -163,7 +119,6 @@ void genome::remove_kmer_from_hash_at(long position_to_remove, std::string curr_
 
     std::vector<long> positions = m[curr_kmer];
     m[curr_kmer].erase(std::find(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove));
-    //assert( std::find( m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove) == m[curr_kmer].end() ); //Verifying if the position was actually deleted
     //Having a very long "vector/list" of positions (~1 million) causes a bottleneck here
     //Approximately takes 0.5 seconds to execute this line "once" if the length of "positions" is 1 million
     
@@ -192,9 +147,9 @@ void genome::get_genome_position_from_virtual_position(long virtual_position, lo
     s.get_prev_node(virtual_position, genome_position, offset, n); 
 }
 
-long genome::get_virtual_position_from_genome_position(long genome_position) //arguement must be a tuple
+long genome::get_virtual_position_from_genome_position(long genome_position, long offset) //arguement must be a tuple
 {   
-    return genome_position+s.get_cumulative_count(genome_position);
+    return genome_position+s.get_cumulative_count(genome_position)+offset;
 }
 
 //Is it required to pass both the length and the string? Can't we derive the length from the string itself? - its supposed to be optional - did you change it? 
@@ -258,100 +213,50 @@ void genome::snp_at(long pos, std::string new_string)
 
 }
 
-std::vector<std::string> genome::generate_kmers(std::string str)
-{
-    std::vector<std::string> kmers;
-    for(int i=0; i<str.length()-K+1; i++){
-        kmers.push_back(str.substr(i,K));    
-    }
-
-    return kmers;
-}
-
-/*
-Search the hash table to find the read.
-If the length of the string is greater than k, 
-k-mers of the read are generated and mapped to the genome.
-*/
 std::vector<long> genome::search(std::string read){
 
-    std::vector<long> positions;
+	std::vector<long> positions;
 
-    //An unordered_map containing positions and their "offsets"(distance from the start of the read)
-    std::unordered_map<long, long> pos_prev;
-    std::unordered_map<long, long> pos_curr;
+	//Read the first k-mer of the read and find all the positions it occurrs at
+	std::string read_kmer = read.substr(0,K); 
+	
+	for(long pos: m.find(read_kmer)->second){
 
-    //Look for the first K-length substring of the read
-    std::string read_kmer = read.substr(0,K); 
-    auto search = m.find(read_kmer);
-    if(search == m.end()){
-        return positions;
-    } 
-    else {
-        for(long p: search->second){
-            pos_prev[p]=0;
-        }
-    }
+		long offset = 0;
+		//If the position doesn't start from within an insertion
+		if(!edit[pos]){
+			if(read==read_reference_at(pos,offset,read.length())){
+				positions.push_back(get_virtual_position_from_genome_position(pos,offset));
+			}
+		} else {
+			std::string read_ext = read_reference_at(pos,offset,read.length()+(s.find(pos)->str).length());
+			//A read can occurr multiple times within an insertion itself
+			//And hence might have different offsets for those locations 	
+			//Eureka! It works! ;) And that's how horrible some test cases can get :P
+			offset = read_ext.find(read); 
+			while(offset!=string::npos){
+				if(read==read_reference_at(pos,offset,read.length())){
+					positions.push_back(get_virtual_position_from_genome_position(pos,offset));
+				}
+				offset = read_ext.find(read,offset+1);
+			}
+		}
+	}
 
-    std::vector<std::string> read_kmers = generate_kmers(read);
-    read_kmers.erase(read_kmers.begin());
-
-    for(std::string kmer: read_kmers){
-        search = m.find(kmer);
-
-        if(search!=m.end()){ //If the k-mer is found, check if it can be extended from any of the previous k-mers
-            for(long p: search->second){
-                if(pos_prev.find(p-1)!=pos_prev.end()){ //If it can extend from the previous k-mer (and is not a part of an insertion)
-                    pos_curr[p]=pos_prev[p-1]+1; //Insert the new pos with an offset++     
-                }
-                else if(pos_prev.find(p)!=pos_prev.end()){ //If it can extend, but is a part of an insertion,
-                    pos_curr[p]=pos_prev[p]; //Insert the new position with the same offset
-                }
-            }
-        }
-        pos_prev = pos_curr;
-        pos_curr.clear(); 
-    }
-
-    //For all the positions, subtract the offset (which is different depending on whether or not there was an insertion at one of the positions) 
-    for(auto it=pos_prev.begin(); it!=pos_prev.end(); it++){
-        positions.push_back(it->first-it->second); 
-    }
-
-    //Get virtual positions from genome positions
-    //If the read started from a point within an insertion, reconstruct the required segment of the reference and find where it exactly started from 
-    for(auto it=positions.begin(); it!=positions.end(); it++){            
-        long position_offset = 0; //Used to locate the exact start point if the read started from a point within an insert
-        if(is_edit[*it]){
-            position_offset = get_updated_reference(*it,0,read.length()).find(read, 0);
-        }
-        *it=get_virtual_position_from_genome_position(*it);
-        *it+=position_offset;
-    }
-
-    return positions;
+	return positions;
 }
-
-/*
-Inserts a string at the 'insert_pos'. Updates the k-mers which lie in the "region of change" 
-Splits the problem into two segments:
- - Updating the k-mers which begin at a point before the insertion
- - Adding the new k-mers which are a result of the insertion (begin at a point in the inserted segment)
-*/
-
 
 vector<pair<string,long>> genome::get_kmers(const long start,const unsigned long len) //edge cases must be handled
 {
-  
-  vector<pair<string,long> > vec;
-  for(long i=start;i<start+len;i++) //could be faster
-  {
-    long genome_position;
-    string kmer = read_reference_abs_at(i,K,genome_position);
-    vec.push_back(make_pair(kmer,genome_position));
-    //remove_kmer_from_hash_at(genome_position,kmer);
-  }
-  return vec;
+
+	vector<pair<string,long> > vec;
+	for(long i=start;i<start+len;i++) //could be faster
+	{
+		long genome_position;
+		string kmer = read_reference_abs_at(i,K,genome_position);
+		vec.push_back(make_pair(kmer,genome_position));
+	}
+	return vec;
 }
 
 string genome::read_reference_at(const long genome_position,const long offset,const long len)
@@ -359,8 +264,7 @@ string genome::read_reference_at(const long genome_position,const long offset,co
     long rem_len=len,curr_genome_pos = genome_position,curr_offset = offset;string kmer;
     while(rem_len>0)
     {
-      cout<<"building kmer "<<kmer<<endl;
-      if(is_edit[curr_genome_pos])
+      if(edit[curr_genome_pos])
       {
 	
 	if(!curr_offset)
@@ -393,184 +297,50 @@ string genome::read_reference_at(const long genome_position,const long offset,co
     }
     return kmer;
 }
+
 string genome::read_reference_abs_at(const long abs_pos,const long len,long &genome_position)
 {
-   unsigned long offset;node* n;string kmer;
-   get_genome_position_from_virtual_position(abs_pos, genome_position, offset, &n);
-   kmer = read_reference_at(genome_position,offset,len);
-   cout<<"kmer "<<kmer<<endl;
-   return kmer;
-   
+	unsigned long offset;node* n;string kmer;
+	get_genome_position_from_virtual_position(abs_pos, genome_position, offset, &n);
+	kmer = read_reference_at(genome_position,offset,len);
+	return kmer;
 }
+
+/*
+Inserts a string at the 'insert_pos'. Updates the k-mers which lie in the "region of change" 
+Splits the problem into two segments:
+ - Updating the k-mers which begin at a point before the insertion
+ - Adding the new k-mers which are a result of the insertion (begin at a point in the inserted segment)
+*/
 void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs){
 
-  const long ins_len = ins.length();
-  auto kmer_pos_pair = get_kmers(insert_pos_abs-K+2,K-1);
-  int i=0;
-  
-  long genome_position;
-  const string end_kmer = read_reference_abs_at(insert_pos_abs+1,K-1,genome_position);
-  string ins_copy = ins+end_kmer;
-  for(auto it:kmer_pos_pair)
-  {
-    std::cout << "Removing: " << it.first << " at " << it.second << std::endl;
-    remove_kmer_from_hash_at(it.second,it.first);
-    string temp = it.first.substr(0,K-i-1) + ins_copy.substr(0,i+1);
-    std::cout << "Concatenating: " << it.first.substr(0,K-i-1) << " and " << ins_copy.substr(0,i+1) << std::endl;
-    std::cout << "Adding: " << temp << " at " << it.second << std::endl;
-    add_kmer_from_hash_at(it.second,temp);
-    i++;
-  }
-  for(i=0;i<ins.length();i++)
-  {
-    string temp = ins.substr(i,K);
-    string temp2 = end_kmer.substr(0,K-temp.length());
-    add_kmer_from_hash_at(kmer_pos_pair.back().second,temp+temp2);
-    std::cout<<endl<<endl << "Adding: " << temp+temp2 << " at " << kmer_pos_pair.back().second << std::endl;
-  }
-  is_edit[kmer_pos_pair.back().second]=1;
-  s.print_list();
-  s.insert_and_update_abs(insert_pos_abs,ins);
-  s.print_list();
-  cout<<endl;
-  for(int i=3;i<7;i++)
-  {
-    cout<<"Edit bit is at "<<i<<" is "<<is_edit[i]<<endl;
-  }
-  
+	const long ins_len = ins.length();
+	auto kmer_pos_pair = get_kmers(insert_pos_abs-K+2,K-1);
+	int i=0;
 
-
-
-
-  
-  
-  
-  
-  
-  
-  
-  
- 
-  
-/*  
-    std::string insertion = ins; 
-
-    node *n;
-    long insert_pos; //position in the 'original genome' corresponding to the virtual_position in the 'virtual genome' 
-    unsigned long offset = 0;
-    
-    get_genome_position_from_virtual_position(insert_pos_abs, insert_pos, offset, &n);
-    if(n->next->val==insert_pos) //if the value already exists
-      n=n->next; //**if the insertion is nested, this is not true    
-    std::cout << "Inserting " << insertion << " at " << insert_pos_abs << ":" << insert_pos << "," << offset << std::endl;    
-
-    if(insert_pos<0 || insert_pos>get_length()-1){
-        std::cerr << "Position of insertion out of bounds of length of genome" << std::endl;
-        std::exit(-1);
-    }
-
-    std::string nested_insertion; 
-    if(is_edit[insert_pos]){
-        nested_insertion=n->str;
-        if(offset > nested_insertion.length()){
-        	std::cerr << "Nested Insertions: Offset greater than size of insertion: " << n->str << " " << offset << " " << insertion << std::endl;
-        	return;
-        }
-        nested_insertion.insert(offset,insertion);
-        insertion = nested_insertion;
-    }
-
-    long edit_start = std::max(insert_pos-K+2,(long)0); //**may not be true - insertion just before
-    long edit_end = std::min(insert_pos+K, (long)reference.length()-1); 
-
-    //Segment which contains the k-mers which no longer exist 
-    std::string edit_segment = get_updated_reference(edit_start, edit_end);
-    std::cout << "edit_segment: " << edit_segment << std::endl;
-    
-    //Make a new string of edit_segment + "insertion" to replace the removed k-mers with new k-mers
-    std::string new_segment = get_updated_reference(edit_start, insert_pos-1) + reference[insert_pos] //**why go to reference again?
-                            + insertion 
-                            + get_updated_reference(insert_pos+1, insert_pos+K);
-    std::cout << "new_segment: " << new_segment << std::endl;
-    
-        //Replace all the modified k-mers
-    for(int p=0; p<=insert_pos-edit_start; p++){
-        std::string curr_kmer = edit_segment.substr(p,K);
-        std::string new_kmer = new_segment.substr(p,K);
-	std::cout << "Replacing: " << curr_kmer << " with " << new_kmer << " at " << edit_start+p << std::endl;
-        if(curr_kmer!=new_kmer){
-	    
-            if(curr_kmer.length()==K){
-                remove_kmer_from_hash_at(p+edit_start,curr_kmer);
-            }    
-            if(new_kmer.length()==K){
-                add_kmer_from_hash_at(p+edit_start,new_kmer);
-            }    
-        }
-    }
-
-//    std::string new_kmer_segment = std::string(insertion+reference.substr(insert_pos+1,K-1));
-      std::string new_kmer_segment = insertion + get_updated_reference(insert_pos+1, insert_pos+K-1);
-      if(new_kmer_segment.length()>=K){
-	  for(int p=0; p<ins.length(); p++) {
-	      std::string new_kmer = new_kmer_segment.substr(p,K);
-		  if(new_kmer.length()==K){
-		    std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;  
-		    add_kmer_from_hash_at(insert_pos,new_kmer);
-		  }
-	    }
-      }
+	long genome_position;
+	const string end_kmer = read_reference_abs_at(insert_pos_abs+1,K-1,genome_position);
+	string ins_copy = ins+end_kmer;
 	
-	for(int p=insert_pos-edit_start+1; p<=insert_pos+ins.length()-edit_start; p++){
-		std::string new_kmer = new_segment.substr(p,K);
-		  if(new_kmer.length()==K){
-		    std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;  
-		    add_kmer_from_hash_at(insert_pos,new_kmer);
-		  }
-	      }
-	  }
+	for(auto it:kmer_pos_pair)
+	{
+		remove_kmer_from_hash_at(it.second,it.first);
+		string temp = it.first.substr(0,K-i-1) + ins_copy.substr(0,i+1);
+		add_kmer_from_hash_at(it.second,temp);
+		i++;
+	}
+	
+	for(i=0;i<ins.length();i++)
+	{
+		string temp = ins.substr(i,K);
+		string temp2 = end_kmer.substr(0,K-temp.length());
+		add_kmer_from_hash_at(kmer_pos_pair.back().second,temp+temp2);
+	}
 
+	//Set the edit bit to true
+	edit[kmer_pos_pair.back().second]=1;
 
+	//Update the skip list
+	s.insert_and_update_abs(insert_pos_abs,ins);
 
-    
-    //Replace all the modified k-mers contained in edit_segment from the hashmap
-    for(int i=0; i<edit_segment.length()-K; i++){
-        if(i<=insert_pos){ //Check to handle insertions at the beginning of the genome
-            std::string curr_kmer = edit_segment.substr(i,K);
-            std::string new_kmer = new_segment.substr(i,K);
-            if(curr_kmer!=new_kmer){
-                std::cout << "Replacing: " << curr_kmer << " with " << new_kmer << " at " << edit_start+i << std::endl;
-                if(curr_kmer.length()==K){
-                    remove_kmer_from_hash_at(edit_start+i, curr_kmer);
-                }
-                if(new_kmer.length()==K && std::count(m[new_kmer].begin(), m[new_kmer].end(), edit_start+i)==0){
-                    add_kmer_from_hash_at(edit_start+i, new_kmer);
-                }
-            }
-        }
-    }
-
-    //Add the new k-mers generated due to insertion into the hashmap
-    std::string new_kmer_segment = std::string(insertion+reference.substr(insert_pos+1,K-1)); //**why go to reference again?
-    if(new_kmer_segment.length()>=K){
-        for(int i=0; i<new_kmer_segment.length()-K+1; i++){
-            std::string new_kmer = new_kmer_segment.substr(i,K);
-            if(new_kmer.length()==K && std::count(m[new_kmer].begin(), m[new_kmer].end(), insert_pos)==0){
-                std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;
-                add_kmer_from_hash_at(insert_pos, new_kmer);
-            }
-        }
-    }
-
-    s.print_list();
-    if(is_edit[insert_pos]){
-	s.insert_and_update(insert_pos, offset, ins);
-        //n->str = nested_insertion;
-        //n->offset +=  insertion.length();
-    } else {
-        s.insert_and_update(insert_pos, offset, insertion); //Insert an entry into the skip list
-        is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
-    }
-    s.print_list();
-*/
 }

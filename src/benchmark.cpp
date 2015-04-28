@@ -68,8 +68,9 @@ void benchmark_insert(genome &g)
     for(std::vector<std::pair<long,char>>::iterator i=random.begin(); i!=random.end(); i++){
         long position = i->first;
         char character = i->second;
-        std::cout << i->first << " ";
-		g.insert_at(std::string(1,character), position);
+        if(position>K && g.get_length()-K){ //To avoid corner cases in insert_at which haven't yet been handled
+			g.insert_at(std::string(1,character), position);
+		}
     }
     gettimeofday(&end, &tzp);
 

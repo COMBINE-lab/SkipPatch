@@ -13,7 +13,7 @@ int main(){
 	g.construct_hash();
 
 	test();
-	//benchmark(g);
+	benchmark(g);
 	
 	return 0;
 }

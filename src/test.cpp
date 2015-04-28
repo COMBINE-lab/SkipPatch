@@ -296,7 +296,7 @@ void test(){
 
 	std::cout << std::endl <<  "Testing: Start" << std::endl;
 	
-	test_snp_at();
+	//test_snp_at();
 	test_insert_at();
 	test_search();
 	

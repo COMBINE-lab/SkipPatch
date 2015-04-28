@@ -36,7 +36,7 @@ public:
     std::string get_updated_reference();
     std::string get_updated_reference(long, long, long);
     std::string read_reference_at(const long ,const long,const long);
-
+    std::string read_reference_abs_at(const long,const long,long &);
     //Hash table functions
     void construct_hash();
     float get_load_factor();
@@ -65,8 +65,7 @@ public:
     std::vector<long> search(std::string);
 
     std::vector<std::string> generate_kmers(std::string);
-    void remove_kmers(const long,const unsigned long);
-
+    std::vector<std::pair<std::string,long>> get_kmers(const long, const unsigned long);
 };
 
 #endif

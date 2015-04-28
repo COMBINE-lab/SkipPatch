@@ -340,15 +340,18 @@ Splits the problem into two segments:
 */
 
 
-void genome::remove_kmers(const long start,const unsigned long len) //edge cases must be handled
+vector<pair<string,long>> genome::get_kmers(const long start,const unsigned long len) //edge cases must be handled
 {
+  
+  vector<pair<string,long> > vec;
   for(long i=start;i<start+len;i++) //could be faster
   {
-    long genome_position;unsigned long offset;node* n;string kmer;
-    get_genome_position_from_virtual_position(i, genome_position, offset, &n);
-    kmer = read_reference_at(i,offset,K);
-    remove_kmer_from_hash_at(genome_position,kmer);
+    long genome_position;
+    string kmer = read_reference_abs_at(i,K,genome_position);
+    vec.push_back(make_pair(kmer,genome_position));
+    //remove_kmer_from_hash_at(genome_position,kmer);
   }
+  return vec;
 }
 
 string genome::read_reference_at(const long genome_position,const long offset,const long len)
@@ -356,32 +359,82 @@ string genome::read_reference_at(const long genome_position,const long offset,co
     long rem_len=len,curr_genome_pos = genome_position,curr_offset = offset;string kmer;
     while(rem_len>0)
     {
+      cout<<"building kmer "<<kmer<<endl;
       if(is_edit[curr_genome_pos])
       {
+	
+	if(!curr_offset)
+	{
+	  kmer+=reference[curr_genome_pos];
+	  rem_len--;
+	  curr_offset=1;
+	}
+	else
+	{
 	node *n = s.find(curr_genome_pos);
-	string temp(n->str,curr_offset,rem_len);
+	string temp(n->str,curr_offset-1,rem_len);
 	kmer+=temp;
 	rem_len-=temp.length();
 	
 	if(!rem_len)
 	  break;
+	curr_genome_pos++;
+	curr_offset=0;
+	}
       }
       else
       {
 	kmer+=reference[curr_genome_pos];
 	rem_len--;
+	curr_genome_pos++;
 	curr_offset=0;
       }
-      curr_genome_pos++;
+      
     }
     return kmer;
+}
+string genome::read_reference_abs_at(const long abs_pos,const long len,long &genome_position)
+{
+   unsigned long offset;node* n;string kmer;
+   get_genome_position_from_virtual_position(abs_pos, genome_position, offset, &n);
+   kmer = read_reference_at(genome_position,offset,len);
+   cout<<"kmer "<<kmer<<endl;
+   return kmer;
+   
 }
 void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs){
 
   const long ins_len = ins.length();
-  remove_kmers(insert_pos_abs-K+2,K-1);
-  
-  
+  auto kmer_pos_pair = get_kmers(insert_pos_abs-K+2,K-1);
+  int i=0;
+  for(auto it:kmer_pos_pair)
+  {
+    std::cout << "Removing: " << it.first << " at " << it.second << std::endl;
+    remove_kmer_from_hash_at(it.second,it.first);
+    string temp = it.first.substr(0,K-i-1) + ins.substr(0,i+1);
+    std::cout << "Concatenating: " << it.first.substr(0,K-i-1) << " and " << ins.substr(0,i+1) << std::endl;
+    std::cout << "Adding: " << temp << " at " << it.second << std::endl;
+    add_kmer_from_hash_at(it.second,temp);
+    i++;
+  }
+  long genome_position;
+  const string end_kmer = read_reference_abs_at(insert_pos_abs+1,K-1,genome_position);
+  for(i=0;i<ins.length();i++)
+  {
+    string temp = ins.substr(i,K);
+    string temp2 = end_kmer.substr(0,K-temp.length());
+    add_kmer_from_hash_at(kmer_pos_pair.back().second,temp+temp2);
+    std::cout<<endl<<endl << "Adding: " << temp+temp2 << " at " << kmer_pos_pair.back().second << std::endl;
+  }
+  is_edit[kmer_pos_pair.back().second]=1;
+  s.print_list();
+  s.insert_and_update_abs(insert_pos_abs,ins);
+  s.print_list();
+  cout<<endl;
+  for(int i=3;i<7;i++)
+  {
+    cout<<"Edit bit is at "<<i<<" is "<<is_edit[i]<<endl;
+  }
   
 
 
@@ -395,26 +448,7 @@ void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs
   
   
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+ 
   
 /*  
     std::string insertion = ins; 

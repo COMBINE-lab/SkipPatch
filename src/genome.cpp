@@ -220,29 +220,31 @@ std::vector<long> genome::search(std::string read){
 	//Read the first k-mer of the read and find all the positions it occurrs at
 	std::string read_kmer = read.substr(0,K); 
 	
-	for(long pos: m.find(read_kmer)->second){
+    auto search = m.find(read_kmer);
+    if(search !=m.end()){
+    	for(long pos: search->second){
 
-		long offset = 0;
-		//If the position doesn't start from within an insertion
-		if(!edit[pos]){
-			if(read==read_reference_at(pos,offset,read.length())){
-				positions.push_back(get_virtual_position_from_genome_position(pos,offset));
-			}
-		} else {
-			std::string read_ext = read_reference_at(pos,offset,read.length()+(s.find(pos)->str).length());
-			//A read can occurr multiple times within an insertion itself
-			//And hence might have different offsets for those locations 	
-			//Eureka! It works! ;) And that's how horrible some test cases can get :P
-			offset = read_ext.find(read); 
-			while(offset!=string::npos){
-				if(read==read_reference_at(pos,offset,read.length())){
-					positions.push_back(get_virtual_position_from_genome_position(pos,offset));
-				}
-				offset = read_ext.find(read,offset+1);
-			}
-		}
-	}
-
+    		long offset = 0;
+    		//If the position doesn't start from within an insertion
+    		if(!edit[pos]){
+    			if(read==read_reference_at(pos,offset,read.length())){
+    				positions.push_back(get_virtual_position_from_genome_position(pos,offset));
+    			}
+    		} else {
+    			std::string read_ext = read_reference_at(pos,offset,read.length()+(s.find(pos)->str).length());
+    			//A read can occurr multiple times within an insertion itself
+    			//And hence might have different offsets for those locations 	
+    			//Eureka! It works! ;) And that's how horrible some test cases can get :P
+    			offset = read_ext.find(read); 
+    			while(offset!=string::npos){
+    				if(read==read_reference_at(pos,offset,read.length())){
+    					positions.push_back(get_virtual_position_from_genome_position(pos,offset));
+    				}
+    				offset = read_ext.find(read,offset+1);
+    			}
+    		}
+    	}
+    }
 	return positions;
 }
 

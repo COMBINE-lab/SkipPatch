@@ -77,8 +77,8 @@ std::string genome::get_updated_reference(long start, long left_offset, long rig
          ins_len = s.find(start)->val;
     }
 
-    while( updated_reference.length() < ins_len+right_offset+K ){
-        updated_reference+=std::string(1,reference[curr_pos]);
+    while( updated_reference.length() < ins_len+right_offset+K ){ 
+        updated_reference+=std::string(1,reference[curr_pos]); //**
         if(is_edit[curr_pos]){
             curr_node = s.find(curr_pos);
             updated_reference+=curr_node->str;
@@ -338,23 +338,25 @@ Splits the problem into two segments:
  - Adding the new k-mers which are a result of the insertion (begin at a point in the inserted segment)
 */
 
-void genome::insert_at(std::string insertion, long insert_pos_abs){
+void genome::insert_at(std::string ins, long insert_pos_abs){
+  
+    std::string insertion = ins; 
 
     node *n;
     long insert_pos; //position in the 'original genome' corresponding to the virtual_position in the 'virtual genome' 
     unsigned long offset = 0;
     
     get_genome_position_from_virtual_position(insert_pos_abs, insert_pos, offset, &n);
-    n=n->next;    
-    //std::cout << "Inserting " << insertion << " at " << insert_pos_abs << ":" << insert_pos << "," << offset << std::endl;    
+    if(n->next->val==insert_pos) //if the value already exists
+      n=n->next; //**if the insertion is nested, this is not true    
+    std::cout << "Inserting " << insertion << " at " << insert_pos_abs << ":" << insert_pos << "," << offset << std::endl;    
 
     if(insert_pos<0 || insert_pos>get_length()-1){
         std::cerr << "Position of insertion out of bounds of length of genome" << std::endl;
         std::exit(-1);
     }
 
-    //Update the skip list depending on whether the insertion is nested 
-    std::string nested_insertion;
+    std::string nested_insertion; 
     if(is_edit[insert_pos]){
         nested_insertion=n->str;
         if(offset > nested_insertion.length()){
@@ -365,26 +367,66 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
         insertion = nested_insertion;
     }
 
-    long edit_start = std::max(insert_pos-K+2,(long)0);
-    long edit_end = std::min(insert_pos+K, (long)reference.length()-1);
+    long edit_start = std::max(insert_pos-K+2,(long)0); //**may not be true - insertion just before
+    long edit_end = std::min(insert_pos+K, (long)reference.length()-1); 
 
     //Segment which contains the k-mers which no longer exist 
     std::string edit_segment = get_updated_reference(edit_start, edit_end);
-    //std::cout << "edit_segment: " << edit_segment << std::endl;
+    std::cout << "edit_segment: " << edit_segment << std::endl;
     
     //Make a new string of edit_segment + "insertion" to replace the removed k-mers with new k-mers
-    std::string new_segment = get_updated_reference(edit_start, insert_pos-1) + reference[insert_pos]
+    std::string new_segment = get_updated_reference(edit_start, insert_pos-1) + reference[insert_pos] //**why go to reference again?
                             + insertion 
                             + get_updated_reference(insert_pos+1, insert_pos+K);
-    //std::cout << "new_segment: " << new_segment << std::endl;
+    std::cout << "new_segment: " << new_segment << std::endl;
     
+        //Replace all the modified k-mers
+    for(int p=0; p<=insert_pos-edit_start; p++){
+        std::string curr_kmer = edit_segment.substr(p,K);
+        std::string new_kmer = new_segment.substr(p,K);
+	std::cout << "Replacing: " << curr_kmer << " with " << new_kmer << " at " << edit_start+p << std::endl;
+        if(curr_kmer!=new_kmer){
+	    
+            if(curr_kmer.length()==K){
+                remove_kmer_from_hash_at(p+edit_start,curr_kmer);
+            }    
+            if(new_kmer.length()==K){
+                add_kmer_from_hash_at(p+edit_start,new_kmer);
+            }    
+        }
+    }
+
+//    std::string new_kmer_segment = std::string(insertion+reference.substr(insert_pos+1,K-1));
+      std::string new_kmer_segment = insertion + get_updated_reference(insert_pos+1, insert_pos+K-1);
+      if(new_kmer_segment.length()>=K){
+	  for(int p=0; p<ins.length(); p++) {
+	      std::string new_kmer = new_kmer_segment.substr(p,K);
+		  if(new_kmer.length()==K){
+		    std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;  
+		    add_kmer_from_hash_at(insert_pos,new_kmer);
+		  }
+	    }
+      }
+/*	
+	for(int p=insert_pos-edit_start+1; p<=insert_pos+ins.length()-edit_start; p++){
+		std::string new_kmer = new_segment.substr(p,K);
+		  if(new_kmer.length()==K){
+		    std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;  
+		    add_kmer_from_hash_at(insert_pos,new_kmer);
+		  }
+	      }
+	  }
+*/
+
+
+    /*
     //Replace all the modified k-mers contained in edit_segment from the hashmap
     for(int i=0; i<edit_segment.length()-K; i++){
         if(i<=insert_pos){ //Check to handle insertions at the beginning of the genome
             std::string curr_kmer = edit_segment.substr(i,K);
             std::string new_kmer = new_segment.substr(i,K);
             if(curr_kmer!=new_kmer){
-                //std::cout << "Replacing: " << curr_kmer << " with " << new_kmer << " at " << edit_start+i << std::endl;
+                std::cout << "Replacing: " << curr_kmer << " with " << new_kmer << " at " << edit_start+i << std::endl;
                 if(curr_kmer.length()==K){
                     remove_kmer_from_hash_at(edit_start+i, curr_kmer);
                 }
@@ -396,23 +438,26 @@ void genome::insert_at(std::string insertion, long insert_pos_abs){
     }
 
     //Add the new k-mers generated due to insertion into the hashmap
-    std::string new_kmer_segment = std::string(insertion+reference.substr(insert_pos+1,K-1));
+    std::string new_kmer_segment = std::string(insertion+reference.substr(insert_pos+1,K-1)); //**why go to reference again?
     if(new_kmer_segment.length()>=K){
         for(int i=0; i<new_kmer_segment.length()-K+1; i++){
             std::string new_kmer = new_kmer_segment.substr(i,K);
             if(new_kmer.length()==K && std::count(m[new_kmer].begin(), m[new_kmer].end(), insert_pos)==0){
-                //std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;
+                std::cout << "Adding: " << new_kmer << " at " << insert_pos << std::endl;
                 add_kmer_from_hash_at(insert_pos, new_kmer);
             }
         }
     }
-
+*/
+    s.print_list();
     if(is_edit[insert_pos]){
-        n->str = nested_insertion;
-        n->offset +=  insertion.length();
+	s.insert_and_update(insert_pos, offset, ins);
+        //n->str = nested_insertion;
+        //n->offset +=  insertion.length();
     } else {
         s.insert_and_update(insert_pos, offset, insertion); //Insert an entry into the skip list
         is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
     }
+    s.print_list();
 
 }

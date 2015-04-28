@@ -53,21 +53,20 @@ void check_insert_at(genome g, string ins, long abs_val, string &reference)
 	g.display_hash();
 	std::cout << std::endl; */
 	
-	/*---Something really fishy here---*/
 
 	//now check the hash
 	//update the reference and construct hash for the same
-	/*
+	
 	genome g_temp;
 	g_temp.set_reference(reference);
 	g_temp.construct_hash();
-	std::cout << "New Hash: " << std::endl;
-	g_temp.display_hash();
+	//std::cout << "New Hash: " << std::endl;
+	//g_temp.display_hash();
 	std::cout << std::endl;
 
 	auto m_temp = g_temp.get_hash();
 	auto m_genome = g.get_hash();      
-	for(auto it=g_temp.get_hash().begin(); it!=g_temp.get_hash().end(); it++)
+	for(auto it=m_temp.begin(); it!=m_temp.end(); it++)
 	{	
 		std::cout << it->first << std::endl;
 	  	for(auto row_it=(it->second).begin(); row_it!=(it->second).end(); row_it++)
@@ -78,17 +77,26 @@ void check_insert_at(genome g, string ins, long abs_val, string &reference)
 		    node *n;
 		    s.get_prev_node(*row_it,val,pos,&n);
 		    *row_it=val;
-		    std::cout << *row_it << " "; //Prints weird values
+		   // std::cout << *row_it << " "; //Prints weird values
 
-	  	} std::cout << std::endl;
+	  	} 
+	  	std::cout << std::endl;
 
+		cout<<"reference is "<<reference<<endl; 
+		cout<<"reference is "<<g.get_updated_reference()<<endl; 
 		sort(it->second.begin(),it->second.end());
 		sort(m_genome[it->first].begin(), m_genome[it->first].end());
-		std::cout << "The hash should be: " << std::endl;
+		for(auto it1 = it->second.begin();it1!=it->second.end();it1++)
+		  cout<<*it1<<" ";
+		cout<<endl;
+		for(auto it1=m_genome[it->first].begin(); it1!=m_genome[it->first].end();it1++)
+		  cout<<*it1<<" ";
+		cout<<endl;
+		//std::cout << "The hash should be: " << std::endl;
 		g_temp.display_hash();
-		std::cout << std::endl;
-		//assert(it->second==m_genome[it->first]);
-	}*/
+		//std::cout << std::endl;
+		assert(it->second==m_genome[it->first]);
+	}
 }
 
 /* Tests if the search for a string of any length in the hash map is working correctly */
@@ -265,14 +273,16 @@ void test_insert_at()
 		
 		genome g;
 		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+		//std::string reference = "ATTAGATGCATGTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
 		g.set_reference(reference);
 		g.construct_hash();
 		
 		//Randomize? 
-		std::vector<long> positions {22,21,7,11,12,0};
+		std::vector<long> positions {5,4,7,11,12,0};
 
 		for(long p: positions){
 			//std::cout << "B: " << g.get_updated_reference() << std::endl;
+			cout<<"Inserting at "<<p<<" string "<<ins<<endl;
 			g.insert_at(ins, p);
 			//std::cout << "A: " << g.get_updated_reference() << std::endl;
 			check_insert_at(g, ins, p, reference);

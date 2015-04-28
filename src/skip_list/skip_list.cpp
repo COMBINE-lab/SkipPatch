@@ -98,17 +98,16 @@ node* skip_list::find_and_update_prev(long val,string str)
   }
   return temp;
 }
-/*pair<node*,unsigned long> skip_list::find_and_update_prev_abs(long val,unsigned long offset)
+
+node* skip_list::find_and_update_prev(unsigned long val, unsigned long len)
 {
-  //long offset = str.length();
+  long offset = len*(-1);
   node *temp=head;
-  long cumulative_count=0
+  
   while(temp)
   {
-    
-    if(val>=(temp->next->val+cumulative_count+temp->offset))
+    if(temp->next->val<=val) // next val is >= next ; = since a node contains offset between that node and the next.
     {
-      cumulative_count+=temp->offset;
       temp=temp->next;
     }
     
@@ -121,22 +120,14 @@ node* skip_list::find_and_update_prev(long val,string str)
       }
       else
       {
-	pair<node*,unsigned long> p;
-	if(val<=(temp->val+cumulative_count+temp->offset))
-	{
-	  p.make_pair(temp->prev,val-cumulative_count);
-	  return p;
-	}
-	p.make_pair(temp->prev,val-cumulative_count);
-	return p;
+	if(temp->val==val)
+	  return temp->prev;
+	return temp;
       }
     } 
   }
-  pair<node*,unsigned long> p;
-  p.make_pair(temp,val-cumulative_count);
-  return p;
+  return temp;
 }
-*/
 void skip_list::insert(long val,long offset)
 {
   //find place to insert
@@ -213,8 +204,13 @@ void skip_list::insert(long val,long offset)
   }
     
 }
-//delete this:
 
+void skip_list::delete_and_update(unsigned long val,unsigned long pos,unsigned long len)
+{
+  node *prev = find_and_update_prev(val,len);
+  node *temp = prev;
+  //while((temp->next->val+temp->next->offset) - (temp->val+pos))
+}
 void skip_list::insert_and_update(long val,unsigned long pos,string str)
 {
   //find place to insert

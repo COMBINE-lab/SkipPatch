@@ -91,8 +91,9 @@ std::string genome::get_updated_reference(long start, long left_offset, long rig
 
 /*Generated the updated reference sequence segment - including insertions and removing deletions
   from the positions 'begin' to 'end' of the genome (positions are genome positions)*/
-std::string genome::get_updated_reference(long begin, long end){
+/*std::string genome::get_updated_reference(unsigned long val, unsigned long offset, unsigned long len){
 
+    get_prev_node
     std::string updated_reference;
     node* curr_node;
     
@@ -106,7 +107,7 @@ std::string genome::get_updated_reference(long begin, long end){
 
     return updated_reference;
 }
-
+*/
 long genome::get_length()
 {
     return reference.length();
@@ -338,8 +339,84 @@ Splits the problem into two segments:
  - Adding the new k-mers which are a result of the insertion (begin at a point in the inserted segment)
 */
 
-void genome::insert_at(std::string ins, long insert_pos_abs){
+
+void genome::remove_kmers(const long start,const unsigned long len) //edge cases must be handled
+{
+  for(long i=start;i<start+len;i++) //could be faster
+  {
+    long genome_position;unsigned long offset;node* n;string kmer;
+    get_genome_position_from_virtual_position(i, genome_position, offset, &n);
+    kmer = read_reference_at(i,offset,K);
+    remove_kmer_from_hash_at(genome_position,kmer);
+  }
+}
+
+string genome::read_reference_at(const long genome_position,const long offset,const long len)
+{
+    long rem_len=len,curr_genome_pos = genome_position,curr_offset = offset;string kmer;
+    while(rem_len>0)
+    {
+      if(is_edit[curr_genome_pos])
+      {
+	node *n = s.find(curr_genome_pos);
+	string temp(n->str,curr_offset,rem_len);
+	kmer+=temp;
+	rem_len-=temp.length();
+	
+	if(!rem_len)
+	  break;
+      }
+      else
+      {
+	kmer+=reference[curr_genome_pos];
+	rem_len--;
+	curr_offset=0;
+      }
+      curr_genome_pos++;
+    }
+    return kmer;
+}
+void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs){
+
+  const long ins_len = ins.length();
+  remove_kmers(insert_pos_abs-K+2,K-1);
   
+  
+  
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+/*  
     std::string insertion = ins; 
 
     node *n;
@@ -407,7 +484,7 @@ void genome::insert_at(std::string ins, long insert_pos_abs){
 		  }
 	    }
       }
-/*	
+	
 	for(int p=insert_pos-edit_start+1; p<=insert_pos+ins.length()-edit_start; p++){
 		std::string new_kmer = new_segment.substr(p,K);
 		  if(new_kmer.length()==K){
@@ -416,10 +493,10 @@ void genome::insert_at(std::string ins, long insert_pos_abs){
 		  }
 	      }
 	  }
-*/
 
 
-    /*
+
+    
     //Replace all the modified k-mers contained in edit_segment from the hashmap
     for(int i=0; i<edit_segment.length()-K; i++){
         if(i<=insert_pos){ //Check to handle insertions at the beginning of the genome
@@ -448,7 +525,7 @@ void genome::insert_at(std::string ins, long insert_pos_abs){
             }
         }
     }
-*/
+
     s.print_list();
     if(is_edit[insert_pos]){
 	s.insert_and_update(insert_pos, offset, ins);
@@ -459,5 +536,5 @@ void genome::insert_at(std::string ins, long insert_pos_abs){
         is_edit[insert_pos]=true; //Set the bit to true if the location consists of an edit
     }
     s.print_list();
-
+*/
 }

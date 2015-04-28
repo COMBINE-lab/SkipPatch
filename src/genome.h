@@ -35,7 +35,7 @@ public:
     //Generate the updated reference, or a segment of the updated reference
     std::string get_updated_reference();
     std::string get_updated_reference(long, long, long);
-    std::string get_updated_reference(long, long);
+    std::string read_reference_at(const long ,const long,const long);
 
     //Hash table functions
     void construct_hash();
@@ -59,12 +59,13 @@ public:
     void snp_at(long, std::string);
     
     //Make an insertion at a given location
-    void insert_at(std::string, long);
+    void insert_at(const std::string, const unsigned long);
     
     //Search for all the occurrences of a read
     std::vector<long> search(std::string);
 
     std::vector<std::string> generate_kmers(std::string);
+    void remove_kmers(const long,const unsigned long);
 
 };
 

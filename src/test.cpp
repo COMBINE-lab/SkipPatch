@@ -268,5 +268,5 @@ void test(){
 	test_insert_at();
 	test_search();
 	
-	std::cout << "Testing: Complete!" << std::endl;
+	std::cout << "Testing: Complete!" << std::endl << std::endl << std::endl;
 }

@@ -93,7 +93,7 @@ void check_insert_at(genome g, string ins, long abs_val, string &reference)
 		  cout<<*it1<<" ";
 		cout<<endl;
 		//std::cout << "The hash should be: " << std::endl;
-		g_temp.display_hash();
+		//g_temp.display_hash();
 		//std::cout << std::endl;
 		assert(it->second==m_genome[it->first]);
 	}
@@ -185,7 +185,7 @@ void test_search_dynamic_reference(){
 	cout << "test_search_dynamic_reference(): Start" << std::endl;
 	
     genome g;
-    std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCAT"; 
+    std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCAT"; 
     g.set_reference(reference);
     g.construct_hash();
     
@@ -193,13 +193,13 @@ void test_search_dynamic_reference(){
     
     string ins = "AGATC";
     long genome_val;unsigned long offset;node *prev;
-
+/*
     long abs_val = 0;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
-    
-    abs_val=42;
+  */  
+    long abs_val=42;
     g.insert_at(ins, abs_val);
     check_insert_at(g,ins,abs_val,reference);
     check_search(g,reference);
@@ -278,7 +278,7 @@ void test_insert_at()
 		g.construct_hash();
 		
 		//Randomize? 
-		std::vector<long> positions {5,4,7,11,12,0};
+		std::vector<long> positions {5,4,7,11,12};
 
 		for(long p: positions){
 			//std::cout << "B: " << g.get_updated_reference() << std::endl;

@@ -162,8 +162,8 @@ void genome::display_load()
 void genome::remove_kmer_from_hash_at(long position_to_remove, std::string curr_kmer){
 
     std::vector<long> positions = m[curr_kmer];
-    m[curr_kmer].erase(std::remove(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove), m[curr_kmer].end());
-    assert( std::find( m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove) == m[curr_kmer].end() ); //Verifying if the position was actually deleted
+    m[curr_kmer].erase(std::find(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove));
+    //assert( std::find( m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove) == m[curr_kmer].end() ); //Verifying if the position was actually deleted
     //Having a very long "vector/list" of positions (~1 million) causes a bottleneck here
     //Approximately takes 0.5 seconds to execute this line "once" if the length of "positions" is 1 million
     
@@ -407,18 +407,20 @@ void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs
   const long ins_len = ins.length();
   auto kmer_pos_pair = get_kmers(insert_pos_abs-K+2,K-1);
   int i=0;
+  
+  long genome_position;
+  const string end_kmer = read_reference_abs_at(insert_pos_abs+1,K-1,genome_position);
+  string ins_copy = ins+end_kmer;
   for(auto it:kmer_pos_pair)
   {
     std::cout << "Removing: " << it.first << " at " << it.second << std::endl;
     remove_kmer_from_hash_at(it.second,it.first);
-    string temp = it.first.substr(0,K-i-1) + ins.substr(0,i+1);
-    std::cout << "Concatenating: " << it.first.substr(0,K-i-1) << " and " << ins.substr(0,i+1) << std::endl;
+    string temp = it.first.substr(0,K-i-1) + ins_copy.substr(0,i+1);
+    std::cout << "Concatenating: " << it.first.substr(0,K-i-1) << " and " << ins_copy.substr(0,i+1) << std::endl;
     std::cout << "Adding: " << temp << " at " << it.second << std::endl;
     add_kmer_from_hash_at(it.second,temp);
     i++;
   }
-  long genome_position;
-  const string end_kmer = read_reference_abs_at(insert_pos_abs+1,K-1,genome_position);
   for(i=0;i<ins.length();i++)
   {
     string temp = ins.substr(i,K);

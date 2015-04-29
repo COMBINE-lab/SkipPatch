@@ -3,12 +3,6 @@
 #include <string>
 #include <fstream>
 
-void remove_repeat_mask(std::string &reference){
-
-	reference.erase(std::remove(reference.begin(), reference.end(), 'D'), reference.end()); //removing all the D-s for a fair benchmark
-	//remember the difference b/w erase and remove!
-}
-
 int main(int argc, char* argv[]){
 
 	if (argc < 2) {
@@ -22,14 +16,15 @@ int main(int argc, char* argv[]){
     //Read the file line by line
 	std::ifstream infile(filename);
 	std::string input;
-    getline(infile,input); //Skip the first line for a FASTA file (.fa, .fna)
+    //getline(infile,input); //Skip the first line for a FASTA file (.fa, .fna)
     while(getline(infile, input)){
-        reference+=input;
+	    if(std::find(input.begin(), input.end(), '>')==input.end())
+	    	reference+=input;
         input.clear();
     }
     infile.close();
 	
-	remove_repeat_mask(reference);
+	reference.erase(std::remove(reference.begin(), reference.end(), 'N'), reference.end()); //removing all the D-s for a fair benchmark
 
 	std::ofstream outfile(filename);
 	outfile << reference << std::endl;

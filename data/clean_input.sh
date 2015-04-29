@@ -27,11 +27,3 @@ mv Drosophila_melanogaster.BDGP6.dna_rm.toplevel.fa fruitfly_rm.fa
 mv Danio_rerio.Zv9.dna.toplevel.fa zebrafish.fa
 mv Danio_rerio.Zv9.dna_sm.toplevel.fa zebrafish_sm.fa
 mv Danio_rerio.Zv9.dna_rm.toplevel.fa zebrafish_rm.fa
-
-./clean_input fruitfly.fa
-./clean_input fruitfly_sm.fa
-./clean_input fruitfly_rm.fa
-./clean_input zebrafish.fa
-./clean_input zebrafish_sm.fa
-./clean_input zebrafish_rm.fa
-

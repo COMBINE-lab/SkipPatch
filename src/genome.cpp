@@ -81,9 +81,10 @@ skip_list genome::get_skip_list()
 
 void genome::construct_hash()
 {
-    for(auto it=reference.begin();it<=reference.end()-K+1;it++){    
+    for(auto it=reference.begin();it<=reference.end()-K;it++){    
         std::string temp(it,it+K);
-        m[temp].push_back(it-reference.begin());
+        if (!(temp.find('n')!=std::string::npos)  && !(temp.find('N')!=std::string::npos)) 
+	        m[temp].push_back(it-reference.begin());
     }
 }
 

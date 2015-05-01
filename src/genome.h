@@ -43,6 +43,7 @@ public:
     
     //Display functions
     void display_genome();
+    void display_updated_genome();
     void display_hash();
     void display_load();
 

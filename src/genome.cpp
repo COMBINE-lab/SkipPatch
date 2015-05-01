@@ -98,8 +98,14 @@ void genome::display_genome()
     std::cout<<reference<<std::endl;
 }
 
-void genome::display_hash()
+void genome::display_updated_genome()
 {
+    std::cout<<get_updated_reference()<<std::endl;
+}
+
+void genome::display_hash()
+{   
+    std::cout<<std::endl<<"Hash Table: "<<std::endl;
     for(auto it=m.begin();it!=m.end();it++){
         std::cout<<it->first<<"\t";
         for(auto vector_it=(it->second).begin();vector_it!=(it->second).end();vector_it++){
@@ -107,6 +113,7 @@ void genome::display_hash()
         }
         std::cout<<std::endl;
     }
+    std::cout<<std::endl;
 }
 
 void genome::display_load()
@@ -118,8 +125,9 @@ void genome::display_load()
 
 void genome::remove_kmer_from_hash_at(long position_to_remove, std::string curr_kmer){
 
-    std::vector<long> positions = m[curr_kmer];
-    m[curr_kmer].erase(std::find(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove));
+    if(!m[curr_kmer].empty()){
+        m[curr_kmer].erase(std::find(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove));
+    }
     //Having a very long "vector/list" of positions (~1 million) causes a bottleneck here
     //Approximately takes 0.5 seconds to execute this line "once" if the length of "positions" is 1 million
     
@@ -265,38 +273,38 @@ vector<pair<string,long>> genome::get_kmers(const long start,const unsigned long
 string genome::read_reference_at(const long genome_position,const long offset,const long len)
 {
     long rem_len=len,curr_genome_pos = genome_position,curr_offset = offset;string kmer;
-    while(rem_len>0)
+
+    while(rem_len>0 && curr_genome_pos<=get_length()-1)
     {
-      if(edit[curr_genome_pos])
-      {
+        if(edit[curr_genome_pos])
+        {
 	
-	if(!curr_offset)
-	{
-	  kmer+=reference[curr_genome_pos];
-	  rem_len--;
-	  curr_offset=1;
-	}
-	else
-	{
-	node *n = s.find(curr_genome_pos);
-	string temp(n->str,curr_offset-1,rem_len);
-	kmer+=temp;
-	rem_len-=temp.length();
+            if(!curr_offset)
+	        {
+                kmer+=reference[curr_genome_pos];
+                rem_len--;
+                curr_offset=1;
+            }
+            else
+        	{
+            	node *n = s.find(curr_genome_pos);
+            	string temp(n->str,curr_offset-1,rem_len);
+            	kmer+=temp;
+            	rem_len-=temp.length();
 	
-	if(!rem_len)
-	  break;
-	curr_genome_pos++;
-	curr_offset=0;
-	}
-      }
-      else
-      {
-	kmer+=reference[curr_genome_pos];
-	rem_len--;
-	curr_genome_pos++;
-	curr_offset=0;
-      }
-      
+            	if(!rem_len)
+                    break;
+            	curr_genome_pos++;
+            	curr_offset=0;
+        	}
+        }
+        else
+        {
+            kmer+=reference[curr_genome_pos];
+            rem_len--;
+            curr_genome_pos++;
+            curr_offset=0;
+        }
     }
     return kmer;
 }
@@ -305,7 +313,7 @@ string genome::read_reference_abs_at(const long abs_pos,const long len,long &gen
 {
 	unsigned long offset;node* n;string kmer;
 	get_genome_position_from_virtual_position(abs_pos, genome_position, offset, &n);
-	kmer = read_reference_at(genome_position,offset,len);
+    kmer = read_reference_at(genome_position,offset,len);
 	return kmer;
 }
 
@@ -318,30 +326,44 @@ Splits the problem into two segments:
 void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs){
 
 	const long ins_len = ins.length();
+
 	auto kmer_pos_pair = get_kmers(insert_pos_abs-K+2,K-1);
 	int i=0;
 
 	long genome_position;
 	const string end_kmer = read_reference_abs_at(insert_pos_abs+1,K-1,genome_position);
 	string ins_copy = ins+end_kmer;
-	
+
+    //Generates genome_position=1,2 for insert_pos_abs=0,1. length
+    //Generates genome_position=(length-a)+1 for insert_pos_abs=(length-a) for a=0,1,2.. K-1
+    //std::cout << insert_pos_abs << " " << genome_position << std::endl;
+
 	for(auto it:kmer_pos_pair)
-	{
+	{   
 		remove_kmer_from_hash_at(it.second,it.first);
 		string temp = it.first.substr(0,K-i-1) + ins_copy.substr(0,i+1);
-		add_kmer_from_hash_at(it.second,temp);
+		if(it.first.length()==K){ //For handling edge cases: (insertion at the end of the genome)
+            add_kmer_from_hash_at(it.second,temp);
+        }
 		i++;
 	}
 	
-	for(i=0;i<ins.length();i++)
+    long add_pos = genome_position;
+    if(!kmer_pos_pair.empty()){ //For handling edge cases: (insertion at the beginning of the genome)
+        add_pos = kmer_pos_pair.back().second;
+    }
+	
+    for(i=0;i<ins.length();i++)
 	{
 		string temp = ins.substr(i,K);
 		string temp2 = end_kmer.substr(0,K-temp.length());
-		add_kmer_from_hash_at(kmer_pos_pair.back().second,temp+temp2);
+		if((temp+temp2).length()==K){ //For handling edge cases: (insertion at the end of the genome)
+            add_kmer_from_hash_at(add_pos,temp+temp2);
+        }
 	}
 
 	//Set the edit bit to true
-	edit[kmer_pos_pair.back().second]=1;
+	edit[add_pos]=1;
 
 	//Update the skip list
 	s.insert_and_update_abs(insert_pos_abs,ins);

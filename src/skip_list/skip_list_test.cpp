@@ -151,6 +151,92 @@ void test_get_prev_node()
 
 }
 
+void test_delete_and_update_abs_standalone(){
+
+    skip_list s;
+
+    s.delete_and_update_abs(2,1);
+    assert(s.find(2)->str=="");
+    assert(s.find(2)->offset==-1); 
+    
+    s.delete_and_update_abs(8,2);
+    assert(s.find(9)->str==""); 
+    assert(s.find(9)->offset==-2); 
+    
+    s.delete_and_update_abs(20,2);
+    assert(s.find(23)->str==""); 
+    assert(s.find(23)->offset==-2);
+
+    s.delete_and_update_abs(15,2);
+    assert(s.find(18)->str==""); 
+    assert(s.find(18)->offset==-2); 
+
+}
+
+void test_delete_and_update_abs_insertion_standalone(){
+
+    skip_list s;
+
+    s.insert_and_update_abs(4,"TTA");
+    s.insert_and_update_abs(12,"AG");
+    s.insert_and_update_abs(18,"CGAT");
+    s.insert_and_update_abs(26,"A");
+
+    s.delete_and_update_abs(2,1); //Deletion before all insertions (no overlap)
+    assert(s.find(2)->str=="");
+    assert(s.find(2)->offset==-1);
+    assert(s.find(4)->str=="TTA"); 
+
+    s.delete_and_update_abs(8,2); //Deletion in between insertions (no overlap)
+    assert(s.find(6)->str==""); 
+    assert(s.find(6)->offset==-2); 
+    assert(s.find(9)->str=="AG"); 
+    
+    s.delete_and_update_abs(13,1); //Deletion in between insertions (no overlap)
+    assert(s.find(11)->str=="");
+    assert(s.find(11)->offset==-1); 
+    assert(s.find(13)->str=="CGAT"); 
+
+    s.delete_and_update_abs(24,1); //Deletion after all insertions (no overlap)
+    assert(s.find(18)->str==""); 
+    assert(s.find(17)->str=="A"); 
+
+}
+
+void test_delete_and_update_abs_insertion_overlap(){
+
+    skip_list s;
+
+    s.insert_and_update_abs(4,"TTA");
+    s.insert_and_update_abs(12,"AG");
+    s.insert_and_update_abs(18,"CGAT");
+    s.insert_and_update_abs(26,"A");
+
+    s.delete_and_update_abs(5,1); //Deletion within insertions (overlap) 
+    assert(s.find(4)->str=="TA"); 
+    assert(s.find(4)->offset==2); 
+    s.delete_and_update_abs(5,1); //Deletion within insertions (overlap) 
+    assert(s.find(4)->str=="T");
+    assert(s.find(4)->offset==1); 
+
+    s.delete_and_update_abs(10,2); //Deletion within insertions (deleting entire insertion) 
+    assert(s.find(9)->str==""); 
+    assert(s.find(9)->offset==0); 
+
+    s.delete_and_update_abs(14,6); //Deletion within insertions (overlap extending into genome) 
+    assert(s.find(13)->str=="");
+    assert(s.find(13)->offset==-2);
+
+}
+
+void test_delete_and_update_abs(){
+
+    test_delete_and_update_abs_standalone();
+    test_delete_and_update_abs_insertion_standalone();
+    test_delete_and_update_abs_insertion_overlap();
+
+}
+
 void test_skip_list(){
 
     std::cout <<  std::endl << "Testing Skip List.." << std::endl;
@@ -166,7 +252,10 @@ void test_skip_list(){
 
     test_get_prev_node();
     std::cout << "test_get_prev_node(): Passed All Test Cases!" << std::endl;
-    
+
+    test_delete_and_update_abs();
+    std::cout << "test_delete_and_update_abs(): Passed All Test Cases!" << std::endl;
+
     std::cout << "Skip List: Passed All Test Cases!" << std::endl << std::endl ;
 
 }

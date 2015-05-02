@@ -369,3 +369,36 @@ void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs
 	s.insert_and_update_abs(insert_pos_abs,ins);
 
 }
+
+void genome::delete_at(const unsigned long delete_pos_abs, const unsigned long del_size){
+
+	auto kmer_pos_pair = get_kmers(delete_pos_abs-K+2,K-1);
+	int i=0;
+
+	long genome_position;
+	const string end_kmer = read_reference_abs_at(delete_pos_abs+1,K-1,genome_position);
+
+    //Generates genome_position=1,2 for insert_pos_abs=0,1. length
+    //Generates genome_position=(length-a)+1 for insert_pos_abs=(length-a) for a=0,1,2.. K-1
+    //std::cout << insert_pos_abs << " " << genome_position << std::endl;
+
+	for(auto it:kmer_pos_pair)
+	{
+		remove_kmer_from_hash_at(it.second,it.first);
+		string temp = it.first.substr(0,K-i-1) + end_kmer.substr(0,i+1);
+		if(it.first.length()==K){ //For handling edge cases: (insertion at the end of the genome)
+            add_kmer_from_hash_at(it.second,temp);
+        }
+		i++;
+	}
+	
+	//Set the edit bit to true
+	for(int j=0; j<del_size; j++){
+		del[genome_position+j]=1;
+	}
+
+	//Update the skip list
+	s.delete_and_update_abs(delete_pos_abs,del_size);
+
+}
+

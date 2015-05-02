@@ -249,7 +249,7 @@ void test_insert_at()
 		g.construct_hash();
 		
 		//Randomize? 
-		std::vector<long> positions {reference.length()-(unsigned long)K,2,5,4,7,11,12};
+		std::vector<unsigned long> positions {reference.length()-K,2,5,4,7,11,12};
 
 		for(long p: positions){
 			g.insert_at(ins, p);
@@ -260,7 +260,7 @@ void test_insert_at()
 	cout << "insert_at(): Complete" << std::endl;
 }
 
-void check_delete_at(genome g, long position, long len, string &reference)
+void check_delete_at(genome &g, long position, long len, string &reference)
 {	
 
   	//test if the the skip list has been updated..
@@ -269,8 +269,8 @@ void check_delete_at(genome g, long position, long len, string &reference)
 	
 	//check if the reference has been updated
 	reference.erase(position,len);
-	std::cout << "Ref: " << reference << endl;
-	std::cout << "REF: " << g.read_reference_at(0,0,g.get_length()) << endl; 
+	//std::cout << "Ref: " << reference << endl;
+	//std::cout << "REF: " << g.read_reference_at(0,0,g.get_length()) << endl; 
 	assert(reference == g.read_reference_at(0,0,g.get_length()));
 
 	//now check the hash
@@ -310,17 +310,21 @@ void test_delete_at(){
 	
 	cout << std::endl << "delete_at(): Start" << std::endl;	
 
-	genome g;
-	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
-	g.set_reference(reference);
-	g.construct_hash();
-	
-	//Randomize? 
-	std::vector<long> positions {5,7,11,20,12};
+	std::vector<long> del_lengths {1,2,3,4,5};
+	std::vector<long> positions {7,11,20,35};
 
-	for(long p: positions){
-		g.delete_at(p,1);
-		check_delete_at(g, p, 1, reference);
+	for(long del_len: del_lengths){
+
+		genome g;
+		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+		g.set_reference(reference);
+		g.construct_hash();
+
+		for(long pos: positions){
+			//std::cout << "Test: " << pos << " " << del_len << " " << reference <<  std::endl;
+			g.delete_at(pos,del_len);
+			check_delete_at(g, pos, del_len, reference);
+		}
 	}
 
 	cout << "delete_at(): Complete" << std::endl;

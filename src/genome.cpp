@@ -42,27 +42,29 @@ std::string genome::get_reference()
 
 std::string genome::get_updated_reference(){
 
-	std::string updated_reference;
+    std::string updated_reference;
 
-	node *temp=s.get_head();
-  	while(temp->down){
-    	temp=temp->down;
-  	}
-  	temp=temp->next;
-  	
-  	long start=0, end=0;
+    node *temp=s.get_head();
+    while(temp->down){
+        temp=temp->down;
+    }
+    temp=temp->next;
+    
+    long start=0, end=0;
 
-	while(temp->next)
-  	{
-  		end = (temp->val)+1;
-  		updated_reference+=std::string(reference.begin()+start, reference.begin()+end);
-  		updated_reference+= temp->str;
-   		start = end;
-   		temp=temp->next;
-  	}
-  	updated_reference+=std::string(reference.begin()+start,reference.end());
+    while(temp->next)
+    {
+        end = (temp->val)+1;
+        updated_reference+=std::string(reference.begin()+start, reference.begin()+end);
+        updated_reference+= temp->str;
+        start = end;
+        temp=temp->next;
+    }
+    updated_reference+=std::string(reference.begin()+start,reference.end());
 
-  	return updated_reference;
+    return updated_reference;
+
+//  return read_reference_at(0,0,get_length());
 
 }
 
@@ -154,8 +156,9 @@ long genome::get_genome_position_from_virtual_position(long virtual_position)
 }
 
 void genome::get_genome_position_from_virtual_position(long virtual_position, long &genome_position, unsigned long &offset, node **n)
-{
+{   
     s.get_prev_node(virtual_position, genome_position, offset, n); 
+
 }
 
 long genome::get_virtual_position_from_genome_position(long genome_position, long offset) //arguement must be a tuple
@@ -259,11 +262,12 @@ std::vector<long> genome::search(std::string read){
 	return positions;
 }
 
-vector<pair<string,long>> genome::get_kmers(const long start,const unsigned long len) //edge cases must be handled
+//Get kmer_count number of k-mers starting at updated position start
+vector<pair<string,long>> genome::get_kmers(const long start,const unsigned long kmer_count) //edge cases must be handled
 {
 
 	vector<pair<string,long> > vec;
-	for(long i=start;i<start+len;i++) //could be faster
+	for(long i=start;i<start+kmer_count;i++) //could be faster
 	{
 		long genome_position;
 		string kmer = read_reference_abs_at(i,K,genome_position);
@@ -340,8 +344,6 @@ void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs
 	const string end_kmer = read_reference_abs_at(insert_pos_abs+1,K-1,genome_position);
 	string ins_copy = ins+end_kmer;
 
-    //Generates genome_position=1,2 for insert_pos_abs=0,1. length
-    //Generates genome_position=(length-a)+1 for insert_pos_abs=(length-a) for a=0,1,2.. K-1
     //std::cout << insert_pos_abs << " " << genome_position << std::endl;
 
 	for(auto it:kmer_pos_pair)
@@ -376,35 +378,41 @@ void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs
 
 }
 
-void genome::delete_at(const unsigned long delete_pos_abs, const unsigned long del_size){
+void genome::delete_at(const unsigned long delete_pos_abs, const unsigned long del_len){
 
-	auto kmer_pos_pair = get_kmers(delete_pos_abs-K+2,K-1);
+	auto kmers_to_replace = get_kmers(delete_pos_abs-K+1,K-1);
 	int i=0;
 
 	long genome_position;
-	const string end_kmer = read_reference_abs_at(delete_pos_abs+1,K-1,genome_position);
+	const string end_kmer = read_reference_abs_at(delete_pos_abs+del_len,K-1,genome_position);
+    genome_position-=del_len;
+    //std::cout << delete_pos_abs+del_len << " " << genome_position << std::endl;
 
-    //Generates genome_position=1,2 for insert_pos_abs=0,1. length
-    //Generates genome_position=(length-a)+1 for insert_pos_abs=(length-a) for a=0,1,2.. K-1
-    //std::cout << insert_pos_abs << " " << genome_position << std::endl;
-
-	for(auto it:kmer_pos_pair)
+	for(auto it:kmers_to_replace)
 	{
 		remove_kmer_from_hash_at(it.second,it.first);
 		string temp = it.first.substr(0,K-i-1) + end_kmer.substr(0,i+1);
 		if(it.first.length()==K){ //For handling edge cases: (insertion at the end of the genome)
             add_kmer_from_hash_at(it.second,temp);
         }
+        //std::cout << "Replaced " << it.first << " with " << temp << " at " << it.second << std::endl;
 		i++;
 	}
+
+    auto kmers_to_delete = get_kmers(delete_pos_abs,del_len);
+
+    for(auto it: kmers_to_delete){
+        remove_kmer_from_hash_at(it.second,it.first);    
+        //std::cout << "Removed " << it.first << " from " << it.second << std::endl;
+    }
 	
 	//Set the edit bit to true
-	for(int j=0; j<del_size; j++){
-		del[genome_position+j]=1;
+	for(int j=0; j<del_len; j++){
+    	del[genome_position+j]=1;
 	}
 
 	//Update the skip list
-	s.delete_and_update_abs(delete_pos_abs,del_size);
+	s.delete_and_update_abs(delete_pos_abs,del_len);
 
 }
 

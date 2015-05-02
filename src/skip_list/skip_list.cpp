@@ -47,78 +47,50 @@ node* skip_list::find(long val)
   return temp;
 }
 
-
-node* skip_list::find_and_update_prev(long val,string str)
-{
-  long offset = str.length();
-  node *temp=head;
-  
-  while(temp)
-  {
-    if(temp->next->val<=val) // next val is >= next ; = since a node contains offset between that node and the next.
-    {
-      temp=temp->next;
-    }
-    
-    else	//current val is lesser than next val
-    {
-      if(temp->down)
-      {
-	temp->offset+=offset;
-	temp=temp->down;
-      }
-      else
-      {
-	if(temp->val==val)
-	  return temp->prev;
-	return temp;
-      }
-    } 
-  }
-  return temp;
-}
-
-node* skip_list::find_and_update_prev(unsigned long val, unsigned long len)
-{
-  long offset = len*(-1);
-  node *temp=head;
-  
-  while(temp)
-  {
-    if(temp->next->val<=val) // next val is >= next ; = since a node contains offset between that node and the next.
-    {
-      temp=temp->next;
-    }
-    
-    else	//current val is lesser than next val
-    {
-      if(temp->down)
-      {
-	temp->offset+=offset;
-	temp=temp->down;
-      }
-      else
-      {
-	if(temp->val==val)
-	  return temp->prev;
-	return temp;
-      }
-    } 
-  }
-  return temp;
-}
-
 void skip_list::delete_and_update(unsigned long val,unsigned long pos,unsigned long len)
 {
-  node *prev = find_and_update_prev(val,len);
-  node *temp = prev;
+  //node *prev = find_and_update_prev(val,len);
+  //node *temp = prev;
   //while((temp->next->val+temp->next->offset) - (temp->val+pos))
 }
 void skip_list::insert_and_update(long val,unsigned long pos,string str)
 {
-  //find place to insert
-  node *prev = find_and_update_prev(val,str);
-  long offset = str.length();
+  //find place to insertnode
+  //node *prev = find_and_update_prev(val,str);
+  
+    long offset = str.length();
+    node *temp=head;
+    node *prev;
+  
+    while(temp)
+    { 
+        if(temp->next->val<=val) // next val is >= next ; = since a node contains offset between that node and the next.
+        {
+            temp=temp->next;
+        }
+        else  //current val is lesser than next val
+        {
+            if(temp->down)
+            {
+                temp->offset+=offset;
+                temp=temp->down;
+            }
+            else
+            {
+                if(temp->val==val){
+                    prev = temp->prev;
+                    break;
+                }
+                prev = temp;
+                break;
+            }
+        } 
+    }
+
+  //node *prev = find_and_update_prev(val,str);
+
+
+  offset = str.length();
   if(prev->next->val==val) //if the value already exists
   {
     //update the offset pointers.. 

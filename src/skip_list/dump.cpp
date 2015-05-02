@@ -95,3 +95,90 @@ void skip_list::insert(long val,long offset)
   }
     
 }
+
+
+node* skip_list::find_and_update_prev(long val,string str)
+{
+  long offset = str.length();
+  node *temp=head;
+  
+  while(temp)
+  {
+    if(temp->next->val<=val) // next val is >= next ; = since a node contains offset between that node and the next.
+    {
+      temp=temp->next;
+    }
+    
+    else  //current val is lesser than next val
+    {
+      if(temp->down)
+      {
+  temp->offset+=offset;
+  temp=temp->down;
+      }
+      else
+      {
+  if(temp->val==val)
+    return temp->prev;
+  return temp;
+      }
+    } 
+  }
+  return temp;
+}
+
+void test_find_and_update_prev_ordered(){
+
+    skip_list s;
+
+    s.insert_and_update(34,0,"AT");
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(1209,0,"CAT");
+
+    assert(s.find_and_update_prev(34,"ATA")  -> val == LONG_MIN);
+    assert(s.find_and_update_prev(78,"CG")  -> val == 34);
+    assert(s.find_and_update_prev(144,"TGG") -> val == 78);
+    assert(s.find_and_update_prev(909,"ATCGC") -> val == 144);
+    assert(s.find_and_update_prev(1209,"CAAT")-> val == 909);
+
+    assert(s.find_and_update_prev(20,"A")  -> val == LONG_MIN);
+    assert(s.find_and_update_prev(50,"T")  -> val == 34);
+    assert(s.find_and_update_prev(100,"G") -> val == 78);
+    assert(s.find_and_update_prev(150,"T") -> val == 144);
+    assert(s.find_and_update_prev(1000,"C")-> val == 909);
+    assert(s.find_and_update_prev(1500,"C")-> val == 1209);
+
+}
+
+void test_find_and_update_prev_unordered(){
+
+    skip_list s;
+
+    s.insert_and_update(78,0,"C");
+    s.insert_and_update(1209,0,"CAT");
+    s.insert_and_update(909,0,"ATCG");
+    s.insert_and_update(144,0,"GG");
+    s.insert_and_update(34,0,"AT");
+
+    assert(s.find_and_update_prev(34,"ATA")  -> val == LONG_MIN);
+    assert(s.find_and_update_prev(78,"CG")  -> val == 34);
+    assert(s.find_and_update_prev(144,"TGG") -> val == 78);
+    assert(s.find_and_update_prev(909,"ATCGC") -> val == 144);
+    assert(s.find_and_update_prev(1209,"CAAT")-> val == 909);
+
+    assert(s.find_and_update_prev(20,"A")  -> val == LONG_MIN);
+    assert(s.find_and_update_prev(50,"T")  -> val == 34);
+    assert(s.find_and_update_prev(100,"G") -> val == 78);
+    assert(s.find_and_update_prev(150,"T") -> val == 144);
+    assert(s.find_and_update_prev(1000,"C")-> val == 909);
+    assert(s.find_and_update_prev(1500,"C")-> val == 1209);
+
+}
+
+void test_find_and_update_prev(){
+  
+  test_find_and_update_prev_ordered();
+  test_find_and_update_prev_unordered();
+}

@@ -82,63 +82,6 @@ void test_get_cumulative_count(){
 }
 
 
-void test_find_and_update_prev_ordered(){
-
-    skip_list s;
-
-    s.insert_and_update(34,0,"AT");
-    s.insert_and_update(78,0,"C");
-    s.insert_and_update(144,0,"GG");
-    s.insert_and_update(909,0,"ATCG");
-    s.insert_and_update(1209,0,"CAT");
-
-    assert(s.find_and_update_prev(34,"ATA")  -> val == LONG_MIN);
-    assert(s.find_and_update_prev(78,"CG")  -> val == 34);
-    assert(s.find_and_update_prev(144,"TGG") -> val == 78);
-    assert(s.find_and_update_prev(909,"ATCGC") -> val == 144);
-    assert(s.find_and_update_prev(1209,"CAAT")-> val == 909);
-
-    assert(s.find_and_update_prev(20,"A")  -> val == LONG_MIN);
-    assert(s.find_and_update_prev(50,"T")  -> val == 34);
-    assert(s.find_and_update_prev(100,"G") -> val == 78);
-    assert(s.find_and_update_prev(150,"T") -> val == 144);
-    assert(s.find_and_update_prev(1000,"C")-> val == 909);
-    assert(s.find_and_update_prev(1500,"C")-> val == 1209);
-
-}
-
-void test_find_and_update_prev_unordered(){
-
-    skip_list s;
-
-    s.insert_and_update(78,0,"C");
-    s.insert_and_update(1209,0,"CAT");
-    s.insert_and_update(909,0,"ATCG");
-    s.insert_and_update(144,0,"GG");
-    s.insert_and_update(34,0,"AT");
-
-    assert(s.find_and_update_prev(34,"ATA")  -> val == LONG_MIN);
-    assert(s.find_and_update_prev(78,"CG")  -> val == 34);
-    assert(s.find_and_update_prev(144,"TGG") -> val == 78);
-    assert(s.find_and_update_prev(909,"ATCGC") -> val == 144);
-    assert(s.find_and_update_prev(1209,"CAAT")-> val == 909);
-
-    assert(s.find_and_update_prev(20,"A")  -> val == LONG_MIN);
-    assert(s.find_and_update_prev(50,"T")  -> val == 34);
-    assert(s.find_and_update_prev(100,"G") -> val == 78);
-    assert(s.find_and_update_prev(150,"T") -> val == 144);
-    assert(s.find_and_update_prev(1000,"C")-> val == 909);
-    assert(s.find_and_update_prev(1500,"C")-> val == 1209);
-
-}
-
-void test_find_and_update_prev(){
-	
-	test_find_and_update_prev_ordered();
-	test_find_and_update_prev_unordered();
-}
-
-
 void test_insert_and_update_abs()
 {
     skip_list s;
@@ -217,9 +160,6 @@ void test_skip_list(){
 
     test_get_cumulative_count();
     std::cout << "get_cumulative_count(): Passed All Test Cases!" << std::endl;
-
-    test_find_and_update_prev();
-    std::cout << "test_find_and_update_prev(): Passed All Test Cases!" << std::endl;
 
     test_insert_and_update_abs();
     std::cout << "test_insert_and_update_abs(): Passed All Test Cases!" << std::endl;

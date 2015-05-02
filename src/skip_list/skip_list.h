@@ -32,8 +32,6 @@ public:
     void print_base_level();
     void print_list();
     void print_node(node*);
-    node* find_and_update_prev(long,std::string);
-    node* find_and_update_prev(unsigned long,unsigned long);
     void insert_and_update(long,unsigned long,std::string);
     long get_cumulative_count(long);
     void insert_and_update_abs(const long,std::string); //updates given absolute value

@@ -249,7 +249,7 @@ void test_insert_at()
 		g.construct_hash();
 		
 		//Randomize? 
-		std::vector<long> positions {reference.length()-K,2,5,4,7,11,12};
+		std::vector<long> positions {reference.length()-(unsigned long)K,2,5,4,7,11,12};
 
 		for(long p: positions){
 			g.insert_at(ins, p);

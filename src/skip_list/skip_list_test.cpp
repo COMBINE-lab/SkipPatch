@@ -56,62 +56,6 @@ void test_find(){
 
 }
 
-void test_find_prev_ordered(){
-
-    skip_list s;
-
-    s.insert_and_update(34,0,"AT");
-    s.insert_and_update(78,0,"C");
-    s.insert_and_update(144,0,"GG");
-    s.insert_and_update(909,0,"ATCG");
-    s.insert_and_update(1209,0,"CAT");
-
-    assert(s.find_prev(34)  -> val == LONG_MIN);
-    assert(s.find_prev(78)  -> val == 34);
-    assert(s.find_prev(144) -> val == 78);
-    assert(s.find_prev(909) -> val == 144);
-    assert(s.find_prev(1209)-> val == 909);
-
-    assert(s.find_prev(20)  -> val == LONG_MIN);
-    assert(s.find_prev(50)  -> val == 34);
-    assert(s.find_prev(100) -> val == 78);
-    assert(s.find_prev(150) -> val == 144);
-    assert(s.find_prev(1000)-> val == 909);
-    assert(s.find_prev(1500)-> val == 1209);
-
-}
-
-void test_find_prev_unordered(){
-
-    skip_list s;
-
-    s.insert_and_update(78,0,"C");
-    s.insert_and_update(1209,0,"CAT");
-    s.insert_and_update(909,0,"ATCG");
-    s.insert_and_update(144,0,"GG");
-    s.insert_and_update(34,0,"AT");
-
-    assert(s.find_prev(34)  -> val == LONG_MIN);
-    assert(s.find_prev(78)  -> val == 34);
-    assert(s.find_prev(144) -> val == 78);
-    assert(s.find_prev(909) -> val == 144);
-    assert(s.find_prev(1209)-> val == 909);
-
-    assert(s.find_prev(20)  -> val == LONG_MIN);
-    assert(s.find_prev(50)  -> val == 34);
-    assert(s.find_prev(100) -> val == 78);
-    assert(s.find_prev(150) -> val == 144);
-    assert(s.find_prev(1000)-> val == 909);
-    assert(s.find_prev(1500)-> val == 1209);
-
-}
-
-void test_find_prev(){
-
-    test_find_prev_ordered();
-    test_find_prev_unordered();
-}
-
 void test_get_cumulative_count(){
 
     skip_list s;
@@ -136,6 +80,7 @@ void test_get_cumulative_count(){
     assert(s.get_cumulative_count(2000)==12);
 
 }
+
 
 void test_find_and_update_prev_ordered(){
 
@@ -192,6 +137,7 @@ void test_find_and_update_prev(){
 	test_find_and_update_prev_ordered();
 	test_find_and_update_prev_unordered();
 }
+
 
 void test_insert_and_update_abs()
 {
@@ -268,9 +214,6 @@ void test_skip_list(){
 
     test_find();
     std::cout << "find(): Passed All Test Cases!" << std::endl;
-
-    test_find_prev();
-    std::cout << "find_prev(): Passed All Test Cases!" << std::endl;
 
     test_get_cumulative_count();
     std::cout << "get_cumulative_count(): Passed All Test Cases!" << std::endl;

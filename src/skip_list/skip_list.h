@@ -29,8 +29,6 @@ public:
     skip_list();
     node* get_head();
     node* find(long); //obsolete, only for testing //if not found return null, else return the node itself.
-    node *find_prev(long); //obsolete
-    void insert(long,long); //obsolete
     void print_base_level();
     void print_list();
     void print_node(node*);

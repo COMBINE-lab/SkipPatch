@@ -14,6 +14,9 @@ void test_search();
 void test_snp_at();
 void test_insert_at();
 
+void check_delete_at();
+void test_delete_at();
+
 void test();
 
 #endif

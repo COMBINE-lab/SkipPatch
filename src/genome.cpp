@@ -303,7 +303,6 @@ string genome::read_reference_at(const long genome_position,const long offset,co
         else if(del[curr_genome_pos])
 	{
 	  curr_genome_pos++;
-	  rem_len--;
 	}
         else
         {

@@ -260,12 +260,79 @@ void test_insert_at()
 	cout << "insert_at(): Complete" << std::endl;
 }
 
+void check_delete_at(genome g, long position, long len, string &reference)
+{	
+
+  	//test if the the skip list has been updated..
+	skip_list s = g.get_skip_list();
+	//check_skip_list_node(s, abs_val, ins); 
+	
+	//check if the reference has been updated
+	reference.erase(position,len);
+	std::cout << "Ref: " << reference << endl;
+	std::cout << "REF: " << g.read_reference_at(0,0,g.get_length()) << endl; 
+	assert(reference == g.read_reference_at(0,0,g.get_length()));
+
+	//now check the hash
+	//update the reference and construct hash for the same	
+	genome g_temp;
+	g_temp.set_reference(reference);
+	g_temp.construct_hash();
+
+	auto m_temp = g_temp.get_hash();
+	auto m_genome = g.get_hash();      
+	for(auto it=m_temp.begin(); it!=m_temp.end(); it++)
+	{	
+	  	for(auto row_it=(it->second).begin(); row_it!=(it->second).end(); row_it++)
+	  	{
+		    //translate from abs to genome pos:    
+		    unsigned long pos;
+		    long val;
+		    node *n;
+		    s.get_prev_node(*row_it,val,pos,&n);
+		    *row_it=val;
+	  	} 
+
+		sort(it->second.begin(),it->second.end());
+		sort(m_genome[it->first].begin(), m_genome[it->first].end());
+
+		/*for(auto it1 = it->second.begin();it1!=it->second.end();it1++)
+		  cout<<*it1<<" ";
+		cout<<endl;
+		for(auto it1=m_genome[it->first].begin(); it1!=m_genome[it->first].end();it1++)
+		  cout<<*it1<<" ";
+		cout<<endl;*/		
+		assert(it->second==m_genome[it->first]);
+	}
+}
+
+void test_delete_at(){
+	
+	cout << std::endl << "delete_at(): Start" << std::endl;	
+
+	genome g;
+	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+	g.set_reference(reference);
+	g.construct_hash();
+	
+	//Randomize? 
+	std::vector<long> positions {5,7,11,20,12};
+
+	for(long p: positions){
+		g.delete_at(p,1);
+		check_delete_at(g, p, 1, reference);
+	}
+
+	cout << "delete_at(): Complete" << std::endl;
+}
+
 void test(){
 
 	std::cout << std::endl <<  "Testing: Start" << std::endl;
 	
 	test_snp_at();
 	test_insert_at();
+	test_delete_at();
 	test_search();
 	
 	std::cout << "Testing: Complete!" << std::endl << std::endl << std::endl;

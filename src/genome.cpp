@@ -25,12 +25,14 @@ void genome::get_input()
     #endif
 
     edit = std::vector<bool>(get_length(),false);
+    del = std::vector<bool>(get_length(),false);
 }
 
 void genome::set_reference(std::string input)
 {    
     reference = input;
     edit = std::vector<bool>(get_length(),false);
+    del = std::vector<bool>(get_length(),false);
 }
 
 std::string genome::get_reference()
@@ -298,6 +300,11 @@ string genome::read_reference_at(const long genome_position,const long offset,co
             	curr_offset=0;
         	}
         }
+        else if(del[curr_genome_pos])
+	{
+	  curr_genome_pos++;
+	  rem_len--;
+	}
         else
         {
             kmer+=reference[curr_genome_pos];

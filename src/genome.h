@@ -19,7 +19,7 @@ private:
     std::unordered_map<std::string, std::vector<long>> m;
     skip_list s;
     std::vector<bool> edit;
-
+    std::vector<bool> del;
 public:
 
     //Get the reference sequence from input

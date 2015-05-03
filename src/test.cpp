@@ -9,10 +9,10 @@
 #include "test.h"
 #include "genome.h"
 #include "utils.h"
-
+//#define DEBUG
 using namespace std;
 
-void test_hash(genome g)
+void test_hash(genome g) //obsolete
 {
 	string reference = g.get_reference();
 	long k = reference.length()-K+1;
@@ -40,26 +40,9 @@ void test_hash(genome g)
 	}
 }
 
-void check_insert_at(genome g, string ins, long abs_val, string &reference)
-{	
-
-  	//test if the the skip list has been updated..
-	skip_list s = g.get_skip_list();
-	//check_skip_list_node(s, abs_val, ins); 
-	
-	//check if the reference has been updated
-	reference.insert(abs_val+1,ins);
-	assert(reference == g.get_updated_reference());
-
-	//now check the hash
-	//update the reference and construct hash for the same	
-	genome g_temp;
-	g_temp.set_reference(reference);
-	g_temp.construct_hash();
-
-	auto m_temp = g_temp.get_hash();
-	auto m_genome = g.get_hash();      
-	for(auto it=m_temp.begin(); it!=m_temp.end(); it++)
+void test_hash_fwd(unordered_map<std::string, std::vector<long>> m_temp,unordered_map<std::string, std::vector<long>> m_genome,skip_list s)
+{
+for(auto it=m_temp.begin(); it!=m_temp.end(); it++)
 	{	
 	  	for(auto row_it=(it->second).begin(); row_it!=(it->second).end(); row_it++)
 	  	{
@@ -69,19 +52,68 @@ void check_insert_at(genome g, string ins, long abs_val, string &reference)
 		    node *n;
 		    s.get_prev_node(*row_it,val,pos,&n);
 		    *row_it=val;
+	//	    cout<<*row_it<<endl;
 	  	} 
 
 		sort(it->second.begin(),it->second.end());
 		sort(m_genome[it->first].begin(), m_genome[it->first].end());
-
-		/*for(auto it1 = it->second.begin();it1!=it->second.end();it1++)
-		  cout<<*it1<<" ";
-		cout<<endl;
-		for(auto it1=m_genome[it->first].begin(); it1!=m_genome[it->first].end();it1++)
-		  cout<<*it1<<" ";
-		cout<<endl;*/		
+		
 		assert(it->second==m_genome[it->first]);
-	}
+}
+}
+
+
+void test_hash_rev(unordered_map<std::string, std::vector<long>> m_temp,unordered_map<std::string, std::vector<long>> m_genome,skip_list s)
+{
+for(auto it=m_genome.begin(); it!=m_genome.end(); it++)
+	{	
+		
+	  	for(auto row_it=m_temp[it->first].begin(); row_it!=m_temp[it->first].end(); row_it++)
+	  	{
+		    //translate from abs to genome pos:    
+		    unsigned long pos;
+		    long val;
+		    node *n;
+		    s.get_prev_node(*row_it,val,pos,&n);
+		    *row_it=val;
+	//	    cout<<*row_it<<endl;
+	  	} 
+
+		sort(it->second.begin(),it->second.end());
+		sort(m_temp[it->first].begin(), m_temp[it->first].end());
+		
+		assert(it->second==m_temp[it->first]);
+}
+}
+
+
+void test_hash(unordered_map<std::string, std::vector<long>> m_temp,unordered_map<std::string, std::vector<long>> m_genome,skip_list s)
+{
+     
+	test_hash_fwd(m_temp,m_genome,s);
+	test_hash_rev(m_temp,m_genome,s);
+}
+
+void check_insert_at(genome g, string ins, long abs_val, string &reference)
+{	
+
+  	//test if the the skip list has been updated..
+	skip_list s = g.get_skip_list();
+	//check_skip_list_node(s, abs_val, ins); 
+	
+	//check if the reference has been updated
+	reference.insert(abs_val+1,ins);
+	assert(reference == g.read_reference_at(0,0,reference.length()));
+
+	//now check the hash
+	//update the reference and construct hash for the same	
+	genome g_temp;
+	g_temp.set_reference(reference);
+	g_temp.construct_hash();
+
+	auto m_temp = g_temp.get_hash();
+	auto m_genome = g.get_hash();
+	test_hash(m_temp,m_genome,s);
 }
 
 /* Tests if the search for a string of any length in the hash map is working correctly */
@@ -139,7 +171,6 @@ void check_search(genome g, string reference)
 		  	auto p_found = g.search(read);
 			auto p_actual = find_substr(reference,read);
 			/*cout<<"The reference is "<<reference<<endl;
-			//cout<<"The reference is "<<g.get_updated_reference()<<endl;
 			cout<<"Current read is "<<read<<endl;
 			cout<<"This should  be at ";
 			for(auto it = p_actual.begin();it!=p_actual.end();it++)
@@ -151,10 +182,10 @@ void check_search(genome g, string reference)
 			cout<<endl;
 		    */
 			//Sort and remove duplicates 
-		    sort(p_found.begin(),p_found.end());
+			sort(p_found.begin(),p_found.end());
 			sort(p_actual.begin(),p_actual.end());
-			p_found.erase(unique(p_found.begin(),p_found.end()), p_found.end());
-			p_actual.erase(unique(p_actual.begin(),p_actual.end()), p_actual.end());
+			//p_found.erase(unique(p_found.begin(),p_found.end()), p_found.end());
+			//p_actual.erase(unique(p_actual.begin(),p_actual.end()), p_actual.end());
 
 			assert(p_found==p_actual);
     }
@@ -254,6 +285,10 @@ void test_insert_at()
 		std::vector<unsigned long> positions {reference.length()-K,2,5,4,7,11,12};
 
 		for(long p: positions){
+		  		//std::cout << "Test: " << pos << " " << del_len << " " << reference <<  std::endl;
+#ifdef DEBUG
+cout<<endl<<"Position: "<<p<<endl;
+#endif
 			g.insert_at(ins, p);
 			check_insert_at(g, ins, p, reference);
 		}
@@ -273,8 +308,11 @@ void check_delete_at(genome &g, long position, long len, string &reference)
 	reference.erase(position,len);
 	//std::cout << "Ref: " << reference << endl;
 	//std::cout << "REF: " << g.read_reference_at(0,0,g.get_length()) << endl; 
-	assert(reference == g.read_reference_at(0,0,g.get_length()));
-
+#ifdef DEBUG
+	cout<<"Actual reference: "<<reference<<endl;
+	cout<<"Incorrect refere: "<<g.read_reference_at(0,0,reference.length())<<endl;
+#endif
+	assert(reference == g.read_reference_at(0,0,reference.length()));
 	//now check the hash
 	//update the reference and construct hash for the same	
 	genome g_temp;
@@ -283,54 +321,136 @@ void check_delete_at(genome &g, long position, long len, string &reference)
 
 	auto m_temp = g_temp.get_hash();
 	auto m_genome = g.get_hash();      
-	for(auto it=m_temp.begin(); it!=m_temp.end(); it++)
-	{	
-	  	for(auto row_it=(it->second).begin(); row_it!=(it->second).end(); row_it++)
-	  	{
-		    //translate from abs to genome pos:    
-		    unsigned long pos;
-		    long val;
-		    node *n;
-		    s.get_prev_node(*row_it,val,pos,&n);
-		    *row_it=val;
-	  	} 
-
-		sort(it->second.begin(),it->second.end());
-		sort(m_genome[it->first].begin(), m_genome[it->first].end());
-
-		/*for(auto it1 = it->second.begin();it1!=it->second.end();it1++)
-		  cout<<*it1<<" ";
-		cout<<endl;
-		for(auto it1=m_genome[it->first].begin(); it1!=m_genome[it->first].end();it1++)
-		  cout<<*it1<<" ";
-		cout<<endl;*/		
-		assert(it->second==m_genome[it->first]);
-	}
+	test_hash(m_temp,m_genome,s);
 }
 
 void test_delete_at(){
 	
 	cout << std::endl << "delete_at(): Start" << std::endl;	
 
-	std::vector<long> del_lengths {1,5,3,4,2};
-	std::vector<long> ins_lengths {1,5,3,4,2};
-	std::vector<long> positions {35,20,55,12,60};
-
+	std::vector<long> del_lengths {1,2,2,1,2};
+	//std::vector<long> ins_lengths {1,5,3,4,2};
+	std::vector<long> positions {18,15,55,19,60};
+	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCTAGCTAGTAGATGGATCTCCCTATCATCTCATCTACT"; 
 	for(long pos: positions){
 		genome g;
-		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCTAGCTAGTAGATGGATCTCCCTATCATCTCATCTACT"; 
+		
 		g.set_reference(reference);
 		g.construct_hash();
 		for(long del_len: del_lengths){
 			//std::cout << "Test: " << pos << " " << del_len << " " << reference <<  std::endl;
+
+cout<<endl<<"Position: "<<pos<<endl;		
+			const string ins = "AGCTAGCC";
+			g.insert_at(ins,4);
+			check_insert_at(g,ins, 4, reference);
+			
+			g.insert_at(ins,pos);
+			check_insert_at(g,ins, pos, reference);
+			g.delete_at(pos+1,del_len);
+			check_delete_at(g, pos+1, del_len, reference);
 			g.delete_at(pos,del_len);
 			check_delete_at(g, pos, del_len, reference);
+			g.delete_at(pos-10,del_len);
+			check_delete_at(g, pos-10, del_len, reference);
 		}
 	}
 
 	cout << "delete_at(): Complete" << std::endl;
 }
 
+
+void test_indels(){
+	
+    
+ 	cout << std::endl << "Checking indel..: Start" << std::endl;
+	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+	//length of insertion <K, >K, =K, =1
+	std::vector<std::string> insertions {"ATGATGATGATG", "TTGTACATGATG", "ATCGATCGATGATG", "CATCGATGATG"}; 
+	std::vector<long> del_lengths {1,2};
+	for(std::string ins: insertions){
+		
+		genome g;
+		
+		g.set_reference(reference);
+		g.construct_hash();
+		
+		//Randomize? 
+		std::vector<unsigned long> positions {21,42,60,75,95,110,130};
+
+		for(long p: positions){
+		  cout<<endl<<"Position: "<<p<<endl;	
+			g.insert_at(ins, p);
+			check_insert_at(g, ins, p, reference);
+			for(long d:del_lengths){
+			    g.delete_at(p+2,d);
+			    check_delete_at(g, p+2,d,reference);
+			    
+			    g.delete_at(p+1,d);
+			    check_delete_at(g, p+1,d,reference);
+		
+			    g.delete_at(p,d);
+			    check_delete_at(g, p,d,reference);
+			    
+			    
+			    g.delete_at(p-10,d);
+			    check_delete_at(g, p-10,d,reference);
+			    
+			}
+		
+		//g.get_skip_list().print_list();
+		//g.get_skip_list().print_base_level();
+		}
+	}
+	del_lengths= {1};
+	insertions= {"TT", "TG", "AT", "CA"}; 
+	reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+	for(std::string ins: insertions){
+		
+		genome g;
+		
+		g.set_reference(reference);
+		g.construct_hash();
+		
+		//Randomize? 
+		std::vector<unsigned long> positions {21,42,23,60,75,95,110,130};
+
+		for(long p: positions){
+		  cout<<endl<<"Position new: "<<p<<" ins "<<ins<<endl;	
+			g.insert_at(ins, p);
+			check_insert_at(g, ins, p, reference);
+			for(long d:del_lengths){
+			   
+			    g.delete_at(p+1,d);
+			    check_delete_at(g, p+1,d,reference);
+			    
+			    g.delete_at(p,d);
+			    check_delete_at(g, p,d,reference);
+			    
+			    g.delete_at(p+10,d);
+			    check_delete_at(g, p+10,d,reference);
+			    
+			    g.insert_at(ins, p);
+			    check_insert_at(g, ins, p, reference);
+			    
+			    g.delete_at(p+2,d);
+			    check_delete_at(g, p+2,d,reference);
+			    
+			    g.delete_at(p+3,d);
+			    check_delete_at(g, p+3,d,reference);
+			    
+			    g.insert_at(ins,p+3);
+			    check_insert_at(g, ins,p+3,reference);
+			    
+			    g.delete_at(p-10,d);
+			    check_delete_at(g, p-10,d,reference);
+			    
+			}
+			
+		}
+	}
+	cout << "Indel check: Complete" << std::endl;
+}
 void test(){
 
 	std::cout << std::endl <<  "Testing: Start" << std::endl;
@@ -338,6 +458,7 @@ void test(){
 	test_snp_at();
 	test_insert_at();
 	test_delete_at();
+	test_indels();
 	test_search();
 	
 	std::cout << "Testing: Complete!" << std::endl << std::endl << std::endl;

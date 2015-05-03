@@ -451,7 +451,7 @@ void genome::delete_at(const unsigned long delete_pos_abs, const unsigned long d
 
 	long genome_position;
 	const string end_kmer = read_reference_abs_at(delete_pos_abs+del_len,K-1,genome_position);
-    genome_position-=del_len;
+	genome_position-=del_len; //will not work for generic case
     //std::cout << delete_pos_abs+del_len << " " << genome_position << std::endl;
 
 	for(auto it:kmers_to_replace)

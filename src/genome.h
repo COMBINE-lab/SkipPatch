@@ -18,7 +18,7 @@ private:
     std::string reference;
     std::unordered_map<std::string, std::vector<long>> m;
     skip_list s;
-    std::vector<bool> edit;
+    std::vector<bool> ins;
     std::vector<bool> del;
 public:
 

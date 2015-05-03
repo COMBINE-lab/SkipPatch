@@ -24,14 +24,14 @@ void genome::get_input()
     std::cout<<"Input taken! "<<std::endl;
     #endif
 
-    edit = std::vector<bool>(get_length(),false);
+    ins = std::vector<bool>(get_length(),false);
     del = std::vector<bool>(get_length(),false);
 }
 
 void genome::set_reference(std::string input)
 {    
     reference = input;
-    edit = std::vector<bool>(get_length(),false);
+    ins = std::vector<bool>(get_length(),false);
     del = std::vector<bool>(get_length(),false);
 }
 
@@ -166,6 +166,7 @@ long genome::get_virtual_position_from_genome_position(long genome_position, lon
     return genome_position+s.get_cumulative_count(genome_position)+offset;
 }
 
+/*
 //Is it required to pass both the length and the string? Can't we derive the length from the string itself? - its supposed to be optional - did you change it? 
 void genome::snp_at(long pos, std::string new_string) 
 {
@@ -181,11 +182,11 @@ void genome::snp_at(long pos, std::string new_string)
     cout<<"Input is valid"<<len<<std::endl;
     #endif
 
-    /*std::string new_string(new_str.begin(),new_str.end());
-    if(new_string==""){
-    	new_string = generate_random_string(len);
-    }
-    len = new_string.length();*/
+    //std::string new_string(new_str.begin(),new_str.end());
+    //if(new_string==""){
+    //	new_string = generate_random_string(len);
+    //}
+    //len = new_string.length();
     #ifdef DEBUG
     cout<<"len  = "<<len<<std::endl;
     #endif
@@ -203,11 +204,10 @@ void genome::snp_at(long pos, std::string new_string)
     for(long i=snp_begin;i<(snp_end-(K-1));i++)
     {
         std::string curr_kmer(reference.begin()+i,reference.begin()+i+K);
-        /*
-        This is to temporarily handle the case when the k-mer is NNNNN..(k), or, contains an 'n' or 'N'
-        Since this k-mer exists at several (millions) of locations, "remove_kmer_from_hash" causes a bottleneck, slowing down the update process  
-        Temporary fix: Simple ignore the k-mer and return false. Permanent soultion?
-        */
+        
+        //This is to temporarily handle the case when the k-mer is NNNNN..(k), or, contains an 'n' or 'N'
+        //Since this k-mer exists at several (millions) of locations, "remove_kmer_from_hash" causes a bottleneck, slowing down the update process  
+        //Temporary fix: Simple ignore the k-mer and return false. Permanent soultion?
         if( (curr_kmer.find('n')!=std::string::npos)  || (curr_kmer.find('N')!=std::string::npos) ){
             return;
         }
@@ -225,6 +225,52 @@ void genome::snp_at(long pos, std::string new_string)
     std::cout<<"Generated string: "<<new_string<<"\t"<<"Inserted at: "<<pos<<std::endl;
     #endif
 
+}*/
+
+void genome::snp_at(const long snp_pos_abs, const std::string snp) {
+
+    const long snp_len = snp.length();
+
+    auto kmer_pos_pair = get_kmers(snp_pos_abs-K+1,snp_len+K-1);
+    int i=0;
+
+    long genome_position;
+    
+    long after_start = std::min(snp_pos_abs+snp_len,get_length()-K); //Doesn't quite fix the edge cases yet
+    long before_start = std::max(snp_pos_abs-K+1,(long)0); //Doesn't quite fix the edge cases yet
+    const std::string after_snp = read_reference_abs_at(after_start,K-1,genome_position);
+    const std::string before_snp = read_reference_abs_at(before_start,K-1,genome_position);
+
+    std::string snp_update = before_snp + snp + after_snp;
+    //Print to check why edge cases don't work
+    //std::cout << before_snp << " + " << snp << " + " << after_snp << " = " << snp_update << endl ;
+
+    for(auto it:kmer_pos_pair)
+    {   
+        remove_kmer_from_hash_at(it.second,it.first);
+        string new_kmer = snp_update.substr(i,K);
+        if(it.first.length()==K){
+            add_kmer_from_hash_at(it.second,new_kmer);
+        }
+        //std::cout << "Replaced " << it.first << " with " << new_kmer << " at " << it.second << std::endl;
+        
+        i++;
+    }
+
+    //Update the genome itself
+    //At every SNP, investigate if it is inside an inserted segment 
+    //This should also take care of the cases where a series of SNPs could span several insertions
+    unsigned long offset; node* n;
+    int j=0;
+    for(int j=0; j<snp_len; j++){
+        get_genome_position_from_virtual_position(snp_pos_abs+j, genome_position, offset, &n);
+        if(ins[genome_position]){
+            n->str = (n->str).replace(offset-1,1,string(1,snp[j]));
+        } else {
+            reference[genome_position] = snp[j]; //No insertion at that point
+        }
+    }
+
 }
 
 std::vector<long> genome::search(std::string read){
@@ -240,7 +286,7 @@ std::vector<long> genome::search(std::string read){
 
     		long offset = 0;
     		//If the position doesn't start from within an insertion
-    		if(!edit[pos]){
+    		if(!ins[pos]){
     			if(read==read_reference_at(pos,offset,read.length())){
     				positions.push_back(get_virtual_position_from_genome_position(pos,offset));
     			}
@@ -282,7 +328,7 @@ string genome::read_reference_at(const long genome_position,const long offset,co
 
     while(rem_len>0 && curr_genome_pos<=get_length()-1)
     {
-        if(edit[curr_genome_pos])
+        if(ins[curr_genome_pos])
         {
 	
             if(!curr_offset)
@@ -333,16 +379,16 @@ Splits the problem into two segments:
  - Updating the k-mers which begin at a point before the insertion
  - Adding the new k-mers which are a result of the insertion (begin at a point in the inserted segment)
 */
-void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs){
+void genome::insert_at(const std::string insertion, const unsigned long insert_pos_abs){
 
-	const long ins_len = ins.length();
+	const long ins_len = insertion.length();
 
 	auto kmer_pos_pair = get_kmers(insert_pos_abs-K+2,K-1);
 	int i=0;
 
 	long genome_position;
 	const string end_kmer = read_reference_abs_at(insert_pos_abs+1,K-1,genome_position);
-	string ins_copy = ins+end_kmer;
+	string ins_copy = insertion+end_kmer;
 
     //std::cout << insert_pos_abs << " " << genome_position << std::endl;
 
@@ -361,20 +407,20 @@ void genome::insert_at(const std::string ins, const unsigned long insert_pos_abs
         add_pos = kmer_pos_pair.back().second;
     }
 	
-    for(i=0;i<ins.length();i++)
+    for(i=0;i<insertion.length();i++)
 	{
-		string temp = ins.substr(i,K);
+		string temp = insertion.substr(i,K);
 		string temp2 = end_kmer.substr(0,K-temp.length());
 		if((temp+temp2).length()==K){ //For handling edge cases: (insertion at the end of the genome)
             add_kmer_from_hash_at(add_pos,temp+temp2);
         }
 	}
 
-	//Set the edit bit to true
-	edit[add_pos]=1;
+	//Set the ins bit to true
+	ins[add_pos]=1;
 
 	//Update the skip list
-	s.insert_and_update_abs(insert_pos_abs,ins);
+	s.insert_and_update_abs(insert_pos_abs,insertion);
 
 }
 
@@ -406,7 +452,7 @@ void genome::delete_at(const unsigned long delete_pos_abs, const unsigned long d
         //std::cout << "Removed " << it.first << " from " << it.second << std::endl;
     }
 	
-	//Set the edit bit to true
+	//Set the ins bit to true
 	for(int j=0; j<del_len; j++){
     	del[genome_position+j]=1;
 	}

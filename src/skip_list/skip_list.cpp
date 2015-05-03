@@ -95,12 +95,12 @@ void skip_list::delete_and_update_abs(const long abs_val,const unsigned long len
   if(prev->next->val==val) //if the value already exists
   {
     //update the offset pointers.. 
-    if((prev->next->str).length()<pos)
+    if((prev->next->str).length()<(pos+1))
     {
       cout<<"Invalid value..pos = "<<pos<<" skip list inconsistent!"<<endl;
       return;
     }
-    long len_ins = (prev->next->str).substr(pos,len).length();
+    long len_ins = (prev->next->str).substr(pos+1,len).length();
     (prev->next->str).erase(pos,len);
     prev->next->offset+=(offset);  
   }

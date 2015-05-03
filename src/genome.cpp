@@ -308,20 +308,6 @@ std::vector<long> genome::search(std::string read){
 	return positions;
 }
 
-//Get kmer_count number of k-mers starting at updated position start
-vector<pair<string,long>> genome::get_kmers(const long start,const unsigned long kmer_count) //edge cases must be handled
-{
-
-	vector<pair<string,long> > vec;
-	for(long i=start;i<start+kmer_count;i++) //could be faster
-	{
-		long genome_position;
-		string kmer = read_reference_abs_at(i,K,genome_position);
-		vec.push_back(make_pair(kmer,genome_position));
-	}
-	return vec;
-}
-
 string genome::read_reference_at(const long genome_position,const long offset,const long len)
 {
     long rem_len=len,curr_genome_pos = genome_position,curr_offset = offset;string kmer;
@@ -369,10 +355,44 @@ string genome::read_reference_abs_at(const long abs_pos,const long len,long &gen
 {
 	unsigned long offset;node* n;string kmer;
 	get_genome_position_from_virtual_position(abs_pos, genome_position, offset, &n);
-    kmer = read_reference_at(genome_position,offset,len);
+	kmer = read_reference_at(genome_position,offset,len);
 	return kmer;
 }
 
+
+void genome::read_reference_abs_at(const long abs_pos,const long len,long &genome_position,unsigned long &offset,string &kmer)
+{
+	node* n;
+	get_genome_position_from_virtual_position(abs_pos, genome_position, offset, &n);
+	kmer = read_reference_at(genome_position,offset,len);
+}
+
+//Get kmer_count number of k-mers starting at updated position start
+vector<pair<string,long>> genome::get_kmers(const long start,const unsigned long kmer_count) //edge cases must be handled
+{
+
+	vector<pair<string,long> > vec;
+	for(long i=start;i<start+kmer_count;i++) //could be faster
+	{
+		long genome_position;
+		string kmer = read_reference_abs_at(i,K,genome_position);
+		vec.push_back(make_pair(kmer,genome_position));
+	}
+	return vec;
+}
+
+vector<tuple<string,long,unsigned long>> genome::get_kmers1(const long start,const unsigned long kmer_count) //edge cases must be handled
+{
+
+	vector<tuple<string,long,unsigned long> > vec;
+	for(long i=start;i<start+kmer_count;i++) //could be faster
+	{
+		long genome_position;unsigned long offset;string kmer;
+		read_reference_abs_at(i,K,genome_position,offset,kmer);
+		vec.push_back(make_tuple(kmer,genome_position,offset));
+	}
+	return vec;
+}
 /*
 Inserts a string at the 'insert_pos'. Updates the k-mers which lie in the "region of change" 
 Splits the problem into two segments:
@@ -440,23 +460,37 @@ void genome::delete_at(const unsigned long delete_pos_abs, const unsigned long d
 		string temp = it.first.substr(0,K-i-1) + end_kmer.substr(0,i+1);
 		if(it.first.length()==K){ //For handling edge cases: (insertion at the end of the genome)
             add_kmer_from_hash_at(it.second,temp);
-        }
+	    }
         //std::cout << "Replaced " << it.first << " with " << temp << " at " << it.second << std::endl;
 		i++;
 	}
 
-    auto kmers_to_delete = get_kmers(delete_pos_abs,del_len);
+    vector<tuple<string,long,unsigned long>> kmers_to_delete = get_kmers1(delete_pos_abs,del_len+1);
 
-    for(auto it: kmers_to_delete){
-        remove_kmer_from_hash_at(it.second,it.first);    
+    for(auto it= kmers_to_delete.begin();it!=(kmers_to_delete.end()-1);it++){
+	long g_pos = get<1>(*it);
+	string kmer = get<0>(*it);
+        remove_kmer_from_hash_at(g_pos,kmer);    
+	del[g_pos]=1;
+	/*
+	if(!(get<2>(*kmers_to_delete.begin())) && get<1>(it)==(get<1>(*kmers_to_delete.begin())))
+	{
+	  del[(get<1>(*kmers_to_delete.begin()))]=0
+	  reference[(get<1>(*kmers_to_delete.begin()))] = 
+	}*/
         //std::cout << "Removed " << it.first << " from " << it.second << std::endl;
     }
-	
-	//Set the ins bit to true
-	for(int j=0; j<del_len; j++){
-    	del[genome_position+j]=1;
+      
+	//case where the kmers must be "moved in"
+	if(!(get<2>(*kmers_to_delete.begin())))
+	{
+	    if(get<1>(*kmers_to_delete.begin()) == get<1>(*(kmers_to_delete.end()-1)))
+	    {
+	      del[get<1>(*kmers_to_delete.begin())]=0;
+	      string temp = get<0>(*(kmers_to_delete.end()-1));
+	      reference[get<1>(*(kmers_to_delete.end()-1))]=temp[0]; //pushing kmer in
+	    }
 	}
-
 	//Update the skip list
 	s.delete_and_update_abs(delete_pos_abs,del_len);
 

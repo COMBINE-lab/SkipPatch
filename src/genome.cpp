@@ -229,21 +229,17 @@ void genome::snp_at(long pos, std::string new_string)
 
 void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 
-    const long snp_len = snp.length();
+	//std::cout << "snp_at: " << snp_pos_abs << " " << snp << std::endl;
+	const long snp_len = snp.length();
 
     auto kmer_pos_pair = get_kmers(snp_pos_abs-K+1,snp_len+K-1);
     int i=0;
 
     long genome_position;
     
-    long after_start = std::min(snp_pos_abs+snp_len,get_length()-K); //Doesn't quite fix the edge cases yet
-    long before_start = std::max(snp_pos_abs-K+1,(long)0); //Doesn't quite fix the edge cases yet
-    const std::string after_snp = read_reference_abs_at(after_start,K-1,genome_position);
-    const std::string before_snp = read_reference_abs_at(before_start,K-1,genome_position);
-
-    std::string snp_update = before_snp + snp + after_snp;
-    //Print to check why edge cases don't work
-    std::cout << before_snp << " + " << snp << " + " << after_snp << " = " << snp_update << endl ;
+    //Edge cases: Use min, max to adjust these values for ends of genome
+    std::string snp_update = read_reference_abs_at(snp_pos_abs-K+1, 2*K-2+snp_len, genome_position);
+    snp_update.replace(K-1,snp_len,snp);
 
     for(auto it:kmer_pos_pair)
     {   
@@ -252,10 +248,10 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
         if(it.first.length()==K){
             add_kmer_from_hash_at(it.second,new_kmer);
         }
-        std::cout << "Replaced " << it.first << " with " << new_kmer << " at " << it.second << std::endl;
-        
+        //std::cout << "Replaced " << it.first << " with " << new_kmer << " at " << it.second << std::endl; 
         i++;
     }
+    //s.print_base_level();
 
     //Update the genome itself
     //At every SNP, investigate if it is inside an inserted segment 
@@ -265,12 +261,19 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
     for(int j=0; j<snp_len; j++){
         get_genome_position_from_virtual_position(snp_pos_abs+j, genome_position, offset, &n);
         if(ins[genome_position]){
-            n->str = (n->str).replace(offset-1,1,string(1,snp[j]));
+        	//std::cout << "I" << n->next->str << " " << n->next->val << " " << n->next->offset << std::endl;
+            if(offset==0){
+            	reference[genome_position] = snp[j];         	
+            	//std::cout << "I: " << "Changing: " << reference[genome_position] << " to " << snp[j] << std::endl;
+            } else{
+	            n->next->str = (n->next->str).replace(offset-1,1,string(1,snp[j])); //Doubt??
+	            //std::cout << "I: " << "Changing: " << n->str[offset-1] << " to " << snp[j] << std::endl;
+	        }
         } else {
+        	//std::cout << "G: " << "Changing: " << reference[genome_position] << " to " << snp[j] << std::endl;
             reference[genome_position] = snp[j]; //No insertion at that point
         }
     }
-
 }
 
 std::vector<long> genome::search(std::string read){
@@ -348,6 +351,7 @@ string genome::read_reference_at(const long genome_position,const long offset,co
             curr_offset=0;
         }
     }
+    //std::cout << "read_reference_at: " << kmer << std::endl;
     return kmer;
 }
 

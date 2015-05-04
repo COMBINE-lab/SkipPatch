@@ -213,7 +213,7 @@ void test_search_dynamic_reference(){
 
     for(std::string ins: insertions){
 	    for(long abs_val: ins_positions){
-	      cout<<endl<<"Position: "<<abs_val<<endl;	
+	      	//cout<<endl<<"Position: "<<abs_val<<endl;	
 		    g.insert_at(ins, abs_val);
 		    check_insert_at(g,ins,abs_val,reference);
 		    check_search(g,reference);    	
@@ -341,7 +341,7 @@ void test_delete_at(){
 		for(long del_len: del_lengths){
 			//std::cout << "Test: " << pos << " " << del_len << " " << reference <<  std::endl;
 
-cout<<endl<<"Position: "<<pos<<endl;		
+			//cout<<endl<<"Position: "<<pos<<endl;		
 			const string ins = "AGCTAGCC";
 			g.insert_at(ins,4);
 			check_insert_at(g,ins, 4, reference);
@@ -380,7 +380,7 @@ void test_indels(){
 		std::vector<unsigned long> positions {21,42,60,75,95,110,130};
 
 		for(long p: positions){
-		  cout<<endl<<"Position: "<<p<<endl;	
+		  	//cout<<endl<<"Position: "<<p<<endl;	
 			g.insert_at(ins, p);
 			check_insert_at(g, ins, p, reference);
 			for(long d:del_lengths){
@@ -417,7 +417,7 @@ void test_indels(){
 		std::vector<unsigned long> positions {21,42,23,60,75,95,110,130};
 
 		for(long p: positions){
-		  cout<<endl<<"Position new: "<<p<<" ins "<<ins<<endl;	
+		  	//cout<<endl<<"Position new: "<<p<<" ins "<<ins<<endl;	
 			g.insert_at(ins, p);
 			check_insert_at(g, ins, p, reference);
 			for(long d:del_lengths){
@@ -477,7 +477,7 @@ void check_snp_at(genome g, string ins, long abs_val, string &reference)
 void test_snp_at(){
 	
     
- 	cout << std::endl << "Checking snp_at..: Start" << std::endl;
+ 	cout << std::endl << "snp_at(): Start" << std::endl;
 	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
 	//length of insertion <K, >K, =K, =1
 	std::vector<std::string> insertions {"ATGATGATGATG", "TTGTACATGATG", "ATCGATCGATGATG", "CATCGATGATG"}; 
@@ -493,18 +493,15 @@ void test_snp_at(){
 		std::vector<unsigned long> positions {21,42,60,75,95,110,130};
 
 		for(long p: positions){
-		  cout<<endl<<"Position: "<<p<<endl;	
-		  g.snp_at(p,"ATCCG");
-			cout<<endl<<"Position: "<<p<<endl;	
+		  	g.snp_at(p,"ATCCG");
 			check_snp_at(g, "ATCCG", p, reference);
 			
 			g.insert_at(ins, p);
 			check_insert_at(g, ins, p, reference);
-			cout<<endl<<"Position: "<<p<<endl;	
+
 			g.snp_at(p,"ATCCG");
-			cout<<endl<<"Position: "<<p<<endl;	
 			check_snp_at(g, "ATCCG", p, reference);
-			cout<<endl<<"Position: "<<p<<endl;	
+
 			for(long d:del_lengths){
 			    g.delete_at(p+2,d);
 			    check_delete_at(g, p+2,d,reference);
@@ -539,7 +536,7 @@ void test_snp_at(){
 		std::vector<unsigned long> positions {21,42,23,60,75,95,110,130};
 
 		for(long p: positions){
-		  cout<<endl<<"Position new: "<<p<<" ins "<<ins<<endl;	
+		  	//cout<<endl<<"Position new: "<<p<<" ins "<<ins<<endl;	
 			g.insert_at(ins, p);
 			check_insert_at(g, ins, p, reference);
 			for(long d:del_lengths){
@@ -572,7 +569,7 @@ void test_snp_at(){
 			
 		}
 	}
-	cout << "Indel check: Complete" << std::endl;
+	cout << "snp_at(): Complete" << std::endl;
 }
 
 

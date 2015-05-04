@@ -170,8 +170,9 @@ void check_search(genome g, string reference)
 		 	
 		  	auto p_found = g.search(read);
 			auto p_actual = find_substr(reference,read);
-			cout<<"The reference is "<<reference<<endl;
-			cout<<"Current read is "<<read<<endl;
+			
+			//cout<<"The reference is "<<reference<<endl;
+			/*cout<<"Current read is "<<read<<endl;
 			cout<<"This should  be at ";
 			for(auto it = p_actual.begin();it!=p_actual.end();it++)
 			  cout<<*it<<"\t";
@@ -180,7 +181,7 @@ void check_search(genome g, string reference)
 			for(auto it = p_found.begin();it!=p_found.end();it++)
 			  cout<<*it<<"\t";
 			cout<<endl;
-		    
+		    */
 			//Sort 
 			sort(p_found.begin(),p_found.end());
 			sort(p_actual.begin(),p_actual.end());
@@ -212,9 +213,9 @@ void test_search_dynamic_reference(){
     std::vector<long> ins_positions {42,9,33,12,50,25};
 
     for(std::string ins: insertions){
-    	cout<<endl<<"Insertion: "<<ins<<endl;	
+    	//cout<<endl<<"Insertion: "<<ins<<endl;	
 	    for(long abs_val: ins_positions){
-	      	cout<<endl<<"Position: "<<abs_val<<endl;	
+	      	//cout<<endl<<"Position: "<<abs_val<<endl;	
 		    g.insert_at(ins, abs_val);
 		    check_insert_at(g,ins,abs_val,reference);
 		    check_search(g,reference);    	
@@ -601,7 +602,7 @@ void test_snp_at(){
 void test_search_at(){
 	
     
- 	cout << std::endl << "snp_at(): Start" << std::endl;
+ 	cout << std::endl << "tesr_search_at(): Start" << std::endl;
 	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
 	//length of insertion <K, >K, =K, =1
 	std::vector<std::string> insertions {"ATGATGATGATG", "TTGTACATGATG", "ATCGATCGATGATG", "CATCGATGATG"}; 
@@ -721,7 +722,7 @@ void test_search_at(){
 			
 		}
 	}
-	cout << "snp_at(): Complete" << std::endl;
+	cout << "tesr_search_at(): Complete" << std::endl;
 }
 
 void test(){
@@ -734,6 +735,6 @@ void test(){
 	test_indels();
 	test_snp_at();
 	test_search_at();
-	
+	test_search();	
 	std::cout << "Testing: Complete!" << std::endl << std::endl << std::endl;
 }

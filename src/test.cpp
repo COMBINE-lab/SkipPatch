@@ -12,34 +12,6 @@
 //#define DEBUG
 using namespace std;
 
-void test_hash(genome g) //obsolete
-{
-	string reference = g.get_reference();
-	long k = reference.length()-K+1;
-	
-	auto m = g.get_hash();
-	for(long i=0;i<k;i++)
-	{
-		string kmer(reference.begin()+i,reference.begin()+i+K);
-		auto pos_it=m.find(kmer);
-
-		if(pos_it==m.end())
-		{
-		    std::cout << "test_hash:: " << kmer << endl;
-		  	assert(false);
-		}
-		else
-		{
-		  	vector<long> positions = pos_it->second;
-		  	for(long pos: positions)
-		  	{
-		    	string temp(reference.begin()+pos,reference.begin()+pos+K);
-		    	assert(temp==kmer);
-		  	}
-		}
-	}
-}
-
 void test_hash_fwd(unordered_map<std::string, std::vector<long>> m_temp,unordered_map<std::string, std::vector<long>> m_genome,skip_list s)
 {
 for(auto it=m_temp.begin(); it!=m_temp.end(); it++)
@@ -225,50 +197,6 @@ void test_search_dynamic_reference(){
     cout << "test_search_dynamic_reference(): Complete" << std::endl;    
 }
 
-void test_search(){
-
-	cout << std::endl << "test_search(): Start" << std::endl;
-
-	test_search_static_reference();
-	test_search_dynamic_reference();
-
-	cout << "test_search(): Complete" << std::endl << std::endl;
-
-}
-/*void test_snp_at()
-{
- 	cout << std::endl << "snp_at(): Start" << std::endl;
-	
-	genome g;
-	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGAATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"; 
-	g.set_reference(reference);
-	g.construct_hash();
-
-	g.snp_at(5,"ACA");
-	test_hash(g);
-
-	g.snp_at(17,"C");
-	test_hash(g);
-
-	g.snp_at(100,"ATCCG");
-	test_hash(g);
-	
-	g.snp_at(10,"GTTAA");
-	test_hash(g);
-
-//	g.snp_at(0,"AC");
-//	test_hash(g);
-
-//	g.snp_at(g.get_length()-K,"TTA");
-//	test_hash(g);
-
-	std::cout <<"snp_at(): Complete!" << std::endl;
-	
-	//invaled cases
-	//somewhere in the middle
-	
-}
-*/
 
 void test_insert_at()
 {
@@ -599,6 +527,16 @@ void test_snp_at(){
 	cout << "snp_at(): Complete" << std::endl;
 }
 
+void test_search(){
+
+	cout << std::endl << "test_search(): Start" << std::endl;
+
+	test_search_static_reference();
+	test_search_dynamic_reference();
+
+	cout << "test_search(): Complete" << std::endl << std::endl;
+
+}
 void test_search_at(){
 	
     

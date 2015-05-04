@@ -243,7 +243,7 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 
     std::string snp_update = before_snp + snp + after_snp;
     //Print to check why edge cases don't work
-    //std::cout << before_snp << " + " << snp << " + " << after_snp << " = " << snp_update << endl ;
+    std::cout << before_snp << " + " << snp << " + " << after_snp << " = " << snp_update << endl ;
 
     for(auto it:kmer_pos_pair)
     {   
@@ -252,7 +252,7 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
         if(it.first.length()==K){
             add_kmer_from_hash_at(it.second,new_kmer);
         }
-        //std::cout << "Replaced " << it.first << " with " << new_kmer << " at " << it.second << std::endl;
+        std::cout << "Replaced " << it.first << " with " << new_kmer << " at " << it.second << std::endl;
         
         i++;
     }

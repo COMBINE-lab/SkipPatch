@@ -181,7 +181,7 @@ void check_search(genome g, string reference)
 			  cout<<*it<<"\t";
 			cout<<endl;
 		    */
-			//Sort and remove duplicates 
+			//Sort 
 			sort(p_found.begin(),p_found.end());
 			sort(p_actual.begin(),p_actual.end());
 			//p_found.erase(unique(p_found.begin(),p_found.end()), p_found.end());
@@ -213,6 +213,7 @@ void test_search_dynamic_reference(){
 
     for(std::string ins: insertions){
 	    for(long abs_val: ins_positions){
+	      cout<<endl<<"Position: "<<abs_val<<endl;	
 		    g.insert_at(ins, abs_val);
 		    check_insert_at(g,ins,abs_val,reference);
 		    check_search(g,reference);    	
@@ -232,8 +233,7 @@ void test_search(){
 	cout << "test_search(): Complete" << std::endl << std::endl;
 
 }
-
-void test_snp_at()
+/*void test_snp_at()
 {
  	cout << std::endl << "snp_at(): Start" << std::endl;
 	
@@ -266,23 +266,24 @@ void test_snp_at()
 	//somewhere in the middle
 	
 }
+*/
 
 void test_insert_at()
 {
  	cout << std::endl << "insert_at(): Start" << std::endl;
 	
 	//length of insertion <K, >K, =K, =1
-	std::vector<std::string> insertions {"ATG", "TTGTAC", "ATCG", "C"}; 
+	std::vector<std::string> insertions {"ATG", "TTGTAC", "ATCG", "C","TTTTTTTT"}; 
 
  	for(std::string ins: insertions){
 		
 		genome g;
-		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+		std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
 		g.set_reference(reference);
 		g.construct_hash();
 		
 		//Randomize? 
-		std::vector<unsigned long> positions {reference.length()-K,2,5,4,7,11,12};
+		std::vector<unsigned long> positions {reference.length()-K,2,5,4,7,11,12,24,36,30};
 
 		for(long p: positions){
 		  		//std::cout << "Test: " << pos << " " << del_len << " " << reference <<  std::endl;
@@ -451,14 +452,139 @@ void test_indels(){
 	}
 	cout << "Indel check: Complete" << std::endl;
 }
+void check_snp_at(genome g, string ins, long abs_val, string &reference)
+{	
+
+  	//test if the the skip list has been updated..
+	skip_list s = g.get_skip_list();
+	//check_skip_list_node(s, abs_val, ins); 
+	
+	//check if the reference has been updated
+	reference.erase(abs_val,ins.length());
+	reference.insert(abs_val,ins);
+	assert(reference == g.read_reference_at(0,0,reference.length()));
+
+	//now check the hash
+	//update the reference and construct hash for the same	
+	genome g_temp;
+	g_temp.set_reference(reference);
+	g_temp.construct_hash();
+
+	auto m_temp = g_temp.get_hash();
+	auto m_genome = g.get_hash();
+	test_hash(m_temp,m_genome,s);
+}
+void test_snp_at(){
+	
+    
+ 	cout << std::endl << "Checking snp_at..: Start" << std::endl;
+	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+	//length of insertion <K, >K, =K, =1
+	std::vector<std::string> insertions {"ATGATGATGATG", "TTGTACATGATG", "ATCGATCGATGATG", "CATCGATGATG"}; 
+	std::vector<long> del_lengths {1,2};
+	for(std::string ins: insertions){
+		
+		genome g;
+		
+		g.set_reference(reference);
+		g.construct_hash();
+		
+		//Randomize? 
+		std::vector<unsigned long> positions {21,42,60,75,95,110,130};
+
+		for(long p: positions){
+		  cout<<endl<<"Position: "<<p<<endl;	
+		  g.snp_at(p,"ATCCG");
+			cout<<endl<<"Position: "<<p<<endl;	
+			check_snp_at(g, "ATCCG", p, reference);
+			
+			g.insert_at(ins, p);
+			check_insert_at(g, ins, p, reference);
+			cout<<endl<<"Position: "<<p<<endl;	
+			g.snp_at(p,"ATCCG");
+			cout<<endl<<"Position: "<<p<<endl;	
+			check_snp_at(g, "ATCCG", p, reference);
+			cout<<endl<<"Position: "<<p<<endl;	
+			for(long d:del_lengths){
+			    g.delete_at(p+2,d);
+			    check_delete_at(g, p+2,d,reference);
+			    
+			    g.delete_at(p+1,d);
+			    check_delete_at(g, p+1,d,reference);
+		
+			    g.delete_at(p,d);
+			    check_delete_at(g, p,d,reference);
+			    
+			    
+			    g.delete_at(p-10,d);
+			    check_delete_at(g, p-10,d,reference);
+			    
+			}
+		
+		//g.get_skip_list().print_list();
+		//g.get_skip_list().print_base_level();
+		}
+	}
+	del_lengths= {1};
+	insertions= {"TT", "TG", "AT", "CA"}; 
+	reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+	for(std::string ins: insertions){
+		
+		genome g;
+		
+		g.set_reference(reference);
+		g.construct_hash();
+		
+		//Randomize? 
+		std::vector<unsigned long> positions {21,42,23,60,75,95,110,130};
+
+		for(long p: positions){
+		  cout<<endl<<"Position new: "<<p<<" ins "<<ins<<endl;	
+			g.insert_at(ins, p);
+			check_insert_at(g, ins, p, reference);
+			for(long d:del_lengths){
+			   
+			    g.delete_at(p+1,d);
+			    check_delete_at(g, p+1,d,reference);
+			    
+			    g.delete_at(p,d);
+			    check_delete_at(g, p,d,reference);
+			    
+			    g.delete_at(p+10,d);
+			    check_delete_at(g, p+10,d,reference);
+			    
+			    g.insert_at(ins, p);
+			    check_insert_at(g, ins, p, reference);
+			    
+			    g.delete_at(p+2,d);
+			    check_delete_at(g, p+2,d,reference);
+			    
+			    g.delete_at(p+3,d);
+			    check_delete_at(g, p+3,d,reference);
+			    
+			    g.insert_at(ins,p+3);
+			    check_insert_at(g, ins,p+3,reference);
+			    
+			    g.delete_at(p-10,d);
+			    check_delete_at(g, p-10,d,reference);
+			    
+			}
+			
+		}
+	}
+	cout << "Indel check: Complete" << std::endl;
+}
+
+
 void test(){
 
 	std::cout << std::endl <<  "Testing: Start" << std::endl;
 	
-	test_snp_at();
+	
 	test_insert_at();
 	test_delete_at();
 	test_indels();
+	test_snp_at();
 	test_search();
 	
 	std::cout << "Testing: Complete!" << std::endl << std::endl << std::endl;

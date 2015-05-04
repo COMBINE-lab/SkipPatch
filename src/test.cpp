@@ -494,29 +494,37 @@ void test_snp_at(){
 		std::vector<unsigned long> positions {21,42,60,75,95,110,130};
 
 		for(long p: positions){
-		  	g.snp_at(p,"ATCCG");
-			check_snp_at(g, "ATCCG", p, reference);
+		  	g.snp_at(p,"ATC");
+			check_snp_at(g, "ATC", p, reference);
 			
 			g.insert_at(ins, p);
 			check_insert_at(g, ins, p, reference);
 
-			g.snp_at(p,"ATCCG");
-			check_snp_at(g, "ATCCG", p, reference);
+			g.snp_at(p,"C");
+			check_snp_at(g, "C", p, reference);
 
 			for(long d:del_lengths){
 			    g.delete_at(p+2,d);
 			    check_delete_at(g, p+2,d,reference);
 			    
+			g.snp_at(p,"AGT");
+			check_snp_at(g, "AGT", p, reference);
 			    g.delete_at(p+1,d);
 			    check_delete_at(g, p+1,d,reference);
 		
+			g.snp_at(p,"TTTTTTTTT");
+			check_snp_at(g, "TTTTTTTTT", p, reference);
 			    g.delete_at(p,d);
 			    check_delete_at(g, p,d,reference);
 			    
+			g.snp_at(p,"GGG");
+			check_snp_at(g, "GGG", p, reference);
 			    
 			    g.delete_at(p-10,d);
 			    check_delete_at(g, p-10,d,reference);
 			    
+			g.snp_at(p,"AT");
+			check_snp_at(g, "AT", p, reference);
 			}
 		
 		//g.get_skip_list().print_list();
@@ -540,26 +548,43 @@ void test_snp_at(){
 		  	//cout<<endl<<"Position new: "<<p<<" ins "<<ins<<endl;	
 			g.insert_at(ins, p);
 			check_insert_at(g, ins, p, reference);
+			
+			g.snp_at(p,"TT");
+			check_snp_at(g, "TT", p, reference);
 			for(long d:del_lengths){
 			   
+			g.snp_at(p,"TTT");
+			check_snp_at(g, "TTT", p, reference);
 			    g.delete_at(p+1,d);
 			    check_delete_at(g, p+1,d,reference);
 			    
+			g.snp_at(p,"ATC");
+			check_snp_at(g, "ATC", p, reference);
 			    g.delete_at(p,d);
 			    check_delete_at(g, p,d,reference);
 			    
+			g.snp_at(p,"AG");
+			check_snp_at(g, "AG", p, reference);
 			    g.delete_at(p+10,d);
 			    check_delete_at(g, p+10,d,reference);
 			    
+			g.snp_at(p,"ATCCG");
+			check_snp_at(g, "ATCCG", p, reference);
 			    g.insert_at(ins, p);
 			    check_insert_at(g, ins, p, reference);
 			    
+			g.snp_at(p,"T");
+			check_snp_at(g, "T", p, reference);
 			    g.delete_at(p+2,d);
 			    check_delete_at(g, p+2,d,reference);
 			    
+			g.snp_at(p,"A");
+			check_snp_at(g, "A", p, reference);
 			    g.delete_at(p+3,d);
 			    check_delete_at(g, p+3,d,reference);
 			    
+			g.snp_at(p,"ATG");
+			check_snp_at(g, "ATG", p, reference);
 			    g.insert_at(ins,p+3);
 			    check_insert_at(g, ins,p+3,reference);
 			    
@@ -573,6 +598,131 @@ void test_snp_at(){
 	cout << "snp_at(): Complete" << std::endl;
 }
 
+void test_search_at(){
+	
+    
+ 	cout << std::endl << "snp_at(): Start" << std::endl;
+	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+	//length of insertion <K, >K, =K, =1
+	std::vector<std::string> insertions {"ATGATGATGATG", "TTGTACATGATG", "ATCGATCGATGATG", "CATCGATGATG"}; 
+	std::vector<long> del_lengths {1,2};
+	for(std::string ins: insertions){
+		
+		genome g;
+		
+		g.set_reference(reference);
+		g.construct_hash();
+		
+		//Randomize? 
+		std::vector<unsigned long> positions {21,42,60,75,95,110,130};
+
+		for(long p: positions){
+		  	g.snp_at(p,"ATC");
+			check_snp_at(g, "ATC", p, reference);
+			check_search(g,reference); 
+			g.insert_at(ins, p);
+			check_insert_at(g, ins, p, reference);
+			check_search(g,reference); 
+			g.snp_at(p,"C");
+			check_snp_at(g, "C", p, reference);
+			check_search(g,reference); 
+			for(long d:del_lengths){
+			    g.delete_at(p+2,d);
+			    check_delete_at(g, p+2,d,reference);
+			check_search(g,reference); 
+			g.snp_at(p,"AGT");
+			check_snp_at(g, "AGT", p, reference);
+			check_search(g,reference); 
+			    g.delete_at(p+1,d);
+			    check_delete_at(g, p+1,d,reference);
+			check_search(g,reference); 
+			g.snp_at(p,"TTTTTTTTT");
+			check_snp_at(g, "TTTTTTTTT", p, reference);
+			    g.delete_at(p,d);
+			    check_delete_at(g, p,d,reference);
+			check_search(g,reference); 
+			g.snp_at(p,"GGG");
+			check_snp_at(g, "GGG", p, reference);
+			check_search(g,reference); 
+			    g.delete_at(p-10,d);
+			    check_delete_at(g, p-10,d,reference);
+			check_search(g,reference);     
+			g.snp_at(p,"AT");
+			check_snp_at(g, "AT", p, reference);
+			check_search(g,reference); 
+			}
+		
+		//g.get_skip_list().print_list();
+		//g.get_skip_list().print_base_level();
+		}
+	}
+	del_lengths= {1};
+	insertions= {"TT", "TG", "AT", "CA"}; 
+	reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+	for(std::string ins: insertions){
+		
+		genome g;
+		
+		g.set_reference(reference);
+		g.construct_hash();
+		
+		//Randomize? 
+		std::vector<unsigned long> positions {21,42,23,60,75,95,110,130};
+
+		for(long p: positions){
+		  	//cout<<endl<<"Position new: "<<p<<" ins "<<ins<<endl;	
+			g.insert_at(ins, p);
+			check_insert_at(g, ins, p, reference);
+			
+			g.snp_at(p,"TT");
+			check_snp_at(g, "TT", p, reference);
+			check_search(g,reference); 
+			for(long d:del_lengths){
+			   
+			g.snp_at(p,"TTT");
+			check_snp_at(g, "TTT", p, reference);
+			    g.delete_at(p+1,d);
+			    check_delete_at(g, p+1,d,reference);
+			check_search(g,reference); 
+			g.snp_at(p,"ATC");
+			check_snp_at(g, "ATC", p, reference);
+			    g.delete_at(p,d);
+			    check_delete_at(g, p,d,reference);
+			check_search(g,reference); 
+			g.snp_at(p,"AG");
+			check_snp_at(g, "AG", p, reference);
+			    g.delete_at(p+10,d);
+			    check_delete_at(g, p+10,d,reference);
+			check_search(g,reference); 
+			g.snp_at(p,"ATCCG");
+			check_snp_at(g, "ATCCG", p, reference);
+			    g.insert_at(ins, p);
+			    check_insert_at(g, ins, p, reference);
+			check_search(g,reference); 
+			g.snp_at(p,"T");
+			check_snp_at(g, "T", p, reference);
+			    g.delete_at(p+2,d);
+			    check_delete_at(g, p+2,d,reference);
+			 check_search(g,reference); 
+			g.snp_at(p,"A");
+			check_snp_at(g, "A", p, reference);
+			    g.delete_at(p+3,d);
+			    check_delete_at(g, p+3,d,reference);
+			 check_search(g,reference); 
+			g.snp_at(p,"ATG");
+			check_snp_at(g, "ATG", p, reference);
+			    g.insert_at(ins,p+3);
+			    check_insert_at(g, ins,p+3,reference);
+			    
+			    g.delete_at(p-10,d);
+			    check_delete_at(g, p-10,d,reference);
+			  check_search(g,reference); 
+			}
+			
+		}
+	}
+	cout << "snp_at(): Complete" << std::endl;
+}
 
 void test(){
 
@@ -583,7 +733,7 @@ void test(){
 	test_delete_at();
 	test_indels();
 	test_snp_at();
-	test_search();
+	test_search_at();
 	
 	std::cout << "Testing: Complete!" << std::endl << std::endl << std::endl;
 }

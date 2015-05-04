@@ -1,20 +1,20 @@
 import random
 import numpy
 import sys
-def testmedian(genome,totedits, medindel, insprob, delprob):
+import argparse
+
+def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
     #genome - path to genome
     #totedits - total number of edits to make
     #medindel - median (mean) size of indel edits. actual edit length determined from gaussian with mean medindel and std medindel/2
     #insprob - probability of insertion
     #delprob - probability of deletion
     #outputs all edits into a text file called "sampleedits.txt"
-    gfile = open(genome)
-    genome = gfile.readline()
-    gfile.close()
+
+    genome = genomeFile.readline()
+    genomeFile.close()
     numbases = len(genome)-1
     genome = genome[0:numbases]
-    outfile = 'sampleedits.txt'
-    f = open(outfile,'w')
     letters = ['A','C','G','T']
     randr = []
     allinds = []
@@ -44,7 +44,7 @@ def testmedian(genome,totedits, medindel, insprob, delprob):
                 instring += random.choice(letters)
             newline = edittype + '\t' + str(randval) + '\t' + instring + '\n'
             numbases += lenchange
-            f.write(newline)
+            outputFile.write(newline)
             for r in randr:
                 if r > randval:
                     randr.remove(r)
@@ -55,7 +55,7 @@ def testmedian(genome,totedits, medindel, insprob, delprob):
             edittype = val
             #lendel = max([int(round(random.gauss(medindel,medindel/2))),1])
             newline = edittype + '\t' + str(randval) + '\t' + str(randval+lenchange-1) + '\n'
-            f.write(newline)
+            outputFile.write(newline)
             numbases -= lenchange
             for r in randr:
                 if r > randval:
@@ -66,13 +66,30 @@ def testmedian(genome,totedits, medindel, insprob, delprob):
             edittype = val
             newSNP = random.choice(letters)
             newline = edittype + '\t' + str(randval) + '\t' + newSNP + '\n'
-            f.write(newline)
+            outputFile.write(newline)
         #if ed%100 == 0:
             #print newline
-    f.close()
+    outputFile.close()
 
-def main(argv=None):
-    testmedian(argv[1],int(argv[2]),int(argv[3]),float(argv[4]),float(argv[5]))
+def main(args):
+    print(args)
+    genomeFile = args.genome
+    totedits = args.totedits
+    meanindel = args.meanindel
+    insprob = args.insprob
+    delprob = args.delprob
+    outFile = args.output
+
+    testmedian(genomeFile, totedits, meanindel, insprob, delprob, outFile)
+    #testmedian(argv[1],int(argv[2]),int(argv[3]),float(argv[4]),float(argv[5]))
             
 if __name__ == '__main__':
-    main(sys.argv)
+    parser = argparse.ArgumentParser(description="Generate random edits following a gaussian distribution.")
+    parser.add_argument('--genome', type=argparse.FileType('r'), help='path to the genome')
+    parser.add_argument('--totedits', type=int, help='total number of edits to make')
+    parser.add_argument('--meanindel', type=float, help='mean size of indel edits')
+    parser.add_argument('--insprob', type=float, help='probability of insertion')
+    parser.add_argument('--delprob', type=float, help='probability of deletion')
+    parser.add_argument('--output', type=argparse.FileType('w'), help='file where edits should be written')
+    args = parser.parse_args()
+    main(args)

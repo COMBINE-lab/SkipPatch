@@ -79,11 +79,11 @@ void benchmark_insert(genome &g)
     
     return;
 }
-void get_input()
+void get_input(vector<tuple<string,long,char>> &vec)
 {
   
   
-  vector<tuple<string,long,char>> vec;
+//  vector<tuple<string,long,char>> vec;
   string g;
   ifstream myfile ("../scripts/output.txt");
   if (myfile.is_open())
@@ -98,17 +98,13 @@ void get_input()
       //cout<<g<<" conv val "<<l<<"\t";
       g.clear();
       getline( myfile,g, '\n');
-      //vec.push_back(make_tuple(g,l,c));
-      cout<<g<<endl;
+      vec.push_back(make_tuple(g,l,c));
+      //cout<<g<<endl;
     }      
   }
   else
   {
     cout<<"Cant open file :( "<<endl;
-  }
-  for(auto it:vec)
-  {
-    cout<<get<0>(it)<<"\t"<<get<1>(it)<<"\t"<<get<2>(it)<<endl;
   }
   return;
 }
@@ -116,9 +112,56 @@ void benchmark(genome &g){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;
     
-	//benchmark_construction(g);
+	benchmark_construction(g);
     
-    get_input();
+  vector<tuple<string,long,char>> vec;
+    get_input(vec);
+	tuple<long,long,long> count = make_tuple(0,0,0);
+	for(auto it:vec)
+	{
+		if(get<2>(it)=='I')
+			get<0>(count)+=1;
+		if(get<2>(it)=='D')
+			get<1>(count)+=1;
+		if(get<2>(it)=='S')
+			get<2>(count)+=1;
+	
+	}
+    struct timeval start, end;
+    struct timezone tzp;
+	
+    gettimeofday(&start, &tzp);
+ 
+   for(auto it:vec)
+  {
+    //cout<<get<0>(it)<<"\t"<<get<1>(it)<<"\t"<<get<2>(it)<<endl;
+	if(get<2>(it)=='I')
+	{
+//		cout<<"Inserting "<<get<0>(it)<<" at "<<get<1>(it);
+		g.insert_at(get<0>(it),get<1>(it));
+	}
+	if(get<2>(it)=='D')
+	{
+		cout<<"Deletion ! not yet writtten";
+		//g.delete_at(get<1>(it),get<0>(it));
+	}
+	if(get<2>(it)=='S')
+	{
+//		cout<<"Snp "<<get<0>(it)<<" at "<<get<1>(it);
+		g.snp_at(get<1>(it),get<0>(it));
+	}
+  }
+ gettimeofday(&end, &tzp);
+
+	std::string message = "Number of Insertions " + std::to_string(get<0>(count)) +
+				"Number of Deletions " + std::to_string(get<1>(count)) +
+ 				"Number of Snips " + std::to_string(get<2>(count)) +
+" "+ 
+				"...\t";
+    print_time_elapsed(message, &start, &end);
+    benchmark_search(g,1000,25);
+//    g.get_skip_list().print_list();
+
     /*benchmark_snp(g);
 
     benchmark_insert(g);

@@ -9,7 +9,7 @@
 
 #include "./skip_list/skip_list.h"
 
-#define K 4 //user defined parameter
+#define K 20 //user defined parameter
 
 class genome {
 

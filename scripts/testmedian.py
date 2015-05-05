@@ -14,7 +14,7 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
 
     if delprob + insprob > 1.0:
         raise "Error, delprob = {} and insprob = {}. "\
-              "The sum is {} >= 1.0".format(
+              "The sum is {} > 1.0".format(
                 delprob, insprob, delprob + insprob)
 
     genome = genomeFile.readline()

@@ -12,7 +12,7 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
     #delprob - probability of deletion
     #outputs all edits into a text file called "sampleedits.txt"
 
-    if delprob + insprob >= 1.0:
+    if delprob + insprob > 1.0:
         raise "Error, delprob = {} and insprob = {}. "\
               "The sum is {} >= 1.0".format(
                 delprob, insprob, delprob + insprob)
@@ -54,7 +54,7 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
             instring = ''
             for k in range(lenchange):
                 instring += random.choice(letters)
-            newline = edittype + '\t' + str(randval) + '\t' + instring + '\n'
+            newline = edittype + ' ' + str(randval) + ' ' + instring + '\n'
             numbases += lenchange
             outputFile.write(newline)
             for r in randr:
@@ -65,7 +65,7 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
             lenchange = max([int(round(random.gauss(medindel,medindel/2))),1])
             edittype = val
             #lendel = max([int(round(random.gauss(medindel,medindel/2))),1])
-            newline = edittype + '\t' + str(randval) + '\t' + str(randval+lenchange-1) + '\n'
+            newline = edittype + ' ' + str(randval) + ' ' + str(randval+lenchange-1) + '\n'
             outputFile.write(newline)
             numbases -= lenchange
             for r in randr:
@@ -75,7 +75,7 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
         elif val == 'S':
             edittype = val
             newSNP = random.choice(letters)
-            newline = edittype + '\t' + str(randval) + '\t' + newSNP + '\n'
+            newline = edittype + ' ' + str(randval) + ' ' + newSNP + '\n'
             outputFile.write(newline)
         #if ed%100 == 0:
             #print newline

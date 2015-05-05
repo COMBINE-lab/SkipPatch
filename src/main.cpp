@@ -46,8 +46,8 @@ int main(int argc, char* argv[]){
 
     //wabi_example();
 
-	test();
-	//benchmark(g);
+	//test();
+	benchmark(g);
 	
 	return 0;
 }

@@ -2,7 +2,7 @@
 #include "utils.h"
 
 #define TESTS 100
-
+using namespace std;
 void benchmark_construction(genome &g){
 
     //Calculating time elapsed
@@ -79,14 +79,47 @@ void benchmark_insert(genome &g)
     
     return;
 }
-
+void get_input()
+{
+  
+  
+  vector<tuple<string,long,char>> vec;
+  string g;
+  ifstream myfile ("../scripts/output.txt");
+  if (myfile.is_open())
+  {
+    while (getline(myfile, g, ' ') )
+    {
+      //cout<<g<<"\t";
+      char c = g[0];
+      g.clear();
+      getline( myfile,g, ' ');
+      long l = stol(g,nullptr,10);
+      //cout<<g<<" conv val "<<l<<"\t";
+      g.clear();
+      getline( myfile,g, '\n');
+      //vec.push_back(make_tuple(g,l,c));
+      cout<<g<<endl;
+    }      
+  }
+  else
+  {
+    cout<<"Cant open file :( "<<endl;
+  }
+  for(auto it:vec)
+  {
+    cout<<get<0>(it)<<"\t"<<get<1>(it)<<"\t"<<get<2>(it)<<endl;
+  }
+  return;
+}
 void benchmark(genome &g){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;
     
-	benchmark_construction(g);
-
-    benchmark_snp(g);
+	//benchmark_construction(g);
+    
+    get_input();
+    /*benchmark_snp(g);
 
     benchmark_insert(g);
 
@@ -94,7 +127,7 @@ void benchmark(genome &g){
     benchmark_search(g,TESTS,35);
     benchmark_search(g,TESTS,70);
     benchmark_search(g,TESTS,100);
-   
+   */
     std::cout<<"BENCHMARKING END"<<std::endl;
 
 }

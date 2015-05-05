@@ -2,6 +2,7 @@ import random
 import numpy
 import sys
 import argparse
+import bisect
 
 def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
     #genome - path to genome
@@ -11,6 +12,11 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
     #delprob - probability of deletion
     #outputs all edits into a text file called "sampleedits.txt"
 
+    if delprob + insprob >= 1.0:
+        raise "Error, delprob = {} and insprob = {}. "\
+              "The sum is {} >= 1.0".format(
+                delprob, insprob, delprob + insprob)
+
     genome = genomeFile.readline()
     genomeFile.close()
     numbases = len(genome)-1
@@ -18,24 +24,30 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
     letters = ['A','C','G','T']
     randr = []
     allinds = []
-    totrange = range(totedits)
-    t1 = 1 - delprob
-    t2 = t1 - insprob
-    SNPrange = int(t1*totedits)
-    insrange = int(insprob*totedits)
-    delrange = int(delprob*totedits)
+
+    snpProb = 1.0 - (insprob + delprob)
+    SNPrange = int(snpProb * totedits)
+    insrange = int(insprob * totedits)
+    delrange = int(delprob * totedits)
+
+    editTypes = (['S'] * SNPrange) +\
+                (['D'] * delrange) +\
+                (['I'] * insrange)
+
+    random.shuffle(editTypes)
     start = True
-    while sum([SNPrange,insrange,delrange]) > 0:
+    numEdits = 0
+
+    for val in editTypes:
+        numEdits += 1
         if start:
             lenchange = max([int(round(random.gauss(medindel,medindel/2))),1])
             randval = random.randrange(20,numbases - lenchange - 20)
             start = False
-        val = random.choice(['I','D','S'])
         while randval in randr:
             randval = random.randrange(20,numbases - lenchange - 20)
         randr.append(randval)
-        if val == 'I' and insrange > 0:
-            insrange -= 1
+        if val == 'I':
             lenchange = max([int(round(random.gauss(medindel,medindel/2))),1])
             #leninsert = max([int(round(random.gauss(medindel,medindel/2))),1])
             edittype = val
@@ -49,8 +61,7 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
                 if r > randval:
                     randr.remove(r)
                     randr.append(r+lenchange)
-        elif val == 'D' and delrange > 0:
-            delrange -= 1
+        elif val == 'D':
             lenchange = max([int(round(random.gauss(medindel,medindel/2))),1])
             edittype = val
             #lendel = max([int(round(random.gauss(medindel,medindel/2))),1])
@@ -61,8 +72,7 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
                 if r > randval:
                     randr.remove(r)
                     randr.append(r-lenchange)
-        elif val == 'S' and SNPrange > 0:
-            SNPrange -= 1
+        elif val == 'S':
             edittype = val
             newSNP = random.choice(letters)
             newline = edittype + '\t' + str(randval) + '\t' + newSNP + '\n'
@@ -72,7 +82,6 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
     outputFile.close()
 
 def main(args):
-    print(args)
     genomeFile = args.genome
     totedits = args.totedits
     meanindel = args.meanindel
@@ -82,7 +91,7 @@ def main(args):
 
     testmedian(genomeFile, totedits, meanindel, insprob, delprob, outFile)
     #testmedian(argv[1],int(argv[2]),int(argv[3]),float(argv[4]),float(argv[5]))
-            
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate random edits following a gaussian distribution.")
     parser.add_argument('--genome', type=argparse.FileType('r'), help='path to the genome')

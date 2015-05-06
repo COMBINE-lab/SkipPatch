@@ -25,7 +25,9 @@ void benchmark_search(genome &g, int num_patterns, int pattern_len){
 
 	gettimeofday(&start, &tzp);
 	for(int i=0;i<num_patterns;i++){
-		g.search(generate_random_string(pattern_len));
+		string temp = generate_random_string(pattern_len);		
+			cout<<temp<<" "<<i<<endl;
+	auto vec = g.search(temp);
 	}
 	gettimeofday(&end, &tzp);
 
@@ -79,13 +81,13 @@ void benchmark_insert(genome &g)
     
     return;
 }
-void get_input(vector<tuple<string,long,char>> &vec)
+void get_input(vector<tuple<string,long,char>> &vec,string path)
 {
   
   
 //  vector<tuple<string,long,char>> vec;
   string g;
-  ifstream myfile ("../scripts/output.txt");
+  ifstream myfile (path);
   if (myfile.is_open())
   {
     while (getline(myfile, g, ' ') )
@@ -108,14 +110,14 @@ void get_input(vector<tuple<string,long,char>> &vec)
   }
   return;
 }
-void benchmark(genome &g){
+void benchmark(genome &g,string path){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;
     
 	benchmark_construction(g);
     
   vector<tuple<string,long,char>> vec;
-    get_input(vec);
+    get_input(vec,path);
 	tuple<long,long,long> count = make_tuple(0,0,0);
 	for(auto it:vec)
 	{
@@ -159,7 +161,8 @@ void benchmark(genome &g){
 " "+ 
 				"...\t";
     print_time_elapsed(message, &start, &end);
-    benchmark_search(g,1000,25);
+	cout<<g.get_length();
+    benchmark_search(g,10,25);
 //    g.get_skip_list().print_list();
 
     /*benchmark_snp(g);

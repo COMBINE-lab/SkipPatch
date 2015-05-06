@@ -12,11 +12,15 @@ using namespace std;
 //#define BENCHMARK 0
 //#define DEBUG 0
 
-void genome::get_input()
+void genome::get_input(string path)
 {
     //ignore_first_line();
+ ifstream myfile (path);
+  if (myfile.is_open())
+  {
+
     std::string input;
-    while(getline(std::cin, input)){
+    while(getline(myfile, input)){
         reference+=input;
         input.clear();
     }
@@ -26,6 +30,11 @@ void genome::get_input()
 
     ins = std::vector<bool>(get_length(),false);
     del = std::vector<bool>(get_length(),false);
+}
+else
+	{
+		cout<<"File is not open";
+	}
 }
 
 void genome::set_reference(std::string input)
@@ -221,9 +230,12 @@ std::vector<long> genome::search(std::string read){
 
 	//Read the first k-mer of the read and find all the positions it occurrs at
 	std::string read_kmer = read.substr(0,K); 
-    auto search = m.find(read_kmer)->second;
-
-    if(!search.empty()){
+	auto f = m.find(read_kmer);
+	
+	if(f!=m.end()){
+		auto search = f->second;
+	
+    //if(!search.empty()){
 
     	//Remove duplicates, take care of multiple occurrences of a read starting from within an insertion later
     	std::sort(search.begin(),search.end());

@@ -41,13 +41,13 @@ int main(int argc, char* argv[]){
 	*/
 
 	genome g;
-	g.get_input();
+	g.get_input(argv[1]);
 	g.construct_hash();
 
     //wabi_example();
 
 	//test();
-	benchmark(g);
+	benchmark(g,argv[2]);
 	
 	return 0;
 }

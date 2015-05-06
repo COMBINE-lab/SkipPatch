@@ -23,7 +23,7 @@ private:
 public:
 
     //Get the reference sequence from input
-    void get_input();
+    void get_input(std::string);
 
     //Getters and setters
     void set_reference(std::string);

@@ -5,7 +5,7 @@
 #include "genome.h"
 #include "utils.h"
 
-void benchmark(genome &);
+void benchmark(genome &,std::string);
 
 void benchmark_construction(genome &);
 

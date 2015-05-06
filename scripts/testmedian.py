@@ -57,10 +57,15 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
             newline = edittype + ' ' + str(randval) + ' ' + instring + '\n'
             numbases += lenchange
             outputFile.write(newline)
+            for r in range(len(randr)):
+		if randr[r] > randval:
+		    randr[r] +=lenchange
+            '''
             for r in randr:
                 if r > randval:
                     randr.remove(r)
                     randr.append(r+lenchange)
+            '''
         elif val == 'D':
             lenchange = max([int(round(random.gauss(medindel,medindel/2))),1])
             edittype = val
@@ -68,10 +73,15 @@ def testmedian(genomeFile, totedits, medindel, insprob, delprob, outputFile):
             newline = edittype + ' ' + str(randval) + ' ' + str(randval+lenchange-1) + '\n'
             outputFile.write(newline)
             numbases -= lenchange
+            '''
             for r in randr:
                 if r > randval:
                     randr.remove(r)
                     randr.append(r-lenchange)
+            '''
+            for r in range(len(randr)):
+		if randr[r] > randval:
+		    randr[r] -=lenchange
         elif val == 'S':
             edittype = val
             newSNP = random.choice(letters)

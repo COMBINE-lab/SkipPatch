@@ -81,7 +81,7 @@ void benchmark_insert(genome &g)
     
     return;
 }
-void get_input(vector<tuple<string,long,char>> &vec,string path)
+void get_input(vector<tuple<string,long,char,long>> &vec,string path)
 {
   
   
@@ -100,7 +100,12 @@ void get_input(vector<tuple<string,long,char>> &vec,string path)
       //cout<<g<<" conv val "<<l<<"\t";
       g.clear();
       getline( myfile,g, '\n');
-      vec.push_back(make_tuple(g,l,c));
+	long l_del=0;
+	if(c=='D')
+	{
+		l_del = stol(g,nullptr,10);
+	}
+      vec.push_back(make_tuple(g,l,c,l_del));
       //cout<<g<<endl;
     }      
   }
@@ -116,7 +121,7 @@ void benchmark(genome &g,string path){
     
 	benchmark_construction(g);
     
-  vector<tuple<string,long,char>> vec;
+  vector<tuple<string,long,char,long>> vec;
     get_input(vec,path);
 	tuple<long,long,long> count = make_tuple(0,0,0);
 	for(auto it:vec)
@@ -144,8 +149,8 @@ void benchmark(genome &g,string path){
 	}
 	if(get<2>(it)=='D')
 	{
-		cout<<"Deletion ! not yet writtten";
-		//g.delete_at(get<1>(it),get<0>(it));
+		//cout<<"Deletion ! not yet writtten";
+		g.delete_at(get<1>(it),get<3>(it)-get<1>(it)+1);
 	}
 	if(get<2>(it)=='S')
 	{

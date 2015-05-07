@@ -127,14 +127,20 @@ int main(int argc, char *argv[]) {
 	gettimeofday(&start, &tzp);
 	wt->addText(text,n);
 	gettimeofday(&end, &tzp);
-	print_time_elapsed("DynSA: Index build time: ", &start, &end);
+	print_time_elapsed("DynSA: Building Index: ", &start, &end);
+
+	int test_count=0;
 
 	//Read data
   	vector<tuple<char, long, string>> input_data;
   	get_test_input(argv[2],input_data);
 
-	gettimeofday(&start, &tzp); 
+	gettimeofday(&start, &tzp);
+
 	for(auto it: input_data){
+
+		if(test_count>=stoi(argv[4],nullptr,10))
+			break;
 
   		if(get<0>(it)=='I') {
 			//cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it) << endl;
@@ -142,16 +148,19 @@ int main(int argc, char *argv[]) {
 			strcpy( (char*)ins, (get<2>(it)).c_str() );
 			wt->addChars(ins, get<2>(it).length(), get<1>(it)+2); //wt->addChars(patterns[i], length_patterns[i], ins_indexes[i]+1);
    			total_length_ins += get<2>(it).length();   	
+   			test_count++;
 		}
 		if(get<0>(it)=='D') {
 			//cout<<"Deleting from "<< get<1>(it) <<" to "<< stoi(get<2>(it))+get<1>(it)-1 << endl;
-			wt->deleteChars(stoi(get<2>(it),nullptr,10), get<1>(it)+2); //wt->deleteChars(length_del[i], del_indexes[i]+1);
-    		total_length_del += get<1>(it);
+			wt->deleteChars(stoi(get<2>(it),nullptr,10)-get<1>(it)+1, get<1>(it)); //wt->deleteChars(length_del[i], del_indexes[i]+1);
+    		total_length_del += (stoi(get<2>(it),nullptr,10)-get<1>(it));
+    		test_count++;
 		}
 		if(get<0>(it)=='S') {
 			//cout<<"SNP "<<get<2>(it)<<" at "<<get<1>(it) << endl;
 			wt->deleteChars( stoi(get<2>(it),nullptr,10), get<1>(it)+2);
 			wt->addChars((uchar *)&get<2>(it), get<2>(it).length(), get<1>(it)+2);
+			test_count++;
 		}
   	}
 	gettimeofday(&end, &tzp);
@@ -179,6 +188,9 @@ int main(int argc, char *argv[]) {
 	std::ofstream outfile (output_file);
 	outfile << newtext;
 	outfile.close();
+
+	std::cout << text << endl;
+	std::cout << newtext << endl;
 
   	if (n!=length) { // Clearly, if length is different from the expected length, we have a big problem!
     	cerr << "Houston, we have a problem...   " << " n = " << n << ", length = " << length << endl;

@@ -1,6 +1,6 @@
 CC	= g++ 
 CFLAGS = -c -Wall -Werror -fmax-errors=3
-LIBARG	= -g -std=c++11 
+LIBARG	= -g -O3 -funroll-loops -std=c++11 
 INCLUDE = -I . 
 TARGET	= skip_list skip_list_test
 SRC	= $(addsuffix .cpp, $(TARGET))

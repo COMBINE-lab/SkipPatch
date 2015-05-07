@@ -38,9 +38,11 @@ public:
     std::string read_reference_abs_at(const long,const long,long &);
     void read_reference_abs_at(const long ,const long ,long&,unsigned long&,std::string&);
     //Hash table functions
+    void load_hash(const std::string& fname);
+    void save_hash(const std::string& fname);
     void construct_hash();
     float get_load_factor();
-    
+
     //Display functions
     void display_genome();
     void display_updated_genome();
@@ -50,21 +52,21 @@ public:
     //Modify the hash table to add/remove positions at which a k-mer occurs
     void remove_kmer_from_hash_at(long, std::string);
     void add_kmer_from_hash_at(long, std::string);
-    
-    //Translating positions between the genome and virtual coordinate systems        
+
+    //Translating positions between the genome and virtual coordinate systems
     long get_genome_position_from_virtual_position(long);
     void get_genome_position_from_virtual_position(long, long &, unsigned long &, node**);
     long get_virtual_position_from_genome_position(long,long);
 
     //In-place update: Replace the segment in the reference at a particular point with the given variant
     void snp_at(long, std::string);
-    
+
     //Make an insertion at a given location
     void insert_at(const std::string, const unsigned long);
 
     //Make a deletion at a given location
     void delete_at(const unsigned long, const unsigned long);
-    
+
     //Search for all the occurrences of a read
     std::vector<long> search(std::string);
 

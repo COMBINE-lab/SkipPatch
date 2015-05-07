@@ -11,16 +11,16 @@ void wabi_example(){
 	example.set_reference("AGCTTTTCATTCTGA");
 	example.construct_hash();
 	example.display_hash();
-	
+
 	example.snp_at(4,"G");
 	example.display_hash();
-	
+
 	example.insert_at("TGAA",7);
 	example.display_hash();
 	example.get_skip_list().print_list();
 	example.get_skip_list().print_base_level();
 	example.display_updated_genome();
-	
+
 	example.insert_at("AT",3);
 	example.insert_at("TAC",16);
 	example.display_hash();
@@ -31,7 +31,7 @@ void wabi_example(){
 }
 
 int main(int argc, char* argv[]){
-	
+
 	/*
 	if (argc < 3) {
         std::cerr << "Usage: " << argv[0] << " input_file_name" << " K" << std::endl;
@@ -42,12 +42,13 @@ int main(int argc, char* argv[]){
 
 	genome g;
 	g.get_input(argv[1]);
-	g.construct_hash();
+    // ROB edit --- are we constructing the hash twice?
+	//g.construct_hash();
 
     //wabi_example();
 
 	//test();
 	benchmark(g,argv[2]);
-	
+
 	return 0;
 }

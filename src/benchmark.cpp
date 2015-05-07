@@ -12,20 +12,27 @@ void benchmark_construction(genome &g){
     gettimeofday(&start, &tzp);
     g.construct_hash();
     gettimeofday(&end, &tzp);
-    
+
     print_time_elapsed("Constructing Hash: ", &start, &end);
+
+//    gettimeofday(&start, &tzp);
+//    std::string fname("hashdump.bin");
+//    g.save_hash(fname);
+//    gettimeofday(&end, &tzp);
+//
+//    print_time_elapsed("Saving hash to file: ", &start, &end);
 
     return;
 }
 
 void benchmark_search(genome &g, int num_patterns, int pattern_len){
-  
+
 	struct timeval start, end;
 	struct timezone tzp;
 
 	gettimeofday(&start, &tzp);
 	for(int i=0;i<num_patterns;i++){
-		string temp = generate_random_string(pattern_len);		
+		string temp = generate_random_string(pattern_len);
 //			cout<<temp<<" "<<i<<endl;
 	auto vec = g.search(temp);
 	}
@@ -41,11 +48,11 @@ void benchmark_snp(genome &g)
 {
     struct timeval start, end;
     struct timezone tzp;
-	
+
     std::vector<std::pair<long,char>> random = generate_random_inserts(TESTS,g.get_length());
 
     gettimeofday(&start, &tzp);
-    
+
     for(std::vector<std::pair<long,char>>::iterator i=random.begin(); i!=random.end(); i++){
         long position = i->first;
         char character = i->second;
@@ -55,18 +62,18 @@ void benchmark_snp(genome &g)
 
 	std::string message = "Inserting " + std::to_string(TESTS) + " SNPs at random locations"+ "...\t";
     print_time_elapsed(message, &start, &end);
-    
+
     return;
 }
 void benchmark_insert(genome &g)
 {
     struct timeval start, end;
     struct timezone tzp;
-	
+
     std::vector<std::pair<long,char>> random = generate_random_inserts(TESTS,g.get_length());
 
     gettimeofday(&start, &tzp);
-    
+
     for(std::vector<std::pair<long,char>>::iterator i=random.begin(); i!=random.end(); i++){
         long position = i->first;
         char character = i->second;
@@ -78,13 +85,13 @@ void benchmark_insert(genome &g)
 
 	std::string message = "Inserting " + std::to_string(TESTS) + " strings at random locations"+ "...\t";
     print_time_elapsed(message, &start, &end);
-    
+
     return;
 }
 void get_input(vector<tuple<string,long,char,long>> &vec,string path)
 {
-  
-  
+
+
 //  vector<tuple<string,long,char>> vec;
   string g;
   ifstream myfile (path);
@@ -107,7 +114,7 @@ void get_input(vector<tuple<string,long,char,long>> &vec,string path)
 	}
       vec.push_back(make_tuple(g,l,c,l_del));
       //cout<<g<<endl;
-    }      
+    }
   }
   else
   {
@@ -118,9 +125,9 @@ void get_input(vector<tuple<string,long,char,long>> &vec,string path)
 void benchmark(genome &g,string path){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;
-    
+
 	benchmark_construction(g);
-    
+
   vector<tuple<string,long,char,long>> vec;
     get_input(vec,path);
 	tuple<long,long,long> count = make_tuple(0,0,0);
@@ -132,13 +139,13 @@ void benchmark(genome &g,string path){
 			get<1>(count)+=1;
 		if(get<2>(it)=='S')
 			get<2>(count)+=1;
-	
+
 	}
     struct timeval start, end;
     struct timezone tzp;
-	
+
     gettimeofday(&start, &tzp);
- 
+
    for(auto it:vec)
   {
     //cout<<get<0>(it)<<"\t"<<get<1>(it)<<"\t"<<get<2>(it)<<endl;
@@ -182,11 +189,11 @@ void benchmark(genome &g,string path){
 
 
 }
-	
+
 //Open test file
 /*	std::fstream referenceFile;
 referenceFile.open("./../data/input.txt");
-if( !referenceFile || referenceFile.eof() ){ 
-    std::cout << "Error: Reference Sequence File Not Found.\n"; exit(2); 
+if( !referenceFile || referenceFile.eof() ){
+    std::cout << "Error: Reference Sequence File Not Found.\n"; exit(2);
 }*/
- 	
+

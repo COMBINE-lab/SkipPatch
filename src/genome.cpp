@@ -417,7 +417,10 @@ void genome::insert_at(const std::string insertion, const unsigned long insert_p
 }
 
 void genome::delete_at(const unsigned long delete_pos_abs, const unsigned long del_len){
-
+	if(!s.is_valid_delete(delete_pos_abs,del_len))
+	{
+	  cout<<"Invalid delete caught!"<<endl;
+	}
 	auto kmers_to_replace = get_kmers(delete_pos_abs-K+1,K-1);
 	int i=0;
 

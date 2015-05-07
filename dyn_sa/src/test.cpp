@@ -57,7 +57,7 @@ uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
 }
 
 void usage(char *program) {
-    cerr << "Usage (NOW): " << program << " <filename_reference> <input_data> " << endl;
+    cerr << "Usage (NOW): " << program << " <filename_input_reference> <input_test_data> <filename_output_updated_reference> <number_of_edits>" << endl;
     cerr << "Usage (EARLIER): " << program << " <filename> [lcp] [getSA <num_queries>] [insert (<file to ins.> <pos of ins.>)+] [delete (<pos. to delete> <length of deletion>)+] " << endl;
     exit(1);
 }
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     struct timeval start, end;
     struct timezone tzp;
 
-  	if (argc < 2) {
+  	if (argc < 4) {
     	usage(argv[0]);
   	}
 
@@ -175,12 +175,10 @@ int main(int argc, char *argv[]) {
       		break;
   	}
 
-  	std::string output_file (argv[1] + std::string(".dynsa.updated.reference"));
+  	std::string output_file (argv[3] + std::string(".") + std::string(argv[4]) + std::string(".dynsa"));
 	std::ofstream outfile (output_file);
 	outfile << newtext;
 	outfile.close();
-
-  	//std::cout << newtext << std::endl;
 
   	if (n!=length) { // Clearly, if length is different from the expected length, we have a big problem!
     	cerr << "Houston, we have a problem...   " << " n = " << n << ", length = " << length << endl;

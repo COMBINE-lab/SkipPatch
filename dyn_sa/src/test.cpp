@@ -143,27 +143,27 @@ int main(int argc, char *argv[]) {
 			break;
 
   		if(get<0>(it)=='I') {
-			cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it)+1 << endl;
+			//cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it) << endl;
 			uchar *ins = new uchar[ (get<2>(it)).length()+1 ];
 			strcpy( (char*)ins, (get<2>(it)).c_str() );
-			wt->addChars(ins, get<2>(it).length(), get<1>(it)+2); //wt->addChars(patterns[i], length_patterns[i], ins_indexes[i]+1);
+			wt->addChars(ins, get<2>(it).length(), get<1>(it)+1); //wt->addChars(patterns[i], length_patterns[i], ins_indexes[i]+1);
    			total_length_ins += get<2>(it).length();   	
    			test_count++;
 		}
 		if(get<0>(it)=='D') {
-			cout<<"Deleting from "<< get<1>(it)+1 <<" to "<< stoi(get<2>(it))+1 << endl;
-			wt->deleteChars(stoi(get<2>(it),nullptr,10)-get<1>(it)+1, get<1>(it)); //wt->deleteChars(length_del[i], del_indexes[i]+1);
+			//cout<<"Deleting from "<< get<1>(it)+1 <<" to "<< stoi(get<2>(it))+1 << endl;
+			wt->deleteChars(stoi(get<2>(it),nullptr,10)-get<1>(it)+1, get<1>(it)+1); //wt->deleteChars(length_del[i], del_indexes[i]+1);
     		total_length_del += (stoi(get<2>(it),nullptr,10)-get<1>(it));
     		test_count++;
 		}
 		if(get<0>(it)=='S') {
-			cout<<"SNP "<<get<2>(it)<<" at "<<get<1>(it) << endl;
+			//cout<<"SNP "<<get<2>(it)<<" at "<<get<1>(it) << endl;
 			uchar *ins = new uchar[ (get<2>(it)).length()+1 ];
 			strcpy( (char*)ins, (get<2>(it)).c_str() );
 			
-			cout<<"Deleting from "<< get<1>(it) <<" to "<< (get<2>(it)).length()+get<1>(it)-1 << endl;
+			//cout<<"Deleting from "<< get<1>(it) <<" to "<< (get<2>(it)).length()+get<1>(it)-1 << endl;
 			wt->deleteChars((get<2>(it)).length(), get<1>(it)+1);
-			cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it) << endl;
+			//cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it) << endl;
 			wt->addChars(ins, get<2>(it).length(), get<1>(it)+1);
 			test_count++;
 		}

@@ -1,0 +1,45 @@
+Compile
+----------
+make 
+
+Run
+----------
+The compilation generates three executables:
+ * test: you can use it directly or through testMultiple.sh for random 
+         insertions and deletions.
+ * slidingWindow: index only a window of given length and slide it along the
+                  text.
+ * locate: index a file and locate the specified patterns using the index.
+
+For removing object files you can use 'make clean'.
+For removing object, precompiled header and excutable files you can use 
+'make cleanall'
+
+
+Papers
+---------
+The method implemented is described in the following papers:
+ ------ Dynamic Sequence with Indels -----
+ uses huffman shaped wavelet tree
+ space: O(n H_0) time: O((log n) H_0)
+ paper: V. M\"akinen, G. Navarro. 
+        Dynamic Entropy-Compressed Sequences and Full-Text Indexes. 
+        CPM 2006, Chapter 3.6 
+
+        W. Gerlach. 
+        Dynamic FM-Index for a collection of texts with application
+        to space-efﬁcient construction of the compressed sufﬁx array.
+        Master's thesis. Universit\"at Bielefeld, Germany.
+
+ ------ Dynamic Suffix Array -------
+ papers: M. Salson, T. Lecroq, M. L\'eonard, L. Mouchard. 
+         Dynamic Burrows-Wheeler Transform.
+         PSC 2008, pp. 13--25, 2008.
+                        
+         M. Salson, T. Lecroq, M. L\'eonard, L. Mouchard.
+         A Four-Stage Algorithm for Updating a Burrows-Wheeler Transform
+         Theoretical Computer Science, 410(43):4350–4359, 2009.
+                                        
+         M. Salson, T. Lecroq, M. L\'eonard, L. Mouchard. 
+         Dynamic Extended Suffix Arrays. 
+         Journal of Discrete Algorithms. doi:10.1016/j.jda.2009.02.007

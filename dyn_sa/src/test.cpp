@@ -57,7 +57,7 @@ uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
 }
 
 void usage(char *program) {
-    cerr << "Usage (NOW): " << program << " <filename_reference> <input_data> " << endl;
+    cerr << "Usage (NOW): " << program << " <filename_input_reference> <input_test_data> <filename_output_updated_reference> <number_of_edits>" << endl;
     cerr << "Usage (EARLIER): " << program << " <filename> [lcp] [getSA <num_queries>] [insert (<file to ins.> <pos of ins.>)+] [delete (<pos. to delete> <length of deletion>)+] " << endl;
     exit(1);
 }
@@ -103,7 +103,7 @@ void get_test_input(std::string filename, vector<tuple<char,long,string>> &vec)
   return;
 }
 
-//Edited for benchmarking with DynHash - DO NOT USE
+//Edited for benchmarking with DynHash
 int main(int argc, char *argv[]) {
 	
 	size_t n;
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     struct timeval start, end;
     struct timezone tzp;
 
-  	if (argc < 2) {
+  	if (argc < 4) {
     	usage(argv[0]);
   	}
 
@@ -124,17 +124,23 @@ int main(int argc, char *argv[]) {
 	wt = new DynSA(false);
 	f = DynRankS::createCharDistribution(text, (n > 10000000) ? n+1 : 10000000, 1);
 	wt->initEmptyDynSA(f);
-	gettimeofday(&start, &tzp); //time1 = getChrono();
+	gettimeofday(&start, &tzp);
 	wt->addText(text,n);
-	gettimeofday(&end, &tzp); //time1 = getChrono()-time1;
-	print_time_elapsed("DynSA: Index build time: ", &start, &end); //cerr << "Index built in " << time1/1000000.0 << " s." << endl;
+	gettimeofday(&end, &tzp);
+	print_time_elapsed("DynSA: Building Index: ", &start, &end);
+
+	int test_count=0;
 
 	//Read data
   	vector<tuple<char, long, string>> input_data;
   	get_test_input(argv[2],input_data);
 
-	gettimeofday(&start, &tzp); 
+	gettimeofday(&start, &tzp);
+
 	for(auto it: input_data){
+
+		if(test_count>=stoi(argv[4],nullptr,10))
+			break;
 
   		if(get<0>(it)=='I') {
 			//cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it) << endl;
@@ -142,21 +148,61 @@ int main(int argc, char *argv[]) {
 			strcpy( (char*)ins, (get<2>(it)).c_str() );
 			wt->addChars(ins, get<2>(it).length(), get<1>(it)+1); //wt->addChars(patterns[i], length_patterns[i], ins_indexes[i]+1);
    			total_length_ins += get<2>(it).length();   	
+   			test_count++;
 		}
 		if(get<0>(it)=='D') {
-			//cout<<"Deleting from "<< get<1>(it) <<" to "<< stoi(get<2>(it))+get<1>(it)-1 << endl;
-			wt->deleteChars(stoi(get<2>(it),nullptr,10), get<1>(it)+1); //wt->deleteChars(length_del[i], del_indexes[i]+1);
-    		total_length_del += get<1>(it);
+			//cout<<"Deleting from "<< get<1>(it)+1 <<" to "<< stoi(get<2>(it))+1 << endl;
+			wt->deleteChars(stoi(get<2>(it),nullptr,10)-get<1>(it)+1, get<1>(it)+1); //wt->deleteChars(length_del[i], del_indexes[i]+1);
+    		total_length_del += (stoi(get<2>(it),nullptr,10)-get<1>(it));
+    		test_count++;
 		}
 		if(get<0>(it)=='S') {
 			//cout<<"SNP "<<get<2>(it)<<" at "<<get<1>(it) << endl;
-			wt->deleteChars( stoi(get<2>(it),nullptr,10), get<1>(it)+1);
-			wt->addChars((uchar *)&get<2>(it), get<2>(it).length(), get<1>(it)+1);
+			uchar *ins = new uchar[ (get<2>(it)).length()+1 ];
+			strcpy( (char*)ins, (get<2>(it)).c_str() );
+			
+			//cout<<"Deleting from "<< get<1>(it) <<" to "<< (get<2>(it)).length()+get<1>(it)-1 << endl;
+			wt->deleteChars((get<2>(it)).length(), get<1>(it)+1);
+			//cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it) << endl;
+			wt->addChars(ins, get<2>(it).length(), get<1>(it)+1);
+			test_count++;
 		}
   	}
 	gettimeofday(&end, &tzp);
 	std::string message = std::string("DynSA: Updates: ");
 	print_time_elapsed(message, &start, &end);
+
+
+	//Regenerating the updated reference sequence from the BWT F&L
+	n = wt->getSize();
+	size_t i = 1, length = 0;
+  	char c = (*wt)[i];
+  	uchar *newtext = new uchar[n];
+  	newtext[n-1]='\0';
+  	//Retrieve the text
+  	while (c!=0) {
+    	c = (*wt)[i];
+    	newtext[n-length-2]=c;
+    	i = wt->LFmapping(i);
+    	length++;
+    	if (length > n)
+      		break;
+  	}
+
+  	std::string output_file (argv[3] + std::string(".") + std::string(argv[4]) + std::string(".dynsa"));
+	std::ofstream outfile (output_file);
+	outfile << newtext;
+	outfile.close();
+
+	//std::cout << text << endl;
+	//std::cout << newtext << endl;
+
+  	if (n!=length) { // Clearly, if length is different from the expected length, we have a big problem!
+    	cerr << "Houston, we have a problem...   " << " n = " << n << ", length = " << length << endl;
+    	exit(2);
+  	} else {
+  		//Verify here if the generated string is correct 
+	}
 
 	delete [] text;
   	delete [] f;
@@ -165,6 +211,7 @@ int main(int argc, char *argv[]) {
 }
 
 
+//A lot of junk code here. Check everything carefully before using.
 /*
 int main(int argc, char *argv[]) {
   //ullong time1;

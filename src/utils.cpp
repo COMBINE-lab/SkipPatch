@@ -63,13 +63,14 @@ bool is_valid_input(long pos,long len,long max_len)
 /* Generates a random string (DNA: ATCG) of the given length */
 std::string generate_random_string(long len){
 
-    std::srand(std::time(0)); //use current time as seed for random generator
 
+    std::srand(unsigned ( std::time(0) )); //use current time as seed for random generator
     std::string random_str;
     for(long i=0; i<len; i++)
     {   
         random_str+=alphabet[std::rand()%(alphabet.size())]; 
     }
+    std::srand(std::time(0)); //use current time as seed for random generator
     random_shuffle(random_str.begin(),random_str.end()); //*now really random :)
     
     return random_str;

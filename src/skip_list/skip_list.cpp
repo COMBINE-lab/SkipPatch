@@ -46,7 +46,73 @@ node* skip_list::find(long val)
   }
   return temp;
 }
+void skip_list::get_prev_node(long abs_val, long &val, unsigned long &pos,node **n)
+{
+  
+  node *temp=head;
+  //node *prev;
+  long cumulative_count=0;
+  pos = 0;val=0;
+  
+  while(temp)
+  {
+  //cout<<"in here! cc = "<<cumulative_count<<" "<<abs_val<<" "<<temp->val<<endl;  
+    if(abs_val>=(temp->next->val+cumulative_count+temp->offset) &&temp->next->val!=LONG_MAX)
+    {
+      cumulative_count+=temp->offset;
+      temp=temp->next;
+    }
+    
+    else	//current val is lesser than next val
+    {
+      if(temp->down)
+      {
+	//temp->offset+=offset;
+	temp=temp->down;
+      }
+      else
+      {
+	//pair<node*,unsigned long> p;
+	if(abs_val<=(temp->val+cumulative_count+temp->offset)) //existing node
+	{
+	  //str = temp->str;
+	  *n = temp->prev;
+	  val = temp->val;
+	  pos = abs_val-cumulative_count-temp->val;
+	  //p.make_pair(temp->prev,val-cumulative_count);
+	  //return p;
+	}
+	else
+	{
+	  *n = temp;
+	  val = abs_val- cumulative_count - temp->offset;
+	  pos = 0;
+	}
+	break;
+      }
+    } 
+  }
+  
+}
 
+bool skip_list::is_valid_delete(const long abs_val,const unsigned long len)
+{
+  long val;unsigned long pos;node *prev;
+  get_prev_node(abs_val, val, pos,&prev);
+  
+  if(prev->next->val==val) //if the value already exists
+  {
+    //update the offset pointers.. 
+    if(((pos+len-1)>(prev->next->str).length()) || (len>(prev->next->str).length())||((pos==1)&&(len>=(prev->next->str).length())))
+    {
+      cout<<" len "<<len<<" (prev->next->str).length() "<<(prev->next->str).length()<<endl;
+      cout<<"Invalid value exists..pos = "<<pos<<" value "<<prev->next->val<<" Inconsistent value caught!"<<endl;
+      return false;
+    }
+   
+  }
+   return true;
+}
 void skip_list::delete_and_update_abs(const long abs_val,const unsigned long len)
 {
   long offset = len*-1;
@@ -98,7 +164,7 @@ void skip_list::delete_and_update_abs(const long abs_val,const unsigned long len
     if(((pos+len-1)>(prev->next->str).length()) || (len>(prev->next->str).length())||((pos==1)&&(len>=(prev->next->str).length())))
     {
       cout<<" len "<<len<<" (prev->next->str).length() "<<(prev->next->str).length()<<endl;
-      cout<<"Invalid value exists..pos = "<<pos<<" skip list inconsistent!"<<endl;
+      cout<<"Invalid value exists..pos = "<<pos<<" value "<<prev->next->val<<" skip list inconsistent!"<<endl;
       return;
     }
     
@@ -547,54 +613,6 @@ void skip_list::insert_and_update_abs(const long abs_val,string str)
     }
   }
     
-}
-void skip_list::get_prev_node(long abs_val, long &val, unsigned long &pos,node **n)
-{
-  
-  node *temp=head;
-  //node *prev;
-  long cumulative_count=0;
-  pos = 0;val=0;
-  
-  while(temp)
-  {
-  //cout<<"in here! cc = "<<cumulative_count<<" "<<abs_val<<" "<<temp->val<<endl;  
-    if(abs_val>=(temp->next->val+cumulative_count+temp->offset) &&temp->next->val!=LONG_MAX)
-    {
-      cumulative_count+=temp->offset;
-      temp=temp->next;
-    }
-    
-    else	//current val is lesser than next val
-    {
-      if(temp->down)
-      {
-	//temp->offset+=offset;
-	temp=temp->down;
-      }
-      else
-      {
-	//pair<node*,unsigned long> p;
-	if(abs_val<=(temp->val+cumulative_count+temp->offset)) //existing node
-	{
-	  //str = temp->str;
-	  *n = temp->prev;
-	  val = temp->val;
-	  pos = abs_val-cumulative_count-temp->val;
-	  //p.make_pair(temp->prev,val-cumulative_count);
-	  //return p;
-	}
-	else
-	{
-	  *n = temp;
-	  val = abs_val- cumulative_count - temp->offset;
-	  pos = 0;
-	}
-	break;
-      }
-    } 
-  }
-  
 }
 long skip_list::get_cumulative_count(long val) //returns the absolute offset for a val in the genome.
 {

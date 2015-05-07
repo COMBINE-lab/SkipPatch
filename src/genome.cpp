@@ -139,8 +139,9 @@ void genome::display_load()
 void genome::remove_kmer_from_hash_at(long position_to_remove, std::string curr_kmer){
 
     if(!m[curr_kmer].empty()){
+ if(std::find(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove)!=m[curr_kmer].end()){
         m[curr_kmer].erase(std::find(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove));
-    }
+    }}
     //Having a very long "vector/list" of positions (~1 million) causes a bottleneck here
     //Approximately takes 0.5 seconds to execute this line "once" if the length of "positions" is 1 million
     
@@ -417,7 +418,11 @@ void genome::insert_at(const std::string insertion, const unsigned long insert_p
 }
 
 void genome::delete_at(const unsigned long delete_pos_abs, const unsigned long del_len){
-
+	if(!s.is_valid_delete(delete_pos_abs,del_len))
+	{
+	  cout<<"Invalid delete caught!"<<endl;
+	return;
+	}
 	auto kmers_to_replace = get_kmers(delete_pos_abs-K+1,K-1);
 	int i=0;
 

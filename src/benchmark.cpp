@@ -26,7 +26,7 @@ void benchmark_search(genome &g, int num_patterns, int pattern_len){
 	gettimeofday(&start, &tzp);
 	for(int i=0;i<num_patterns;i++){
 		string temp = generate_random_string(pattern_len);		
-			cout<<temp<<" "<<i<<endl;
+//			cout<<temp<<" "<<i<<endl;
 	auto vec = g.search(temp);
 	}
 	gettimeofday(&end, &tzp);
@@ -160,13 +160,11 @@ void benchmark(genome &g,string path){
   }
  gettimeofday(&end, &tzp);
 
-	std::string message = "Number of Insertions " + std::to_string(get<0>(count)) +
-				"Number of Deletions " + std::to_string(get<1>(count)) +
- 				"Number of Snips " + std::to_string(get<2>(count)) +
-" "+ 
-				"...\t";
+	std::string message = "Ins: " + std::to_string(get<0>(count)) + "\n"
+				"Del: " + std::to_string(get<1>(count)) +"\n"
+ 				"Snp:  " + std::to_string(get<2>(count))+"\n" ;
     print_time_elapsed(message, &start, &end);
-	cout<<g.get_length();
+//	cout<<g.get_length();
     benchmark_search(g,10,25);
 //    g.get_skip_list().print_list();
 
@@ -180,6 +178,8 @@ void benchmark(genome &g,string path){
     benchmark_search(g,TESTS,100);
    */
     std::cout<<"BENCHMARKING END"<<std::endl;
+	//:read_reference_abs_at(const long abs_pos,const long len,long &genome_position,unsigned long &offset,string &kmer)
+
 
 }
 	

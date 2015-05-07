@@ -106,6 +106,7 @@ def genquery(genomeFile, jellyFile, totedits, medindel, insprob, delprob, queryf
     outputFile.close()
 
 def main():
+    global EDIT_QUERY_PROB
     parser = argparse.ArgumentParser(description="Generate random edits following a gaussian distribution.")
     parser.add_argument('--genome', type=argparse.FileType('r'), help='path to the genome')
     parser.add_argument('--jellyfile', type=str, help='path to the Jellyfish output file')
@@ -116,7 +117,11 @@ def main():
     parser.add_argument('--queryfreq', type=int, help='frequency of queries')
     parser.add_argument('--querycount', type=int, help='number of queries per query section')
     parser.add_argument('--output', type=argparse.FileType('w'), help='file where edits should be written')
+    parser.add_argument('--editqueries', type=float, default=EDIT_QUERY_PROB, help='fraction of queries that hit an edit')
     args = parser.parse_args()
+
+    EDIT_QUERY_PROB=args.editqueries
+
     genquery(args.genome, args.jellyfile, args.totedits, args.meanindel, args.insprob, args.delprob, args.queryfreq, args.querycount, args.output)
 
 if __name__ == '__main__':

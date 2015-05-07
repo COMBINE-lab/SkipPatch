@@ -191,8 +191,8 @@ int main(int argc, char *argv[]) {
 	outfile << newtext;
 	outfile.close();
 
-	std::cout << text << endl;
-	std::cout << newtext << endl;
+	//std::cout << text << endl;
+	//std::cout << newtext << endl;
 
   	if (n!=length) { // Clearly, if length is different from the expected length, we have a big problem!
     	cerr << "Houston, we have a problem...   " << " n = " << n << ", length = " << length << endl;

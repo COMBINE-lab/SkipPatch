@@ -115,7 +115,7 @@ void get_input(vector<tuple<string,long,char,long>> &vec,string path)
   }
   return;
 }
-void benchmark(genome &g,string path){
+void benchmark(genome &g,string path,const string reference_dump_path,const long edits){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;
     
@@ -124,39 +124,58 @@ void benchmark(genome &g,string path){
   vector<tuple<string,long,char,long>> vec;
     get_input(vec,path);
 	tuple<long,long,long> count = make_tuple(0,0,0);
-	for(auto it:vec)
+	/*for(auto it:vec)
 	{
 		if(get<2>(it)=='I')
 			get<0>(count)+=1;
-		if(get<2>(it)=='D')
-			get<1>(count)+=1;
+//		if(get<2>(it)=='D')
+//			get<1>(count)+=1;
 		if(get<2>(it)=='S')
 			get<2>(count)+=1;
 	
-	}
+	}*/
     struct timeval start, end;
     struct timezone tzp;
 	
     gettimeofday(&start, &tzp);
- 
+ long totedits = edits;vector<long > d;long lc=0;
+cout<<"total edits: "<<totedits;
    for(auto it:vec)
   {
+	if(totedits>0)
+	{
     //cout<<get<0>(it)<<"\t"<<get<1>(it)<<"\t"<<get<2>(it)<<endl;
 	if(get<2>(it)=='I')
 	{
 //		cout<<"Inserting "<<get<0>(it)<<" at "<<get<1>(it);
 		g.insert_at(get<0>(it),get<1>(it));
+			get<0>(count)+=1;
 	}
 	if(get<2>(it)=='D')
 	{
 		//cout<<"Deletion ! not yet writtten";
-		g.delete_at(get<1>(it),get<3>(it)-get<1>(it)+1);
+		if(!g.delete_at(get<1>(it),get<3>(it)-get<1>(it)+1))	
+	{	
+				d.push_back(lc);	
+				totedits++;	
+	}
+			get<1>(count)+=1;
+		
 	}
 	if(get<2>(it)=='S')
 	{
 //		cout<<"Snp "<<get<0>(it)<<" at "<<get<1>(it);
 		g.snp_at(get<1>(it),get<0>(it));
+			get<2>(count)+=1;
 	}
+	totedits--;
+	}
+	else
+	{
+		cout<<endl<<edits<<" edits completed!";
+		break;
+	}
+	lc++;
   }
  gettimeofday(&end, &tzp);
 
@@ -166,6 +185,19 @@ void benchmark(genome &g,string path){
     print_time_elapsed(message, &start, &end);
 //	cout<<g.get_length();
     benchmark_search(g,10,25);
+	cout<<endl<<"writing genome to a file .."<<endl;
+	std::string output_file (reference_dump_path);
+	std::ofstream outfile (output_file);
+	outfile << g.read_reference_at(0,0,LONG_MAX);
+	outfile.close();
+	std::string output_file1 ("./edit");
+	std::ofstream outfile1 (output_file1);
+	for(auto it:d)
+		outfile1 << it<<"\n";
+	outfile1.close();;
+
+//	g.read_reference_at(0,0,LONG_MAX);
+
 //    g.get_skip_list().print_list();
 
     /*benchmark_snp(g);

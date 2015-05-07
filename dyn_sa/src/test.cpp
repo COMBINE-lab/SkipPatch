@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
 		}
 		if(get<0>(it)=='S') {
 			//cout<<"SNP "<<get<2>(it)<<" at "<<get<1>(it) << endl;
-			wt->deleteChars( stoi(get<2>(it),nullptr,10), get<1>(it)+2);
+			wt->deleteChars(stoi(get<2>(it),nullptr,10)-get<1>(it)+1, get<1>(it));
 			wt->addChars((uchar *)&get<2>(it), get<2>(it).length(), get<1>(it)+2);
 			test_count++;
 		}

@@ -63,7 +63,7 @@ public:
     void insert_at(const std::string, const unsigned long);
 
     //Make a deletion at a given location
-    void delete_at(const unsigned long, const unsigned long);
+    bool delete_at(const unsigned long, const unsigned long);
     
     //Search for all the occurrences of a read
     std::vector<long> search(std::string);

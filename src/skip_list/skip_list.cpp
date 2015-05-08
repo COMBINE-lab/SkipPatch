@@ -105,8 +105,9 @@ bool skip_list::is_valid_delete(const long abs_val,const unsigned long len)
     //update the offset pointers.. 
     if(((pos+len-1)>(prev->next->str).length()) || (len>(prev->next->str).length())||((pos==1)&&(len>=(prev->next->str).length())))
     {
-      cout<<" len "<<len<<" (prev->next->str).length() "<<(prev->next->str).length()<<endl;
-      cout<<"Invalid value exists..pos = "<<pos<<" value "<<prev->next->val<<" Inconsistent value caught!"<<endl;
+	cout<<".";
+    //  cout<<" len "<<len<<" (prev->next->str).length() "<<(prev->next->str).length()<<endl;
+     // cout<<"Invalid value exists..pos = "<<pos<<" value "<<prev->next->val<<" Inconsistent value caught!"<<endl;
       return false;
     }
    
@@ -163,8 +164,9 @@ void skip_list::delete_and_update_abs(const long abs_val,const unsigned long len
     //update the offset pointers.. 
     if(((pos+len-1)>(prev->next->str).length()) || (len>(prev->next->str).length())||((pos==1)&&(len>=(prev->next->str).length())))
     {
-      cout<<" len "<<len<<" (prev->next->str).length() "<<(prev->next->str).length()<<endl;
-      cout<<"Invalid value exists..pos = "<<pos<<" value "<<prev->next->val<<" skip list inconsistent!"<<endl;
+	cout<<".";
+//      cout<<" len "<<len<<" (prev->next->str).length() "<<(prev->next->str).length()<<endl;
+  //    cout<<"Invalid value exists..pos = "<<pos<<" value "<<prev->next->val<<" skip list inconsistent!"<<endl;
       return;
     }
     

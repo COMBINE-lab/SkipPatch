@@ -1,7 +1,7 @@
 #include "benchmark.h"
 #include "utils.h"
 
-#define QF 4641
+#define QF 142573
 #define QC 1000
 #define N 10
 #define TESTS 100
@@ -204,7 +204,7 @@ void benchmark_search(genome &g,const string path_to_query_file){
 	long c = j*QF;
     for(int i=0;i<QF;i++)
     {
-	if(get<0>(edit[i+c])=='D')
+	if(get<0>(edit[i+c])=='I')
 	      g.insert_at(get<3>(edit[i+c]),get<1>(edit[i+c]));
 	else
 	      g.delete_at(get<1>(edit[i+c]),get<2>(edit[i+c])-get<1>(edit[i+c])+1);
@@ -300,7 +300,7 @@ cout<<"total edits: "<<totedits;
  				"Snp:  " + std::to_string(get<2>(count))+"\n" ;
     print_time_elapsed(message, &start, &end);
 //	cout<<g.get_length();
-    benchmark_search(g,10,25);
+/*    benchmark_search(g,10,25);
 	cout<<endl<<"writing genome to a file .."<<endl;
 	std::string output_file (reference_dump_path);
 	std::ofstream outfile (output_file);
@@ -310,7 +310,7 @@ cout<<"total edits: "<<totedits;
 	std::ofstream outfile1 (output_file1);
 	for(auto it:d)
 		outfile1 << it<<"\n";
-	outfile1.close();;
+	outfile1.close();;*/
 
 //	g.read_reference_at(0,0,LONG_MAX);
 

@@ -1,6 +1,9 @@
 #include "benchmark.h"
 #include "utils.h"
 
+#define QF 4641
+#define QC 1000
+#define N 10
 #define TESTS 100
 using namespace std;
 void benchmark_construction(genome &g){
@@ -122,6 +125,109 @@ void get_input(vector<tuple<string,long,char,long>> &vec,string path)
   }
   return;
 }
+void get_input(const string path_to_query_file,vector<tuple<char, long, long,string>> &edit,vector<tuple<char,string,char,long>> &query)
+{
+  ifstream myfile (path_to_query_file);
+  if (myfile.is_open())
+  {
+    for(int j=0;j<N;j++)
+    {
+//	cout<<j<<endl;
+  string g;
+      for (int i=0;i<QF;i++)
+      {
+//	cout<<i<<endl;	
+	getline(myfile, g, ' ');
+	char c = g[0];
+//	cout<<c<<"\t";
+	g.clear();
+	
+	getline( myfile,g, ' ');
+	long l = stol(g,nullptr,10);
+//	cout<<l<<"\t";
+	g.clear();
+	
+	getline( myfile,g, '\n');
+	long l_del=0;
+	if(c=='D')
+	{
+		l_del = stol(g,nullptr,10);
+	}
+//	cout<<g<<endl;
+	edit.push_back(make_tuple(c,l,l_del,g));
+	g.clear();
+	//cout<<g<<endl;
+      }
+      
+	//cout<<j<<endl;
+      for (int i=0;i<QC;i++)
+      {
+	
+	getline(myfile, g, ' ');
+	char c = g[0];
+	g.clear();
+	
+	string q;
+	getline( myfile,q, ' ');
+	
+	
+	getline(myfile, g, ' ');
+	char c1 = g[0];
+	g.clear();
+	
+	getline( myfile,g, '\n');
+	long l_del=0;
+	l_del = stol(g,nullptr,10);
+	query.push_back(make_tuple(c,q,c1,l_del));
+	//cout<<g<<endl;
+      }
+    }
+  }
+  else
+  {
+    cout<<"Cant open file :( "<<endl;
+  }
+}
+void benchmark_search(genome &g,const string path_to_query_file){
+  //std::cout<<"SEARCH BENCHMARKING START"<<std::endl;
+  
+  std::cout<<"BENCHMARKING START"<<std::endl;
+  benchmark_construction(g);
+
+  vector<tuple<char, long, long,string>> edit;
+  vector<tuple<char,string,char,long>> query;
+  get_input(path_to_query_file,edit,query);
+  
+  
+  for(int j=0;j<N;j++)
+  {
+	long c = j*QF;
+    for(int i=0;i<QF;i++)
+    {
+	if(get<0>(edit[i+c])=='D')
+	      g.insert_at(get<3>(edit[i+c]),get<1>(edit[i+c]));
+	else
+	      g.delete_at(get<1>(edit[i+c]),get<2>(edit[i+c])-get<1>(edit[i+c])+1);
+     
+    }
+    
+  struct timeval start, end;
+  struct timezone tzp;
+
+  gettimeofday(&start, &tzp);
+    for(int i=0;i<QC;i++)
+    {
+      long c= j*QC;
+      g.search(get<1>(query[i+c]));
+    }
+    gettimeofday(&end, &tzp);
+    string message = "Search Iteration "+ j;
+    print_time_elapsed(message, &start, &end);
+  
+  }
+    std::cout<<"BENCHMARKING END"<<std::endl;
+}
+
 void benchmark(genome &g,string path,const string reference_dump_path,const long edits){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;

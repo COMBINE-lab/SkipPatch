@@ -11,6 +11,8 @@ void benchmark_construction(genome &);
 
 void benchmark_search(genome &, int, int);
 
+void benchmark_search(genome &,std::string);
+
 void benchmark_snp(genome &);
 
 #endif

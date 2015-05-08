@@ -5,32 +5,41 @@
 #define N 10
 using namespace std;
 
-void get_input(const string path_to_query_file,vector<tuple<char, long, long>> &edit,vector<tuple<char,string,char,long>> &query)
+void get_input(const string path_to_query_file,vector<tuple<char, long, long,string>> &edit,vector<tuple<char,string,char,long>> &query)
 {
-  string g;
   ifstream myfile (path_to_query_file);
   if (myfile.is_open())
   {
     for(int j=0;j<N;j++)
     {
+//	cout<<j<<endl;
+  string g;
       for (int i=0;i<QF;i++)
       {
-	
+//	cout<<i<<endl;	
 	getline(myfile, g, ' ');
 	char c = g[0];
+//	cout<<c<<"\t";
 	g.clear();
 	
 	getline( myfile,g, ' ');
 	long l = stol(g,nullptr,10);
+//	cout<<l<<"\t";
 	g.clear();
 	
 	getline( myfile,g, '\n');
-	long l_del = stol(g,nullptr,10);
-	edit.push_back(make_tuple(c,l,l_del));
+	long l_del=0;
+	if(c=='D')
+	{
+		l_del = stol(g,nullptr,10);
+	}
+//	cout<<g<<endl;
+	edit.push_back(make_tuple(c,l,l_del,g));
 	g.clear();
 	//cout<<g<<endl;
       }
       
+	//cout<<j<<endl;
       for (int i=0;i<QC;i++)
       {
 	
@@ -60,21 +69,24 @@ void get_input(const string path_to_query_file,vector<tuple<char, long, long>> &
   }
 }
 void benchmark_search(const string path_to_query_file,const string output_path){
-  std::cout<<"SEARCH BENCHMARKING START"<<std::endl;
-  vector<tuple<char, long, long>> edit;
+  //std::cout<<"SEARCH BENCHMARKING START"<<std::endl;
+  vector<tuple<char, long, long,string>> edit;
   vector<tuple<char,string,char,long>> query;
   get_input(path_to_query_file,edit,query);
   for(int j=0;j<N;j++)
   {
+	long c = j*QF;
     for(int i=0;i<QF;i++)
     {
-      cout<<get<0>(edit[i])<<" "<<get<1>(edit[i])<<" "<<get<2>(edit[i]);
+	if(get<0>(edit[i+c])=='D')
+      cout<<get<0>(edit[i+c])<<" "<<get<1>(edit[i+c])<<" "<<get<2>(edit[i+c]);
+	else
+      cout<<get<0>(edit[i+c])<<" "<<get<1>(edit[i+c])<<" "<<get<3>(edit[i+c]);
       cout<<endl;
     }
-    
     for(int i=0;i<QC;i++)
-    {
-      cout<<get<0>(query[i])<<" "<<get<1>(query[i])<<" "<<get<2>(query[i])<<" "<<get<3>(query[i]);
+    {long c= j*QC;
+      cout<<get<0>(query[i+c])<<" "<<get<1>(query[i+c])<<" "<<get<2>(query[i+c])<<" "<<get<3>(query[i+c]);
       cout<<endl;
     }
   }

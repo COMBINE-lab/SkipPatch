@@ -28,6 +28,7 @@ extern "C" {
 #define QC 3
 #define N 4
 
+
 uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
   std::ifstream file(filename);
   if (!file)

@@ -33,3 +33,4 @@ python testmedian2.py --genome "/mnt/scratch3/nirm/data/ecoli.fa" --totedits 484
 
 
 ./main /mnt/scratch3/nirm/data/fruit.fa /home/komal/dynamic-updateable-index/scripts/fruit_q /mnt/scratch3/nirm/results/search/fruit.fa 23207 >/mnt/scratch3/nirm/results/search/fruit &
+./main /mnt/scratch3/nirm/data/ecoli.fa /home/komal/dynamic-updateable-index/scripts/ecoli_q /mnt/scratch3/nirm/results/search/ecoli.fa 23207 >/mnt/scratch3/nirm/results/search/ecoli &

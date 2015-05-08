@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
 			//cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it) << endl;
 			uchar *ins = new uchar[ (get<2>(it)).length()+1 ];
 			strcpy( (char*)ins, (get<2>(it)).c_str() );
-			wt->addChars(ins, get<2>(it).length(), get<1>(it)+1); //wt->addChars(patterns[i], length_patterns[i], ins_indexes[i]+1);
+			wt->addChars(ins, get<2>(it).length(), get<1>(it)+2); //wt->addChars(patterns[i], length_patterns[i], ins_indexes[i]+1);
    			total_length_ins += get<2>(it).length();   	
    			test_count++;
 		}
@@ -189,10 +189,11 @@ int main(int argc, char *argv[]) {
       		break;
   	}
 
-  	std::string output_file (argv[3] + std::string(".") + std::string(argv[4]) + std::string(".dynsa"));
-	std::ofstream outfile (output_file);
-	outfile << newtext;
-	outfile.close();
+	//Write updated genome to file 
+  	//std::string output_file (argv[3] + std::string("_") + std::string(argv[4]) + std::string(".dynsa"));
+	//std::ofstream outfile (output_file);
+	//outfile << newtext;
+	//outfile.close();
 
 	//std::cout << text << endl;
 	//std::cout << newtext << endl;

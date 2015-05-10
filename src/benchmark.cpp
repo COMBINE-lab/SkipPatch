@@ -136,17 +136,17 @@ void get_input(const string path_to_query_file,vector<tuple<char, long, long,str
   string g;
       for (int i=0;i<QF;i++)
       {
-//	cout<<i<<endl;	
+//	cout<<i<<endl;
 	getline(myfile, g, ' ');
 	char c = g[0];
 //	cout<<c<<"\t";
 	g.clear();
-	
+
 	getline( myfile,g, ' ');
 	long l = stol(g,nullptr,10);
 //	cout<<l<<"\t";
 	g.clear();
-	
+
 	getline( myfile,g, '\n');
 	long l_del=0;
 	if(c=='D')
@@ -158,23 +158,23 @@ void get_input(const string path_to_query_file,vector<tuple<char, long, long,str
 	g.clear();
 	//cout<<g<<endl;
       }
-      
+
 	//cout<<j<<endl;
       for (int i=0;i<QC;i++)
       {
-	
+
 	getline(myfile, g, ' ');
 	char c = g[0];
 	g.clear();
-	
+
 	string q;
 	getline( myfile,q, ' ');
-	
-	
+
+
 	getline(myfile, g, ' ');
 	char c1 = g[0];
 	g.clear();
-	
+
 	getline( myfile,g, '\n');
 	long l_del=0;
 	l_del = stol(g,nullptr,10);
@@ -190,15 +190,15 @@ void get_input(const string path_to_query_file,vector<tuple<char, long, long,str
 }
 void benchmark_search(genome &g,const string path_to_query_file){
   //std::cout<<"SEARCH BENCHMARKING START"<<std::endl;
-  
+
   std::cout<<"BENCHMARKING START"<<std::endl;
   benchmark_construction(g);
 
   vector<tuple<char, long, long,string>> edit;
   vector<tuple<char,string,char,long>> query;
   get_input(path_to_query_file,edit,query);
-  
-  
+
+
   for(int j=0;j<N;j++)
   {
 	long c = j*QF;
@@ -208,9 +208,9 @@ void benchmark_search(genome &g,const string path_to_query_file){
 	      g.insert_at(get<3>(edit[i+c]),get<1>(edit[i+c]));
 	else
 	      g.delete_at(get<1>(edit[i+c]),get<2>(edit[i+c])-get<1>(edit[i+c])+1);
-     
+
     }
-    
+
   struct timeval start, end;
   struct timezone tzp;
 
@@ -223,12 +223,15 @@ void benchmark_search(genome &g,const string path_to_query_file){
     gettimeofday(&end, &tzp);
     string message = "Search Iteration "+ j;
     print_time_elapsed(message, &start, &end);
-  
+
   }
     std::cout<<"BENCHMARKING END"<<std::endl;
 }
 
-void benchmark(genome &g,string path,const string reference_dump_path,const long edits){
+void benchmark(genome &g,
+               string path,
+               //const string reference_dump_path,
+               const long edits){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;
 
@@ -246,7 +249,7 @@ void benchmark(genome &g,string path,const string reference_dump_path,const long
 		if(get<2>(it)=='S')
 			get<2>(count)+=1;
 <<<<<<< HEAD
-	
+
 	}*/
 
     struct timeval start, end;
@@ -270,13 +273,13 @@ cout<<"total edits: "<<totedits;
 	if(get<2>(it)=='D')
 	{
 		//cout<<"Deletion ! not yet writtten";
-		if(!g.delete_at(get<1>(it),get<3>(it)-get<1>(it)+1))	
-	{	
-				d.push_back(lc);	
-				totedits++;	
+		if(!g.delete_at(get<1>(it),get<3>(it)-get<1>(it)+1))
+	{
+				d.push_back(lc);
+				totedits++;
 	}
 			get<1>(count)+=1;
-		
+
 	}
 	if(get<2>(it)=='S')
 	{

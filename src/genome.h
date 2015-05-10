@@ -6,6 +6,9 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <functional>
+
+#include "xxhash.h"
 
 #include "./skip_list/skip_list.h"
 
@@ -16,11 +19,12 @@ class genome {
 private:
 
     std::string reference;
-    std::unordered_map<std::string, std::vector<long>> m;
+    std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m;
     skip_list s;
     std::vector<bool> ins;
     std::vector<bool> del;
 public:
+    genome();
 
     //Get the reference sequence from input
     void get_input(std::string);
@@ -29,7 +33,7 @@ public:
     void set_reference(std::string);
     std::string get_reference();
     long get_length();
-    std::unordered_map<std::string, std::vector<long>> get_hash();
+    //std::unordered_map<std::string, std::vector<long>> get_hash();
     skip_list get_skip_list();
 
     //Generate the updated reference, or a segment of the updated reference
@@ -66,7 +70,7 @@ public:
 
     //Make a deletion at a given location
     bool delete_at(const unsigned long, const unsigned long);
- 
+
     //Search for all the occurrences of a read
     std::vector<long> search(std::string);
 

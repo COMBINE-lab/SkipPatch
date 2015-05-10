@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <algorithm>
 #include <fstream>
+#include <string>
 
 #include "cereal/archives/binary.hpp"
 #include "cereal/types/vector.hpp"
@@ -17,6 +18,13 @@
 using namespace std;
 //#define BENCHMARK 0
 //#define DEBUG 0
+
+unsigned long hashing_func(std::string key)
+{
+    return XXH64(key.c_str(), key.length(), 0);
+}
+
+genome::genome() : m(10000000, hashing_func) {}
 
 void genome::get_input(string path)
 {
@@ -88,10 +96,10 @@ long genome::get_length()
     return reference.length();
 }
 
-std::unordered_map<std::string, std::vector<long>> genome::get_hash()
-{
-	return m;
-}
+//std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> genome::get_hash()
+//{
+//	return m;
+//}
 
 skip_list genome::get_skip_list()
 {
@@ -253,7 +261,7 @@ std::vector<long> genome::search(std::string read){
 	auto f = m.find(read_kmer);
 
 	if(f!=m.end()){
-		auto search = f->second;
+		auto& search = f->second;
 
     //if(!search.empty()){
 
@@ -267,10 +275,12 @@ std::vector<long> genome::search(std::string read){
 
     		if(!ins[pos]){	//If the position doesn't start from within an insertion
     			//std::cout << "POS(G): " << pos << std::endl;
-    			if(read==read_reference_at(pos,offset,read.length())){
+    			if(::memcmp(read.c_str(), read_reference_at(pos,offset,read.length()).c_str(), K) == 0){
     				positions.push_back(get_virtual_position_from_genome_position(pos,offset));
     				//std::cout << "Adding at(1): " << get_virtual_position_from_genome_position(pos,offset) << std::endl;
-    			}
+    			} else {
+                    // TODO: What happens in this case? It is an error, right?
+                }
     		} else {
     			//std::cout << "POS(I): " << pos << std::endl;
 
@@ -284,7 +294,7 @@ std::vector<long> genome::search(std::string read){
     			offset = insertion_ext.find(read_kmer);
     			while(offset!=std::string::npos){
 					//std::cout << "read_ext: " << pos << " " << offset << " " << read.length() << " " << read_reference_at(pos, offset, read.length())  << std::endl;
-    				if(read==read_reference_at(pos, offset, read.length())) {
+    				if(::memcmp(read.c_str(), read_reference_at(pos, offset, read.length()).c_str(), K) == 0) {
     					positions.push_back(get_virtual_position_from_genome_position(pos,offset));
     					//std::cout << "Adding at(2): " << get_virtual_position_from_genome_position(pos,offset) << std::endl;
 					}

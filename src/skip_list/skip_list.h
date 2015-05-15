@@ -36,6 +36,7 @@ public:
     long get_cumulative_count(long);
     void insert_and_update_abs(const long,std::string); //updates given absolute value
     void get_prev_node(long,long&,unsigned long&,node**);
+    void get_stats(long &,long &);
     //void delete_and_update_abs(unsigned long,unsigned long,unsigned long);
     bool is_valid_delete(const long ,const unsigned long );
     void delete_and_update_abs(const long ,const unsigned long);

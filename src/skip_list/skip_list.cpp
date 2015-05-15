@@ -674,6 +674,28 @@ void skip_list::print_base_level()
   cout<<endl;
 }
 
+
+void skip_list::get_stats(long &num_updates,long &num_levels)
+{
+  num_updates=0;num_levels=0;
+  cout<<endl<<endl<<"Base of the skip_list:"<<endl;
+  
+  node *temp=head;
+  while(temp->down)
+  {
+    num_levels++;
+    //temp=temp->down;
+  }
+  //temp=temp->next; //ignoring the sentinel
+  while(temp)
+  {
+    num_updates++;
+    //print_node(temp);
+    //cout<<temp->str<<"\t";
+    temp=temp->next;
+  }
+  cout<<endl;
+}
 void skip_list:: print_list()
 {
   cout<<endl<<"Skip_list:"<<endl;

@@ -24,9 +24,9 @@ extern "C" {
 #include <sys/resource.h>
 #include <sys/time.h>
 
-#define QF 5
-#define QC 3
-#define N 4
+#define QF 302348
+#define QC 5000
+#define N 10
 
 
 uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
@@ -62,7 +62,7 @@ uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
 }
 
 void usage(char *program) {
-    cerr << "Usage (NOW): " << program << " <filename_input_reference> <input_test_data> <filename_output_updated_reference> <number_of_edits>" << endl;
+    cerr << "Usage (NOW): " << program << " <filename_input_reference> <input_test_data> <number_of_edits>" << endl;
     cerr << "Usage (EARLIER): " << program << " <filename> [lcp] [getSA <num_queries>] [insert (<file to ins.> <pos of ins.>)+] [delete (<pos. to delete> <length of deletion>)+] " << endl;
     exit(1);
 }
@@ -79,7 +79,7 @@ void print_time_elapsed(std::string desc, struct timeval* start, struct timeval*
     elapsed.tv_usec = end->tv_usec - start->tv_usec;
     elapsed.tv_sec  = end->tv_sec  - start->tv_sec;
     float time_elapsed = (elapsed.tv_sec*1000000 + elapsed.tv_usec)/1000000.f;
-    std::cerr << desc << " Total Time Elapsed = " << time_elapsed << " seconds" <<std::endl;
+    std::cout << desc << " Total Time Elapsed = " << time_elapsed << " seconds" <<std::endl;
 
     return;
 }
@@ -182,11 +182,11 @@ void benchmark_edits(int argc, char *argv[]){
   	DynSA *wt;
   	float *f;
 	size_t total_length_ins = 0, total_length_del = 0;
-    struct timeval start, end;
-    struct timezone tzp;
+    	struct timeval start, end;
+    	struct timezone tzp;
 
-  	if (argc < 4) {
-    	usage(argv[0]);
+  	if (argc < 3) {
+    		usage(argv[0]);
   	}
 
   	text = get_reference_sequence(argv[1],n,1);
@@ -210,7 +210,7 @@ void benchmark_edits(int argc, char *argv[]){
 
 	for(auto it: input_data){
 
-		if(test_count>=stoi(argv[4],nullptr,10))
+		if(test_count>=stoi(argv[3],nullptr,10))
 			break;
 
   		if(get<0>(it)=='I') {
@@ -243,7 +243,7 @@ void benchmark_edits(int argc, char *argv[]){
 	std::string message = std::string("DynSA: Updates: ");
 	print_time_elapsed(message, &start, &end);
 
-
+	/*
 	//Regenerating the updated reference sequence from the BWT F&L
 	n = wt->getSize();
 	size_t i = 1, length = 0;
@@ -259,6 +259,7 @@ void benchmark_edits(int argc, char *argv[]){
     	if (length > n)
       		break;
   	}
+	*/
 
 	//Write updated genome to file 
   	//std::string output_file (argv[3] + std::string("_") + std::string(argv[4]) + std::string(".dynsa"));
@@ -269,12 +270,14 @@ void benchmark_edits(int argc, char *argv[]){
 	//std::cout << text << endl;
 	//std::cout << newtext << endl;
 
+	/*
   	if (n!=length) { // Clearly, if length is different from the expected length, we have a big problem!
     	cerr << "Houston, we have a problem...   " << " n = " << n << ", length = " << length << endl;
     	exit(2);
   	} else {
   		//Verify here if the generated string is correct 
 	}
+	*/
 
 	delete [] text;
   	delete [] f;
@@ -290,11 +293,11 @@ void benchmark_search(int argc, char *argv[]){
   	DynSA *wt;
   	float *f;
 	size_t total_length_ins = 0, total_length_del = 0;
-    struct timeval start, end;
-    struct timezone tzp;
+    	struct timeval start, end;
+   	struct timezone tzp;
 
-  	if (argc < 4) {
-    	usage(argv[0]);
+  	if (argc < 2) {
+    		usage(argv[0]);
   	}
 
   	text = get_reference_sequence(argv[1],n,1);
@@ -335,17 +338,16 @@ void benchmark_search(int argc, char *argv[]){
 			else if(get<0>(*it)=='D') {
 				//cout<<"Deleting from "<< get<1>(*it) <<" to "<< get<2>(*it) << endl;
 				wt->deleteChars(get<2>(*it)-get<1>(*it)+1, get<1>(*it)); //wt->deleteChars(length_del[i], del_indexes[i]+1);
-	    		total_length_del += (get<2>(*it)-get<1>(*it));
-	    		it++;
+	    			total_length_del += (get<2>(*it)-get<1>(*it));
+	    			it++;
 			}
 			//std::cerr << i*queryfreq+j << endl;	
 		} 
-		cout << endl;
 		
 		gettimeofday(&start, &tzp);
 		for(int j=0; j<querycount; j++){
 			uchar *query = new uchar[ (get<1>(*q)).length()+1 ];
-			strcpy( (char*)query, (get<1>(*q)).c_str() );
+			strcpy((char*)query, (get<1>(*q)).c_str());
 			//std::cerr << i*querycount+j << "   Locating: " << query << endl;	
 			wt->locate(query);
 			q++;
@@ -353,7 +355,6 @@ void benchmark_search(int argc, char *argv[]){
 		gettimeofday(&end, &tzp);
 		std::string message = std::string("DynSA: Search: ");
 		print_time_elapsed(message, &start, &end);
-		cout << endl;
 		
 	}
 
@@ -397,7 +398,7 @@ void benchmark_search(int argc, char *argv[]){
 //Edited for benchmarking with DynHash
 int main(int argc, char *argv[]) {
 
-	//benchmark_edits(argc, argv);
-	benchmark_search(argc, argv);
+	benchmark_edits(argc, argv);
+	//benchmark_search(argc, argv);
 
 }

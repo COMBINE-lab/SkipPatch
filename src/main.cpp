@@ -99,7 +99,8 @@ int main(int argc, const char* argv[]){
         opt.get("--numEdits")->getLong(numEdits);
     }
 
-	benchmark(g, editFile, numEdits);
+	benchmark(g,editFile,numEdits);
+//	benchmark_search(g, editFile);
 
    	/*
 	if (argc < 3) {

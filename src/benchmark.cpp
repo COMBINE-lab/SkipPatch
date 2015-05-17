@@ -1,8 +1,8 @@
 #include "benchmark.h"
 #include "utils.h"
 
-#define QF 142573
-#define QC 1000
+#define QF 302348
+#define QC 5000
 #define N 10
 #define TESTS 100
 using namespace std;
@@ -228,116 +228,105 @@ void benchmark_search(genome &g,const string path_to_query_file){
     std::cout<<"BENCHMARKING END"<<std::endl;
 }
 
-void benchmark(genome &g,
-               string path,
-               //const string reference_dump_path,
-               const long edits){
+
+
+
+void benchmark(genome &g, string path, const long edits){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;
-
 	benchmark_construction(g);
 
-  vector<tuple<string,long,char,long>> vec;
-    get_input(vec,path);
+	vector<tuple<string,long,char,long>> vec;
+    	get_input(vec,path);
 	tuple<long,long,long> count = make_tuple(0,0,0);
 	/*for(auto it:vec)
 	{
 		if(get<2>(it)=='I')
 			get<0>(count)+=1;
-//		if(get<2>(it)=='D')
-//			get<1>(count)+=1;
+		if(get<2>(it)=='D')
+			get<1>(count)+=1;
 		if(get<2>(it)=='S')
 			get<2>(count)+=1;
-<<<<<<< HEAD
-
 	}*/
 
-    struct timeval start, end;
-    struct timezone tzp;
+    	struct timeval start, end;
+    	struct timezone tzp;
 
-    gettimeofday(&start, &tzp);
- long totedits = edits;vector<long > d;long lc=0;
-cout<<"total edits: "<<totedits;
+    	gettimeofday(&start, &tzp);
+ 	long totedits = edits;
+	vector<long > d;
+	long lc=0;
+	
+	cout<<"total edits: "<<totedits;
 
-   for(auto it:vec)
-  {
-	if(totedits>0)
-	{
-    //cout<<get<0>(it)<<"\t"<<get<1>(it)<<"\t"<<get<2>(it)<<endl;
-	if(get<2>(it)=='I')
-	{
-//		cout<<"Inserting "<<get<0>(it)<<" at "<<get<1>(it);
-		g.insert_at(get<0>(it),get<1>(it));
-			get<0>(count)+=1;
-	}
-	if(get<2>(it)=='D')
-	{
-		//cout<<"Deletion ! not yet writtten";
-		if(!g.delete_at(get<1>(it),get<3>(it)-get<1>(it)+1))
-	{
-				d.push_back(lc);
-				totedits++;
-	}
+   	for(auto it:vec)
+  	{
+		if(totedits>0)
+		{
+    			//cout<<get<0>(it)<<"\t"<<get<1>(it)<<"\t"<<get<2>(it)<<endl;
+			if(get<2>(it)=='I')
+			{
+				//cout<<"Inserting "<<get<0>(it)<<" at "<<get<1>(it);
+				g.insert_at(get<0>(it),get<1>(it));
+				get<0>(count)+=1;
+			}
+			if(get<2>(it)=='D')
+			{
+				//cout<<"Deletion ! not yet writtten";
+				if(!g.delete_at(get<1>(it),get<3>(it)-get<1>(it)+1))
+				{		
+					d.push_back(lc);
+					totedits++;
+				}
 			get<1>(count)+=1;
 
-	}
-	if(get<2>(it)=='S')
-	{
-//		cout<<"Snp "<<get<0>(it)<<" at "<<get<1>(it);
-		g.snp_at(get<1>(it),get<0>(it));
-			get<2>(count)+=1;
-	}
-	totedits--;
-	}
-	else
-	{
-		cout<<endl<<edits<<" edits completed!";
-		break;
-	}
-	lc++;
-  }
- gettimeofday(&end, &tzp);
+			}	
+			if(get<2>(it)=='S')
+			{
+				//cout<<"Snp "<<get<0>(it)<<" at "<<get<1>(it);
+				g.snp_at(get<1>(it),get<0>(it));
+				get<2>(count)+=1;
+			}
+			totedits--;
+		}
+		else
+		{
+			cout<<endl<<edits<<" edits completed!";
+			break;
+		}
+		lc++;
+  	}
+ 	gettimeofday(&end, &tzp);
 
-	std::string message = "Ins: " + std::to_string(get<0>(count)) + "\n"
-				"Del: " + std::to_string(get<1>(count)) +"\n"
- 				"Snp:  " + std::to_string(get<2>(count))+"\n" ;
-    print_time_elapsed(message, &start, &end);
-//	cout<<g.get_length();
-/*    benchmark_search(g,10,25);
+	std::string message = 	"Ins: " + std::to_string(get<0>(count)) + "\n"
+				"Del: " + std::to_string(get<1>(count)) + "\n"
+ 				"Snp: " + std::to_string(get<2>(count)) + "\n";
+    	print_time_elapsed(message, &start, &end);
+
+        /*benchmark_search(g,10,25);
 	cout<<endl<<"writing genome to a file .."<<endl;
 	std::string output_file (reference_dump_path);
 	std::ofstream outfile (output_file);
 	outfile << g.read_reference_at(0,0,LONG_MAX);
-	outfile.close();
-	std::string output_file1 ("./edit");
-	std::ofstream outfile1 (output_file1);
+	outfile.close();*/
+
+	std::string invalid_deletes_filename ("/home/komal/data/update_number/invalid_deletes");
+	std::ofstream invalid_deletes_file (invalid_deletes_filename);
 	for(auto it:d)
-		outfile1 << it<<"\n";
-	outfile1.close();;*/
+		invalid_deletes_file << it <<"\n";
+	invalid_deletes_file.close();;
 
 //	g.read_reference_at(0,0,LONG_MAX);
 
-//    g.get_skip_list().print_list();
-
-    /*benchmark_snp(g);
-
+    /*
+    benchmark_snp(g);
     benchmark_insert(g);
-
     benchmark_search(g,TESTS,25);
     benchmark_search(g,TESTS,35);
     benchmark_search(g,TESTS,70);
     benchmark_search(g,TESTS,100);
    */
     std::cout<<"BENCHMARKING END"<<std::endl;
-	//:read_reference_abs_at(const long abs_pos,const long len,long &genome_position,unsigned long &offset,string &kmer)
-
+    //:read_reference_abs_at(const long abs_pos,const long len,long &genome_position,unsigned long &offset,string &kmer)
 
 }
-
-//Open test file
-/*	std::fstream referenceFile;
-referenceFile.open("./../data/input.txt");
-if( !referenceFile || referenceFile.eof() ){
-    std::cout << "Error: Reference Sequence File Not Found.\n"; exit(2);
-}*/
-

@@ -257,7 +257,7 @@ void benchmark(genome &g, string path, const long edits){
 	vector<long > d;
 	long lc=0;
 	
-	cout<<"total edits: "<<totedits;
+	cout<<"total edits: " << totedits << std::endl;
 
    	for(auto it:vec)
   	{
@@ -328,5 +328,46 @@ void benchmark(genome &g, string path, const long edits){
    */
     std::cout<<"BENCHMARKING END"<<std::endl;
     //:read_reference_abs_at(const long abs_pos,const long len,long &genome_position,unsigned long &offset,string &kmer)
+
+}
+
+
+void benchmark_substring(genome &g, std::string filepath){
+
+	std::vector<std::pair<long,long>> substrings;
+	std::ifstream inputfile (filepath);
+	std::string line, pos, len;
+	if (inputfile.is_open())
+  	{
+		while(getline(inputfile, line)){
+	
+			std::stringstream linestream(line);
+			getline(linestream, pos, ','); 
+			getline(linestream, len, ',');
+			substrings.push_back(std::make_pair(stol(pos,nullptr,10),stol(len,nullptr,10)));
+			line.clear(); pos.clear(); len.clear();
+		}
+	}
+	else
+	{
+		std::cerr << "Houston, we have a problem opening the substring file" << std::endl;
+		exit(-1);
+	}
+
+	
+        struct timeval start, end;
+        struct timezone tzp;
+	long temp;
+        gettimeofday(&start, &tzp);
+
+	for(auto substr: substrings){
+		//std::cout << substr.first << " " << substr.second << std::endl;
+		g.read_reference_abs_at(substr.first, substr.second, temp);
+	}
+
+	gettimeofday(&end, &tzp);
+
+	std::string message = 	"Extracted " + std::to_string(substrings.size()) + " substrings: ";
+   	print_time_elapsed(message, &start, &end);
 
 }

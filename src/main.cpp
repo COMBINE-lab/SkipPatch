@@ -66,6 +66,10 @@ int main(int argc, const char* argv[]){
 	opt.add( "", 0, 1, 0,
              "The number of edits to perform.",
              "-n", "--numEdits");
+	opt.add( "", 0, 1, 0,
+             "The substrings file.",
+             "-s", "--substr");
+
     opt.parse(argc, argv);
 
     if (opt.isSet("-h") ) {
@@ -98,9 +102,15 @@ int main(int argc, const char* argv[]){
     if (opt.isSet("--numEdits")) {
         opt.get("--numEdits")->getLong(numEdits);
     }
-
+	
+	std::string substrFile;
+    if (opt.isSet("--substr")) {
+        opt.get("--substr")->getString(substrFile);
+    }
+	
 	benchmark(g,editFile,numEdits);
-//	benchmark_search(g, editFile);
+	benchmark_substring(g,substrFile);
+	//benchmark_search(g, editFile);
 
    	/*
 	if (argc < 3) {

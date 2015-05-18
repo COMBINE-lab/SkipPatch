@@ -16,4 +16,6 @@ void benchmark_search(genome &,std::string);
 
 void benchmark_snp(genome &);
 
+void benchmark_substring(genome &, std::string);
+
 #endif

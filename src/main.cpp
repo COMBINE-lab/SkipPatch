@@ -36,6 +36,7 @@ void wabi_example(){
 }
 
 int main(int argc, const char* argv[]){
+
 	ezOptionParser opt;
 
     namespace spd = spdlog;
@@ -47,10 +48,11 @@ int main(int argc, const char* argv[]){
     //auto fileLog = spdlog::create("fileLog", {fileSink});
     //auto jointLog = spdlog::create("jointLog", {fileSink, consoleSink});
 
-
 	opt.overview = "Test dynamically-updateable index.";
 	opt.syntax = "main [OPTIONS]";
+
 	//opt.footer = "v0.1.4 Copyright (C) 2011 Remik Ziemlinski\nThis program is free and without warranty.\n";
+
 	opt.add( "", 0, 0, 0,
              "Help!",
              "-h", "-help", "--help", "--usage");
@@ -82,16 +84,13 @@ int main(int argc, const char* argv[]){
     genome g;
 
     std::string genomeFile;
-    //if (opt.isSet("--build")) {
-        if (opt.isSet("--genome")) {
-            opt.get("--genome")->getString(genomeFile);
-        } else {
-            stderrLogger->warn("You can't build an index without a genome!");
-            return 1;
-        }
-    //}
 
-	g.get_input(genomeFile);
+    if (opt.isSet("--genome")) {
+        opt.get("--genome")->getString(genomeFile);
+    } else {
+        stderrLogger->warn("You can't build an index without a genome!");
+        return 1;
+    }
 
     std::string editFile;
     if (opt.isSet("--edits")) {
@@ -107,26 +106,12 @@ int main(int argc, const char* argv[]){
     if (opt.isSet("--substr")) {
         opt.get("--substr")->getString(substrFile);
     }
+
+    g.get_input(genomeFile);
 	
 	benchmark(g,editFile,numEdits);
 	benchmark_substring(g,substrFile);
 	//benchmark_search(g, editFile);
 
-   	/*
-	if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " input_file_name" << " K" << std::endl;
-        return 1;
-    }
-    std::string filename = argv[1];
-	*/
-
-    // ROB edit --- are we constructing the hash twice?
-	//g.construct_hash();
-
-    //wabi_example();
-
-	//test();
-	//benchmark(g, argv[2], argv[3], atol(argv[4]));
-	//benchmark_search(g,argv[2]);
 	return 0;
 }

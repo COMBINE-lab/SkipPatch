@@ -63,7 +63,7 @@ uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
 }
 
 void usage(char *program) {
-    cerr << "Usage (NOW): " << program << " <filename_input_reference> <input_test_data> <number_of_edits>" << endl;
+    cerr << "Usage (NOW): " << program << " <filename_input_reference> <input_test_data> <number_of_edits> <output_file_updated_reference_sequence>" << endl;
     cerr << "Usage (EARLIER): " << program << " <filename> [lcp] [getSA <num_queries>] [insert (<file to ins.> <pos of ins.>)+] [delete (<pos. to delete> <length of deletion>)+] " << endl;
     exit(1);
 }
@@ -244,29 +244,30 @@ void benchmark_edits(int argc, char *argv[]){
 	std::string message = std::string("DynSA: Updates: ");
 	print_time_elapsed(message, &start, &end);
 
-	/*
-	//Regenerating the updated reference sequence from the BWT F&L
-	n = wt->getSize();
-	size_t i = 1, length = 0;
-  	char c = (*wt)[i];
-  	uchar *newtext = new uchar[n];
-  	newtext[n-1]='\0';
-  	//Retrieve the text
-  	while (c!=0) {
-    	c = (*wt)[i];
-    	newtext[n-length-2]=c;
-    	i = wt->LFmapping(i);
-    	length++;
-    	if (length > n)
-      		break;
-  	}
-	*/
-
-	//Write updated genome to file 
-  	//std::string output_file (argv[3] + std::string("_") + std::string(argv[4]) + std::string(".dynsa"));
-	//std::ofstream outfile (output_file);
-	//outfile << newtext;
-	//outfile.close();
+	if(argv[4]){
+	
+		//Regenerating the updated reference sequence from the BWT F&L
+		n = wt->getSize();
+		size_t i = 1, length = 0;
+	  	char c = (*wt)[i];
+	  	uchar *newtext = new uchar[n];
+	  	newtext[n-1]='\0';
+	  	//Retrieve the text
+	  	while (c!=0) {
+	    	c = (*wt)[i];
+	    	newtext[n-length-2]=c;
+	    	i = wt->LFmapping(i);
+	    	length++;
+	    	if (length > n)
+	      		break;
+	  	}
+		
+		//Write updated genome to file 
+	  	std::string output_file (argv[4]);
+		std::ofstream outfile (output_file);
+		outfile << newtext;
+		outfile.close();
+	}
 
 	//std::cout << text << endl;
 	//std::cout << newtext << endl;
@@ -503,8 +504,8 @@ void benchmark_substr(int argc, char *argv[]){
 //Edited for benchmarking with DynHash
 int main(int argc, char *argv[]) {
 
-	//benchmark_edits(argc, argv);
+	benchmark_edits(argc, argv);
 	//benchmark_search(argc, argv);
-	benchmark_substr(argc,argv);
+	//benchmark_substr(argc,argv);
 }
 

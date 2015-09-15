@@ -7,6 +7,8 @@
 #include "ezOptionParser.hpp"
 #include "spdlog/spdlog.h"
 
+#define TEST 1
+
 using namespace ez;
 using namespace std;
 
@@ -71,6 +73,9 @@ int main(int argc, const char* argv[]){
 	opt.add( "", 0, 1, 0,
              "The substrings file.",
              "-s", "--substr");
+	opt.add( "", 0, 1, 0,
+             "The output file.",
+             "-o", "--output");
 
     opt.parse(argc, argv);
 
@@ -98,7 +103,7 @@ int main(int argc, const char* argv[]){
     }
 
     long numEdits;
-    if (opt.isSet("--numEdits")) {
+    if (opt.isSet("--cd ")) {
         opt.get("--numEdits")->getLong(numEdits);
     }
 	
@@ -108,10 +113,23 @@ int main(int argc, const char* argv[]){
     }
 
     g.get_input(genomeFile);
+#ifdef TEST
+	test();
+#endif
 	
 	benchmark(g,editFile,numEdits);
-	benchmark_substring(g,substrFile);
+	//benchmark_substring(g,substrFile);
 	//benchmark_search(g, editFile);
+
+   string outputFile;
+   if (opt.isSet("--output")) {
+		opt.get("--output")->getString(outputFile);
+		ofstream myfile;
+		myfile.open (outputFile);
+		//myfile << "Writing this to a file.\n";
+		myfile <<g.get_updated_reference();
+		myfile.close();
+	}
 
 	return 0;
 }

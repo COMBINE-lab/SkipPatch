@@ -96,10 +96,10 @@ long genome::get_length()
     return reference.length();
 }
 
-//std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> genome::get_hash()
-//{
-//	return m;
-//}
+std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> genome::get_hash()
+{
+	return m;
+}
 
 skip_list genome::get_skip_list()
 {

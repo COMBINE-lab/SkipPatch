@@ -12,7 +12,7 @@
 //#define DEBUG
 using namespace std;
 
-void test_hash_fwd(unordered_map<std::string, std::vector<long>> m_temp,unordered_map<std::string, std::vector<long>> m_genome,skip_list s)
+void test_hash_fwd(std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m_temp, std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m_genome,skip_list s)
 {
 for(auto it=m_temp.begin(); it!=m_temp.end(); it++)
 	{	
@@ -35,7 +35,7 @@ for(auto it=m_temp.begin(); it!=m_temp.end(); it++)
 }
 
 
-void test_hash_rev(unordered_map<std::string, std::vector<long>> m_temp,unordered_map<std::string, std::vector<long>> m_genome,skip_list s)
+void test_hash_rev(std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m_temp, std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m_genome,skip_list s)
 {
 for(auto it=m_genome.begin(); it!=m_genome.end(); it++)
 	{	
@@ -59,7 +59,7 @@ for(auto it=m_genome.begin(); it!=m_genome.end(); it++)
 }
 
 
-void test_hash(unordered_map<std::string, std::vector<long>> m_temp,unordered_map<std::string, std::vector<long>> m_genome,skip_list s)
+void test_hash(std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m_temp, std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m_genome,skip_list s)
 {
      
 	test_hash_fwd(m_temp,m_genome,s);

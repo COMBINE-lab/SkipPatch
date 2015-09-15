@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include <bits/stdc++.h>
 
-#include "utils.h"
+#include "spdlog/spdlog.h"
 
 void print_time_elapsed(std::string, struct timeval*, struct timeval*);
 

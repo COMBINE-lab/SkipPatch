@@ -6,26 +6,22 @@
 #define N 10
 #define TESTS 100
 using namespace std;
-void benchmark_construction(genome &g){
 
-    //Calculating time elapsed
-    struct timeval start, end;
-    struct timezone tzp;
+/**
+ * Benchmarks the time taken to construct the hash from the reference sequence
+ */
+void benchmark_construction(genome &g) {
 
-    gettimeofday(&start, &tzp);
-    g.construct_hash();
-    gettimeofday(&end, &tzp);
+	struct timeval start, end;
+	struct timezone tzp;
 
-    print_time_elapsed("Constructing Hash: ", &start, &end);
+	gettimeofday(&start, &tzp);
+	g.construct_hash();
+	gettimeofday(&end, &tzp);
 
-//    gettimeofday(&start, &tzp);
-//    std::string fname("hashdump.bin");
-//    g.save_hash(fname);
-//    gettimeofday(&end, &tzp);
-//
-//    print_time_elapsed("Saving hash to file: ", &start, &end);
+	print_time_elapsed("Constructing Hash: ", &start, &end);
 
-    return;
+	return;
 }
 
 void benchmark_search(genome &g, int num_patterns, int pattern_len){
@@ -231,7 +227,7 @@ void benchmark_search(genome &g,const string path_to_query_file){
 
 
 
-void benchmark(genome &g, string path, const long edits){
+void benchmark_edits(genome &g, string path, const long edits){
 
 	std::cout<<"BENCHMARKING START"<<std::endl;
 	benchmark_construction(g);

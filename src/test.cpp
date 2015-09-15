@@ -216,7 +216,7 @@ void test_insert_at()
 		std::vector<unsigned long> positions {reference.length()-K,2,5,4,7,11,12,24,36,30};
 
 		for(long p: positions){
-		  		//std::cout << "Test: " << pos << " " << del_len << " " << reference <<  std::endl;
+		  		//std::cout << "Test: " << p << " " << ins << " " << reference <<  std::endl;
 #ifdef DEBUG
 cout<<endl<<"Position: "<<p<<endl;
 #endif
@@ -666,7 +666,6 @@ void test_search_at(){
 void test(){
 
 	std::cout << std::endl <<  "Testing: Start" << std::endl;
-	
 	
 	test_insert_at();
 	test_delete_at();

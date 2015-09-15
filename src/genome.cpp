@@ -261,7 +261,7 @@ std::vector<long> genome::search(std::string read){
 	auto f = m.find(read_kmer);
 
 	if(f!=m.end()){
-		auto& search = f->second;
+		auto search = f->second;
 
     //if(!search.empty()){
 
@@ -275,7 +275,7 @@ std::vector<long> genome::search(std::string read){
 
     		if(!ins[pos]){	//If the position doesn't start from within an insertion
     			//std::cout << "POS(G): " << pos << std::endl;
-    			if(::memcmp(read.c_str(), read_reference_at(pos,offset,read.length()).c_str(), K) == 0){
+    			if(::memcmp(read.c_str(), read_reference_at(pos,offset,read.length()).c_str(), read.length()) == 0){
     				positions.push_back(get_virtual_position_from_genome_position(pos,offset));
     				//std::cout << "Adding at(1): " << get_virtual_position_from_genome_position(pos,offset) << std::endl;
     			} else {
@@ -294,7 +294,7 @@ std::vector<long> genome::search(std::string read){
     			offset = insertion_ext.find(read_kmer);
     			while(offset!=std::string::npos){
 					//std::cout << "read_ext: " << pos << " " << offset << " " << read.length() << " " << read_reference_at(pos, offset, read.length())  << std::endl;
-    				if(::memcmp(read.c_str(), read_reference_at(pos, offset, read.length()).c_str(), K) == 0) {
+    				if(::memcmp(read.c_str(), read_reference_at(pos, offset, read.length()).c_str(), read.length()) == 0) {
     					positions.push_back(get_virtual_position_from_genome_position(pos,offset));
     					//std::cout << "Adding at(2): " << get_virtual_position_from_genome_position(pos,offset) << std::endl;
 					}

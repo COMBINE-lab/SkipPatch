@@ -33,7 +33,7 @@ void print_time_elapsed(std::string desc, struct timeval* start,
 	float time_elapsed = (elapsed.tv_sec * 1000000 + elapsed.tv_usec)
 			/ 1000000.f;
 
-	std::cout << "Total Time Elapsed: " << time_elapsed << " seconds" << std::endl;
+	std::cout << desc << " Total Time Elapsed: " << time_elapsed << " seconds" << std::endl;
 
 	return;
 }

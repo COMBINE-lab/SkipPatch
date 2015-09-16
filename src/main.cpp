@@ -93,7 +93,7 @@ int main(int argc, const char* argv[]){
     if (opt.isSet("--genome")) {
         opt.get("--genome")->getString(genomeFile);
     } else {
-        stderrLogger->warn("You can't build an index without a genome!");
+        stderrLogger->warn() << "You can't build an index without a genome!";
         return 1;
     }
 
@@ -118,6 +118,7 @@ int main(int argc, const char* argv[]){
 #endif
 	
 	benchmark(g,editFile,numEdits);
+	//benchmark_edits(g,editFile,numEdits);
 	//benchmark_substring(g,substrFile);
 	//benchmark_search(g, editFile);
 

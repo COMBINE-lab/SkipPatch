@@ -4,18 +4,20 @@
 #include <bits/stdc++.h>
 #include "genome.h"
 #include "utils.h"
+#include "spdlog/spdlog.h"
 
-//void benchmark(genome &,std::string, const std::string,const long);
-void benchmark(genome &, std::string, const long);
+namespace spd = spdlog;
 
-void benchmark_construction(genome &);
+	void benchmark_construction(genome &);
 
-void benchmark_search(genome &, int, int);
+	void benchmark_search(genome &, int, int);
 
-void benchmark_search(genome &,std::string);
+	void benchmark_search(genome &,std::string);
 
-void benchmark_snp(genome &);
+	void benchmark_edits(genome &, std::string, const long);
 
-void benchmark_substring(genome &, std::string);
+	void benchmark_snp(genome &);
+
+	void benchmark_substring(genome &, std::string);
 
 #endif

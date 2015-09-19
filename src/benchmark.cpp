@@ -384,24 +384,8 @@ void benchmark_substring(genome &g, std::string substr_file_path) {
 								stol(substr_details[1], nullptr, 10)));
     		}
     	}
-	}
-
-	/*
-	if (substr_file.is_open()) {
-
-		while (getline(substr_file, line)) {
-			std::stringstream linestream(line);
-			getline(linestream, pos, ',');
-			getline(linestream, len, ',');
-			substrings.push_back(
-					std::make_pair(stol(pos, nullptr, 10),
-							stol(len, nullptr, 10)));
-			line.clear();
-			pos.clear();
-			len.clear();
-		}
-	}*/ else {
-		std::cerr << "[benchmark.cpp][()] Failed to open file: " << substr_file_path << std::endl;
+	} else {
+		std::cerr << "[benchmark.cpp][benchmark_substring()] Failed to open file: " << substr_file_path << std::endl;
 		exit(-1);
 	}
 

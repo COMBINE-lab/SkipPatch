@@ -120,7 +120,7 @@ int main(int argc, const char* argv[]) {
 
 	g.get_input(genomeFile);
 
-	//test();
+	test();
 	//benchmark_edits(g,editFile,numEdits);
 	//benchmark_substring(g,substrFile);
 	//benchmark_search(g, editsFile, queryFrequency, queryCount, iterations);

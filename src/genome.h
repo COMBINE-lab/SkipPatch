@@ -19,11 +19,14 @@ class genome {
 private:
 
     std::string reference;
-    std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m;
+    std::unordered_map<std::string, std::vector<long>> m;
+    //std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m;
     skip_list s;
     std::vector<bool> ins;
     std::vector<bool> del;
+
 public:
+
     genome();
 
     //Get the reference sequence from input
@@ -33,7 +36,8 @@ public:
     void set_reference(std::string);
     std::string get_reference();
     long get_length();
-    std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> get_hash();
+    std::unordered_map<std::string, std::vector<long>> get_hash();
+    //std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> get_hash();
     skip_list get_skip_list();
 
     //Generate the updated reference, or a segment of the updated reference
@@ -41,6 +45,7 @@ public:
     std::string read_reference_at(const long ,const long,const long);
     std::string read_reference_abs_at(const long,const long,long &);
     void read_reference_abs_at(const long ,const long ,long&,unsigned long&,std::string&);
+
     //Hash table functions
     void load_hash(const std::string& fname);
     void save_hash(const std::string& fname);

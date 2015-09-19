@@ -19,12 +19,17 @@ using namespace std;
 //#define BENCHMARK 0
 //#define DEBUG 0
 
+/*
 unsigned long hashing_func(std::string key)
 {
     return XXH64(key.c_str(), key.length(), 0);
 }
 
 genome::genome() : m(10000000, hashing_func) {}
+*/
+
+genome::genome() {
+}
 
 void genome::get_input(string path)
 {
@@ -96,10 +101,17 @@ long genome::get_length()
     return reference.length();
 }
 
+std::unordered_map<std::string, std::vector<long>> genome::get_hash()
+{
+	return m;
+}
+
+/*
 std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> genome::get_hash()
 {
 	return m;
 }
+*/
 
 skip_list genome::get_skip_list()
 {
@@ -261,7 +273,7 @@ std::vector<long> genome::search(std::string read){
 	auto f = m.find(read_kmer);
 
 	if(f!=m.end()){
-		auto search = f->second;
+		auto& search = f->second;
 
     //if(!search.empty()){
 

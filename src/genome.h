@@ -81,7 +81,7 @@ public:
 
     std::vector<std::string> generate_kmers(std::string);
     std::vector<std::pair<std::string,long>> get_kmers(const long, const unsigned long);
-    std::vector<std::tuple<std::string,long,unsigned long>> get_kmers1(const long,const unsigned long );
+    std::vector<std::tuple<std::string,long,unsigned long>> get_kmers_with_offset(const long,const unsigned long );
 };
 
 #endif

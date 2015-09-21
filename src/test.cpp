@@ -9,7 +9,7 @@
 #include "test.h"
 #include "genome.h"
 #include "utils.h"
-//#define DEBUG
+//#define DEBUGs
 using namespace std;
 
 void test_hash_fwd(std::unordered_map<std::string, std::vector<long>> m_temp, std::unordered_map<std::string, std::vector<long>> m_genome,skip_list s)
@@ -91,7 +91,7 @@ void check_insert_at(genome g, string ins, long abs_val, string &reference)
 /* Tests if the search for a string of any length in the hash map is working correctly */
 void test_search_static_reference(){
 
-	cout << "test_search_static_reference(): Start" << std::endl;
+	LOGINFO(FILE_LOGGER, "Starting.. ");
 
     genome g;
     std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATCGCAGATCGA"; 
@@ -114,7 +114,7 @@ void test_search_static_reference(){
         assert(g.search(read).size()==0);
     }
 
-	cout << "test_search_static_reference(): Complete" << std::endl;
+	LOGINFO(FILE_LOGGER, "Complete");
 }
 
 
@@ -173,7 +173,7 @@ void check_search(genome g, string reference)
 
 void test_search_dynamic_reference(){
 
-	cout << "test_search_dynamic_reference(): Start" << std::endl;
+	LOGINFO(FILE_LOGGER, "Starting.. ");
 	
     genome g;
     std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCAT"; 
@@ -194,14 +194,15 @@ void test_search_dynamic_reference(){
 	    }
 	}
 
-    cout << "test_search_dynamic_reference(): Complete" << std::endl;    
+	LOGINFO(FILE_LOGGER, "Complete");
 }
 
 
 void test_insert_at()
 {
- 	cout << std::endl << "insert_at(): Start" << std::endl;
 	
+	LOGINFO(FILE_LOGGER, "Starting.. ");
+
 	//length of insertion <K, >K, =K, =1
 	std::vector<std::string> insertions {"ATG", "TTGTAC", "ATCG", "C","TTTTTTTT"}; 
 
@@ -225,7 +226,7 @@ cout<<endl<<"Position: "<<p<<endl;
 		}
 	}
 
-	cout << "insert_at(): Complete" << std::endl;
+	LOGINFO(FILE_LOGGER, "Complete");
 }
 
 void check_delete_at(genome &g, long position, long len, string &reference)
@@ -256,8 +257,8 @@ void check_delete_at(genome &g, long position, long len, string &reference)
 }
 
 void test_delete_at(){
-	
-	cout << std::endl << "delete_at(): Start" << std::endl;	
+
+	LOGINFO(FILE_LOGGER, "Starting.. ");
 
 	std::vector<long> del_lengths {1,2,2,1,2};
 	//std::vector<long> ins_lengths {1,5,3,4,2};
@@ -287,14 +288,15 @@ void test_delete_at(){
 		}
 	}
 
-	cout << "delete_at(): Complete" << std::endl;
+	LOGINFO(FILE_LOGGER, "Complete");
 }
 
 
 void test_indels(){
 	
-    
- 	cout << std::endl << "test_indels(): Start" << std::endl;
+
+	LOGINFO(FILE_LOGGER, "Starting.. ");
+
 	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
 	//length of insertion <K, >K, =K, =1
 	std::vector<std::string> insertions {"ATGATGATGATG", "TTGTACATGATG", "ATCGATCGATGATG", "CATCGATGATG"}; 
@@ -380,7 +382,9 @@ void test_indels(){
 			
 		}
 	}
-	cout << "test_indels(): Complete" << std::endl;
+
+	LOGINFO(FILE_LOGGER, "Complete");
+
 }
 void check_snp_at(genome g, string ins, long abs_val, string &reference)
 {	
@@ -406,8 +410,9 @@ void check_snp_at(genome g, string ins, long abs_val, string &reference)
 }
 void test_snp_at(){
 	
-    
- 	cout << std::endl << "snp_at(): Start" << std::endl;
+
+	LOGINFO(FILE_LOGGER, "Starting.. ");
+
 	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
 	//length of insertion <K, >K, =K, =1
 	std::vector<std::string> insertions {"ATGATGATGATG", "TTGTACATGATG", "ATCGATCGATGATG", "CATCGATGATG"}; 
@@ -524,24 +529,27 @@ void test_snp_at(){
 			
 		}
 	}
-	cout << "snp_at(): Complete" << std::endl;
+
+	LOGINFO(FILE_LOGGER, "Complete");
+
 }
 
 void test_search(){
 
-	cout << std::endl << "test_search(): Start" << std::endl;
+
+	LOGINFO(FILE_LOGGER, "Starting.. ");
 
 	test_search_static_reference();
 	test_search_dynamic_reference();
 
-	cout << "test_search(): Complete" << std::endl << std::endl;
+	LOGINFO(FILE_LOGGER, "Complete");
 
 }
 void test_search_at(){
-	
-    
- 	cout << std::endl << "tesr_search_at(): Start" << std::endl;
-	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT"; 
+
+	LOGINFO(FILE_LOGGER, "Starting.. ");
+
+ 	std::string reference = "ATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGATATTAGCTAGCCTAGCTAGTAGATGGATCTCCCCCTATCATCATCATCTACTACATCAGCATGATCGATCGAT";
 	//length of insertion <K, >K, =K, =1
 	std::vector<std::string> insertions {"ATGATGATGATG", "TTGTACATGATG", "ATCGATCGATGATG", "CATCGATGATG"}; 
 	std::vector<long> del_lengths {1,2};
@@ -660,18 +668,22 @@ void test_search_at(){
 			
 		}
 	}
-	cout << "tesr_search_at(): Complete" << std::endl;
+
+	LOGINFO(FILE_LOGGER, "Complete");
+
 }
 
 void test(){
 
-	std::cout << std::endl <<  "Testing: Start" << std::endl;
-	
+	LOGINFO(FILE_LOGGER, "Starting.. ");
+
 	test_insert_at();
 	test_delete_at();
 	test_indels();
 	test_snp_at();
 	test_search_at();
 	test_search();	
-	std::cout << "Testing: Complete!" << std::endl << std::endl << std::endl;
+
+	LOGINFO(FILE_LOGGER, "Testing Complete");
+
 }

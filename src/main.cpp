@@ -37,20 +37,13 @@ void wabi_example() {
 
 int main(int argc, const char* argv[]) {
 
+	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, "../logs/skippatch.log");
+	auto console_logger = spdlog::stdout_logger_mt("console");
+	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
+
 	ezOptionParser opt;
-
-	namespace spd = spdlog;
-
-	auto stderrLogger = spd::stdout_logger_mt("console");
-	//auto fileSink = std::make_shared<spd::sinks::simple_file_sink_mt>(logFileName, true);
-	//auto consoleSink = std::make_shared<spd::sinks::stderr_sink_mt>();
-	//auto consoleLog = spdlog::create("consoleLog", {consoleSink});
-	//auto fileLog = spdlog::create("fileLog", {fileSink});
-	//auto jointLog = spdlog::create("jointLog", {fileSink, consoleSink});
-
 	opt.overview = "Test dynamically-updateable index.";
 	opt.syntax = "main [OPTIONS]";
-	//opt.footer = "v0.1.4 Copyright (C) 2011 Remik Ziemlinski\nThis program is free and without warranty.\n";
 
 	opt.add("", 0, 0, 0, "Help!", "-h", "-help", "--help", "--usage");
 
@@ -77,14 +70,12 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
 
-	genome g;
-
 	std::string genomeFile;
 
 	if (opt.isSet("--genome")) {
 		opt.get("--genome")->getString(genomeFile);
 	} else {
-		stderrLogger->warn() << "You can't build an index without a genome!";
+		console_logger->warn() << "You can't build an index without a genome!";
 		return 1;
 	}
 
@@ -118,11 +109,15 @@ int main(int argc, const char* argv[]) {
 		opt.get("--iterations")->getLong(iterations);
 	}
 
+	std::cout << "Log file: " << "../logs/skippatch.log" << std::endl;
+
+	genome g;
 	g.get_input(genomeFile);
 
 	test();
+
 	//benchmark_edits(g,editFile,numEdits);
-	//benchmark_substring(g,substrFile);
+	benchmark_substring(g,substrFile);
 	//benchmark_search(g, editsFile, queryFrequency, queryCount, iterations);
 
 	return 0;

@@ -132,8 +132,9 @@ void parse_edit_file(std::vector<std::tuple<std::string, std::string, std::strin
     		}
     	}
     } else {
-    	//TODO: Change to logging
-		std::cerr << "[benchmark.cpp][parse_edit_file()] Failed to open file " << edits_file_path << std::endl;
+		std::string error_message = "Failed to open file: " + edits_file_path;
+		LOGALERT(FILE_LOGGER, error_message);
+		LOGALERT(FILE_LOGGER, "Exiting program");
 		exit(-1);
 	}
 
@@ -152,8 +153,7 @@ void parse_edit_file(std::vector<std::tuple<std::string, std::string, std::strin
  */
 void benchmark_edits(genome &g, std::string edits_file, const long number_of_edits) {
 
-	//TODO: Change to logging
-	std::cout << "BEGIN: BENCHMARKING EDITS" << std::endl;
+	LOGINFO(FILE_LOGGER, "Start: Benchmarking Edits");
 
 	benchmark_construction(g);
 
@@ -216,8 +216,7 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 		invalid_deletes_file << invalid_delete << "\n";
 	invalid_deletes_file.close();
 
-	//TODO: Change to logging
-	std::cout << "END: BENCHMARKING EDITS" << std::endl;
+	LOGINFO(FILE_LOGGER, "End: Benchmarking Edits");
 
 }
 
@@ -284,8 +283,9 @@ void parse_edit_file(const std::string edits_queries_file_path,
 			}
 		}
 	}  else {
-    	//TODO: Change to logging
-		std::cerr << "[benchmark.cpp][parse_edit_file()] Failed to open file: " << edits_queries_file_path << std::endl;
+		std::string error_message = "Failed to open file: " + edits_queries_file_path;
+		LOGALERT(FILE_LOGGER, error_message);
+		LOGALERT(FILE_LOGGER, "Exiting program");
 		exit(-1);
 	}
 }
@@ -302,8 +302,7 @@ void parse_edit_file(const std::string edits_queries_file_path,
  */
 void benchmark_search(genome &g, const std::string path_to_query_file, long queryFrequency, long queryCount, long iterations) {
 
-	//TODO: Change to logging
-	std::cout << "BEGIN: BENCHMARKING SEARCH" << std::endl;
+	LOGINFO(FILE_LOGGER, "Start: Benchmarking Search");
 
 	benchmark_construction(g);
 
@@ -340,8 +339,7 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
 
 	}
 
-	//TODO: Change to logging
-	std::cout << "BEGIN: BENCHMARKING SEARCH" << std::endl;
+	LOGINFO(FILE_LOGGER, "Complete: Benchmarking Search");
 }
 
 /**
@@ -360,13 +358,13 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
  */
 void benchmark_substring(genome &g, std::string substr_file_path) {
 
-	//TODO: Change to logging
-	std::cout << "BEGIN: BENCHMARKING SUBSTRING" << std::endl;
+	LOGINFO(FILE_LOGGER, "Starting: Benchmarking Substring Extraction");
+
+	benchmark_construction(g);
 
 	std::vector<std::pair<long, long>> substrings;
 	std::ifstream substr_file(substr_file_path);
 	std::string line, pos, len;
-
 
 	if (substr_file.is_open()) {
 		while (!substr_file.eof())
@@ -385,7 +383,9 @@ void benchmark_substring(genome &g, std::string substr_file_path) {
     		}
     	}
 	} else {
-		std::cerr << "[benchmark.cpp][benchmark_substring()] Failed to open file: " << substr_file_path << std::endl;
+		std::string error_message = "Failed to open file: " + substr_file_path;
+		LOGALERT(FILE_LOGGER, error_message);
+		LOGALERT(FILE_LOGGER, "Exiting program");
 		exit(-1);
 	}
 
@@ -404,7 +404,6 @@ void benchmark_substring(genome &g, std::string substr_file_path) {
 			+ " substrings: ";
 	print_time_elapsed(message, &start, &end);
 
-	//TODO: Change to logging
-	std::cout << "END: BENCHMARKING SUBSTRING" << std::endl;
+	LOGINFO(FILE_LOGGER, "Complete: Benchmarking Substring Extraction");
 
 }

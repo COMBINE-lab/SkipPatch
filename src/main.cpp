@@ -39,6 +39,7 @@ int main(int argc, const char* argv[]) {
 
 	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, "../logs/skippatch.log");
 	auto console_logger = spdlog::stdout_logger_mt("console");
+	spd::set_level(spd::level::info); //level of logging
 	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
 
 	ezOptionParser opt;

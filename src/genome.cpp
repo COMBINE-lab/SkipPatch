@@ -16,8 +16,6 @@
 #include "utils.h"
 
 using namespace std;
-//#define BENCHMARK 0
-//#define DEBUG 0
 
 /*
  unsigned long hashing_func(std::string key)
@@ -208,7 +206,7 @@ long genome::get_virtual_position_from_genome_position(long genome_position,
 
 void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 
-	//std::cout << "snp_at: " << snp_pos_abs << " " << snp << std::endl;
+	LOGDEBUG(FILE_LOGGER,"snp_at: " + std::to_string(snp_pos_abs) + " " + snp);
 	const long snp_len = snp.length();
 
 	auto kmer_pos_pair = get_kmers(snp_pos_abs - K + 1, snp_len + K - 1);
@@ -227,7 +225,7 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 		if (it.first.length() == K) {
 			add_kmer_from_hash_at(it.second, new_kmer);
 		}
-		//std::cout << "Replaced " << it.first << " with " << new_kmer << " at " << it.second << std::endl;
+		LOGDEBUG(FILE_LOGGER,"Replaced " + it.first + " with " + new_kmer + " at " + std::to_string(it.second));
 		i++;
 	}
 	//s.print_base_level();
@@ -242,17 +240,16 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 		get_genome_position_from_virtual_position(snp_pos_abs + j,
 				genome_position, offset, &n);
 		if (ins[genome_position]) {
-			//std::cout << "I" << n->next->str << " " << n->next->val << " " << n->next->offset << std::endl;
+			LOGDEBUG(FILE_LOGGER,"I: " + n->next->str + " " + std::to_string(n->next->val) + " " + std::to_string(n->next->offset));
 			if (offset == 0) {
 				reference[genome_position] = snp[j];
-				//std::cout << "I: " << "Changing: " << reference[genome_position] << " to " << snp[j] << std::endl;
+				LOGDEBUG(FILE_LOGGER,"I: Changing " + std::string(1,reference[genome_position]) + " to " + snp[j]);
 			} else {
-				n->next->str = (n->next->str).replace(offset - 1, 1,
-						string(1, snp[j])); //Doubt??
-				//std::cout << "I: " << "Changing: " << n->str[offset-1] << " to " << snp[j] << std::endl;
+				n->next->str = (n->next->str).replace(offset - 1, 1, string(1, snp[j])); //Doubt??
+				LOGDEBUG(FILE_LOGGER,"I: Changing " + std::string(1,n->str[offset-1]) + " to " + snp[j]);
 			}
 		} else {
-			//std::cout << "G: " << "Changing: " << reference[genome_position] << " to " << snp[j] << std::endl;
+			LOGDEBUG(FILE_LOGGER,"G: Changing " + std::string(1,reference[genome_position]) + " to " + snp[j]);
 			reference[genome_position] = snp[j]; //No insertion at that point
 		}
 	}
@@ -280,19 +277,18 @@ std::vector<long> genome::search(std::string read) {
 			long offset = 0;
 
 			if (!ins[pos]) { //If the position doesn't start from within an insertion
-				//std::cout << "POS(G): " << pos << std::endl;
+				LOGDEBUG(FILE_LOGGER,"POS(G): " + std::to_string(pos));
 				if (::memcmp(read.c_str(),
 						read_reference_at(pos, offset, read.length()).c_str(),
 						read.length()) == 0) {
 					positions.push_back(
-							get_virtual_position_from_genome_position(pos,
-									offset));
-					//std::cout << "Adding at(1): " << get_virtual_position_from_genome_position(pos,offset) << std::endl;
+							get_virtual_position_from_genome_position(pos, offset));
+					LOGDEBUG(FILE_LOGGER,"Adding at(1): " + std::to_string(get_virtual_position_from_genome_position(pos,offset)));
 				} else {
 					// TODO: What happens in this case? It is an error, right?
 				}
 			} else {
-				//std::cout << "POS(I): " << pos << std::endl;
+				LOGDEBUG(FILE_LOGGER,"POS(I): " + std::to_string(pos));
 
 				//A read can occurr multiple times within an insertion itself
 				//And hence might have different offsets for those locations
@@ -304,14 +300,10 @@ std::vector<long> genome::search(std::string read) {
 						insertion_length + K);
 				offset = insertion_ext.find(read_kmer);
 				while (offset != std::string::npos) {
-					//std::cout << "read_ext: " << pos << " " << offset << " " << read.length() << " " << read_reference_at(pos, offset, read.length())  << std::endl;
-					if (::memcmp(read.c_str(),
-							read_reference_at(pos, offset, read.length()).c_str(),
-							read.length()) == 0) {
-						positions.push_back(
-								get_virtual_position_from_genome_position(pos,
-										offset));
-						//std::cout << "Adding at(2): " << get_virtual_position_from_genome_position(pos,offset) << std::endl;
+					LOGDEBUG(FILE_LOGGER,"read_ext: " + std::to_string(pos) + " " + std::to_string(offset) + " " + std::to_string(read.length()) + " " + read_reference_at(pos, offset, read.length()));
+					if (::memcmp(read.c_str(), read_reference_at(pos, offset, read.length()).c_str(), read.length()) == 0) {
+						positions.push_back(get_virtual_position_from_genome_position(pos, offset));
+						LOGDEBUG(FILE_LOGGER,"Adding at(2): " + std::to_string(get_virtual_position_from_genome_position(pos,offset)));
 					}
 					offset = insertion_ext.find(read_kmer, offset + 1);
 				}
@@ -428,8 +420,7 @@ vector<tuple<string, long, unsigned long>> genome::get_kmers_with_offset(
 void genome::insert_at(const std::string insertion,
 		const unsigned long insert_pos_abs) {
 
-	//TODO: Logging
-	//std::cout << "insert_at: " << insertion << " at " << insert_pos_abs << std::endl;
+	LOGDEBUG(FILE_LOGGER,"insert_at: " + insertion + " at "  + std::to_string(insert_pos_abs));
 
 	const long ins_len = insertion.length();
 
@@ -441,7 +432,7 @@ void genome::insert_at(const std::string insertion,
 			genome_position);
 	string ins_copy = insertion + end_kmer;
 
-	//std::cout << insert_pos_abs << " " << genome_position << std::endl;
+	LOGDEBUG(FILE_LOGGER, std::to_string(insert_pos_abs) + " " + std::to_string(genome_position));
 
 	for (auto it : kmer_pos_pair) {
 		remove_kmer_from_hash_at(it.second, it.first);
@@ -491,7 +482,8 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 	const string end_kmer = read_reference_abs_at(delete_pos_abs + del_len,
 	K - 1, genome_position);
 	genome_position -= del_len; //will not work for generic case
-	//std::cout << delete_pos_abs+del_len << " " << genome_position << std::endl;
+
+	LOGDEBUG(FILE_LOGGER, std::to_string(delete_pos_abs+del_len) + " " + std::to_string(genome_position));
 
 	for (auto it : kmers_to_replace) {
 		remove_kmer_from_hash_at(it.second, it.first);
@@ -499,7 +491,7 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 		if (it.first.length() == K) { //For handling edge cases: (insertion at the end of the genome)
 			add_kmer_from_hash_at(it.second, temp);
 		}
-		//std::cout << "Replaced " << it.first << " with " << temp << " at " << it.second << std::endl;
+		LOGDEBUG(FILE_LOGGER, "Replaced " + it.first + " with " + temp +  " at " + std::to_string(it.second));
 		i++;
 	}
 

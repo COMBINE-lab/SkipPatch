@@ -37,20 +37,18 @@ void wabi_example() {
 
 int main(int argc, const char* argv[]) {
 
-	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, "../logs/skippatch.log");
-	auto console_logger = spdlog::stdout_logger_mt("console");
-	spd::set_level(spd::level::info); //level of logging
-	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
-
 	ezOptionParser opt;
 	opt.overview = "Test dynamically-updateable index.";
 	opt.syntax = "main [OPTIONS]";
 
 	opt.add("", 0, 0, 0, "Help!", "-h", "-help", "--help", "--usage");
 
-	//TODO: Do we need the build option? Don't we *have* to build the hash?
-	opt.add("", 0, 0, 0, "Build the hash.", "-b", "--build");
 	opt.add("", 0, 1, 0, "The genome file.", "-g", "--genome");
+
+	//TODO: The value of K isn't used yet.
+	opt.add("", 0, 1, 0, "Value of K.", "-k", "--k");
+
+	opt.add("", 0, 1, 0, "Type of benchmark to perform: edit/substr/search ", "-t", "--benchmarkType");
 
 	opt.add("", 0, 1, 0, "The edit file.", "-e", "--editsFile");
 	opt.add("", 0, 1, 0, "The number of edits to perform.", "-n", "--numEdits");
@@ -62,7 +60,20 @@ int main(int argc, const char* argv[]) {
 
 	opt.add("", 0, 1, 0, "The substrings file.", "-s", "--substrFile");
 
+	opt.add("", 0, 1, 0, "File path for logs", "-l", "--logFile");
+
 	opt.parse(argc, argv);
+
+	//If the log file path is specified as an input parameter, use it, or use the default location.
+	std::string logFile = "../logs/skippatch.log";
+	if (opt.isSet("--logFile")) {
+		opt.get("--logFile")->getString(logFile);
+	}
+
+	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logFile);
+	auto console_logger = spdlog::stdout_logger_mt("console");
+	spd::set_level(spd::level::info); //level of logging
+	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
 
 	if (opt.isSet("-h")) {
 		std::string usage;
@@ -72,12 +83,23 @@ int main(int argc, const char* argv[]) {
 	}
 
 	std::string genomeFile;
-
 	if (opt.isSet("--genome")) {
 		opt.get("--genome")->getString(genomeFile);
 	} else {
 		console_logger->warn() << "You can't build an index without a genome!";
 		return 1;
+	}
+
+	int k;
+	if (opt.isSet("--k")) {
+		opt.get("--k")->getInt(k);
+	}
+
+	std::string benchmarkType;
+	if (opt.isSet("--benchmarkType")) {
+		opt.get("--benchmarkType")->getString(benchmarkType);
+	} else {
+		console_logger->warn() << "Type of benchmark to be performed has not been specified!";
 	}
 
 	std::string editsFile;
@@ -110,16 +132,26 @@ int main(int argc, const char* argv[]) {
 		opt.get("--iterations")->getLong(iterations);
 	}
 
-	std::cout << "Log file: " << "../logs/skippatch.log" << std::endl;
+	console_logger->info() << "Log file: " << logFile;
 
 	genome g;
 	g.get_input(genomeFile);
 
 	test();
 
-	//benchmark_edits(g,editFile,numEdits);
-	benchmark_substring(g,substrFile);
-	//benchmark_search(g, editsFile, queryFrequency, queryCount, iterations);
+	if (benchmarkType == "edit") {
+		LOGINFO(FILE_LOGGER, "Benchmarking edits");
+		benchmark_edits(g, editsFile, numEdits);
+	}
+	if (benchmarkType == "substr") {
+		LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
+		benchmark_substring(g, substrFile);
+	}
+	if (benchmarkType == "search") {
+		LOGINFO(FILE_LOGGER, "Benchmarking search");
+		benchmark_search(g, editsFile, queryFrequency, queryCount, iterations);
+	}
 
 	return 0;
+
 }

@@ -1,0 +1,2 @@
+#!/bin/bash
+python verifyCorrectnessWithCLI.py -SPBinary "/home/nitish/SkipPatch/src/main" -SABinary "/home/komal/SkipPatch/dyn_sa/src/test" -genome "/mnt/scratch2/nirm/data/ecoli.fa" -edit_file "/home/komal/data/update_number/ecoli_0.01_10" -output_path_updated_genome "/mnt/scratch2/nirm/output_genomes/" -output_path_benchmark "/mnt/scratch2/nirm/test_benchmarks/" -num_edits 464 -comments "test" 

@@ -307,6 +307,11 @@ std::vector<long> genome::search(std::string read){
 	return positions;
 }
 
+/*
+ * reads the reference from the specified genome(origional) position and offset (in the skip list)
+ * up to the specified length or until it reaches the end of the genome.
+ *
+ */
 string genome::read_reference_at(const long genome_position,const long offset,const long len)
 {
     long rem_len=len,curr_genome_pos = genome_position,curr_offset = offset;string kmer;

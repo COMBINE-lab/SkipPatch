@@ -7,7 +7,7 @@
 #include "ezOptionParser.hpp"
 #include "spdlog/spdlog.h"
 
-#define TEST 1
+//#define TEST 1
 
 using namespace ez;
 using namespace std;
@@ -117,8 +117,8 @@ int main(int argc, const char* argv[]){
 	test();
 #endif
 	
-	benchmark(g,editFile,numEdits);
-	//benchmark_edits(g,editFile,numEdits);
+	//benchmark(g,editFile,numEdits);
+	benchmark_edits(g,editFile,numEdits);
 	//benchmark_substring(g,substrFile);
 	//benchmark_search(g, editFile);
 
@@ -128,7 +128,7 @@ int main(int argc, const char* argv[]){
 		ofstream myfile;
 		myfile.open (outputFile);
 		//myfile << "Writing this to a file.\n";
-		myfile <<g.get_updated_reference();
+		myfile <<g.read_reference_at(0,0,g.get_length());
 		myfile.close();
 	}
 

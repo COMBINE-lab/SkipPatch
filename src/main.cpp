@@ -92,60 +92,7 @@ int main(int argc, const char* argv[]) {
 		opt.get("--numEdits")->getLong(numEdits);
 	}
 
-	//opt.footer = "v0.1.4 Copyright (C) 2011 Remik Ziemlinski\nThis program is free and without warranty.\n";
 
-	opt.add( "", 0, 0, 0,
-             "Help!",
-             "-h", "-help", "--help", "--usage");
-	opt.add( "", 0, 0, 0,
-             "Build the hash.",
-             "-b", "--build");
-	opt.add( "", 0, 1, 0,
-             "The genome file.",
-             "-g", "--genome");
-	opt.add( "", 0, 1, 0,
-             "The edit file.",
-             "-e", "--edits");
-	opt.add( "", 0, 1, 0,
-             "The number of edits to perform.",
-             "-n", "--numEdits");
-	opt.add( "", 0, 1, 0,
-             "The substrings file.",
-             "-s", "--substr");
-	opt.add( "", 0, 1, 0,
-             "The output file.",
-             "-o", "--output");
-
-    opt.parse(argc, argv);
-
-    if (opt.isSet("-h") ) {
-        std::string usage;
-        opt.getUsage(usage,80,ezOptionParser::ALIGN);
-        std::cerr << usage;
-        return 1;
-    }
-
-    genome g;
-
-    std::string genomeFile;
-
-    if (opt.isSet("--genome")) {
-        opt.get("--genome")->getString(genomeFile);
-    } else {
-        stderrLogger->warn() << "You can't build an index without a genome!";
-        return 1;
-    }
-
-    std::string editFile;
-    if (opt.isSet("--edits")) {
-        opt.get("--edits")->getString(editFile);
-    }
-
-    long numEdits;
-    if (opt.isSet("--numEdits")) {
-        opt.get("--numEdits")->getLong(numEdits);
-    }
-	
 	std::string substrFile;
 	if (opt.isSet("--substrFile")) {
 		opt.get("--substrFile")->getString(substrFile);
@@ -172,7 +119,7 @@ int main(int argc, const char* argv[]) {
 	g.get_input(genomeFile);
 
 //	test();
-	
+
 	benchmark_edits(g,editFile,numEdits);
 	//benchmark_substring(g,substrFile);
 	//benchmark_search(g, editsFile, queryFrequency, queryCount, iterations);

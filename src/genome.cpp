@@ -319,6 +319,7 @@ std::vector<long> genome::search(std::string read) {
  * up to the specified length or until it reaches the end of the genome.
  *
  */
+
 string genome::read_reference_at(const long genome_position, const long offset,
 		const long len) {
 

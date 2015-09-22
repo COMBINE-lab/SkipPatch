@@ -205,9 +205,9 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 	print_time_elapsed("Edits: ", &start, &end);
 
-	std::cout << "Total Insertions: " << ins_count << std::endl;
-	std::cout << "Total Deletions: " << del_count << std::endl;
-	std::cout << "Total SNPs: " << snp_count << std::endl;
+	LOGINFO(FILE_LOGGER, "Total Insertions: " + std::to_string(ins_count));
+	LOGINFO(FILE_LOGGER, "Total Deletions: " + std::to_string(del_count));
+	LOGINFO(FILE_LOGGER, "Total SNPs: " + std::to_string(snp_count));
 
 	//TODO: Remove after deletion corner case is fixed
 	//Store every invalid delete in a file

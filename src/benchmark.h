@@ -12,7 +12,7 @@ namespace spd = spdlog;
 
 	void benchmark_search(genome &, int, int);
 
-	void benchmark_search(genome &,std::string);
+	void benchmark_search(genome &,std::string, long, long, long);
 
 	void benchmark_edits(genome &, std::string, const long);
 

@@ -44,10 +44,13 @@ def format_path(s):
 def make_output_dir(output_path,timestamp):
     #print ("op path type ",type( (output_path)))
     #print ("op timestamp formatted ",type( (timestamp)))
+    output_path_dirname = ""
+    if output_path is None:
+        return output_path_dirname
     output_path_dirname =  format_path(output_path)+format_path(timestamp)
     
     if os.path.isdir(output_path_dirname):
-        print "The benchmark and updated genome files being saved in same directory!"
+        print "\nThe benchmark and updated genome files being saved in same directory!\n"
     else:
         mknewdir = "mkdir "+ output_path_dirname
         sb.call([mknewdir],shell=True)
@@ -65,82 +68,93 @@ def write_args(path,args):
 def execute(runCommand,name,output_path):
     print "\n"
     print "running",name,"...\n"
-    print "runcommand:", runCommand,"\n"
+    #print "runcommand:", runCommand,"\n"
     write_args(output_path,runCommand)
     retValSA = sb.call(runCommand,shell = True)
+    print '\n'
     print "done running",name,"!"
+    print '\n'
+
+def format_args(arg, option):
+    if arg is not None:
+        return " -"+option+ " "+arg
+    return ""
 
 
 #TODO: write a script which does this naively instead of using the SA
-parser = argparse.ArgumentParser(description='Test the correctness of the Skip Patch (currently by diff with SA output) \n All arguments are mandatory!')
+
+parser = argparse.ArgumentParser(description='Test the correctness of the Skip Patch (currently by diff with SA output) \n ')
 
 parser.add_argument('-SPBinary','-sp', type=str, help = "path to the Skip Patch binary")
 parser.add_argument('-SABinary', '-sa', type=str, help = "path to the Suffix Array binary")
-parser.add_argument('-genome','-g', type=str, action = readable_file, help = "path to the genome fasta")
-parser.add_argument('-edit_file','-e', action = readable_file, type=str, help = "The edit file.")
-parser.add_argument('-output_path_updated_genome','-og', type = str, action = writeable_dir, help='directory to write the updated genome')
-parser.add_argument('-output_path_benchmark','-ob', type=str, action =  writeable_dir, help='directory to write the benchmarks')
-parser.add_argument('-num_edits', '-n', type=int, help = "Number of edits to perform")
-#parser.add_argument('-alert','-a', type=str, action = readable_file, help='make a sound after the test ends, path to the .wav file' )
+parser.add_argument('-output_path_updated_genome','-o', type = str, action = writeable_dir, help='directory to write the output (useful for verifying correctness)')
+parser.add_argument('-log_path','-l', type = str, action = writeable_dir, help='directory to write the logs')
 parser.add_argument('-comments', '-c', type=str, help='why are you running this test?' )
+parser.add_argument('-runCommand','-rc', type = str, help='the cli params to run the tests with')
 
 args = parser.parse_args()
 
 import datetime
 timestamp = str(datetime.datetime.now()).replace(" ","-")
 
-output_path = make_output_dir(args.output_path_updated_genome,timestamp)
-output_path_benchmark = make_output_dir(args.output_path_benchmark,timestamp)
-
 #building args for running SA and SP
 
-SPBinary = args.SPBinary
-SABinary = args.SABinary
-genome = " -g "+ args.genome
-edit_file = " -e "+ args.edit_file
-build_hash = " -b"
-num_edits_formatted = " -n "+ str(args.num_edits)
+output_path_formatted = ''
+output_path_SP = ""
+output_path_SA = ""
 
-output_path_SP= output_path + "SPGenome.fa"
-output_path_SP_formatted = " -o " + output_path_SP 
-output_path_SA= output_path + "SAGenome.fa"
-output_path_benchmark_SA = " > "+ output_path_benchmark + "SABenchmark.txt"
-output_path_benchmark_SP = " > "+ output_path_benchmark + "SPBenchmark.txt"
+if args.output_path_updated_genome is not None:
+    output_path = make_output_dir(args.output_path_updated_genome,timestamp)
 
-run_SP = SPBinary+genome+edit_file+ build_hash+num_edits_formatted+output_path_SP_formatted+output_path_benchmark_SP 
-run_SA = SABinary+" "+args.genome+ " "+ args.edit_file+" "+str(args.num_edits)+" "+output_path_SA+ output_path_benchmark_SA 
+    output_path_SP = format_path(output_path) + 'SPGenome.fa'
+    output_path_SA = format_path(output_path) + 'SAGenome.fa'
+    output_path_formatted = format_args(output_path,'o')
 
-execute(run_SP,"Skip Patch",output_path)
-execute(run_SA,"Suffx Array",output_path)
+log_path = ""
+if args.output_path_updated_genome is not None:
+    log_path = make_output_dir(args.log_path,timestamp)
+    log_path_formatted = format_args(format_path(log_path),'l')
 
-print "\n\n\n"
-with open (output_path_SP, "r") as myfile:
-    g1=myfile.read()
-myfile.close()
+if args.SPBinary is not None:
+    run_SP = args.SPBinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand
+    print run_SP
+    execute(run_SP,"Skip Patch",log_path)
 
-with open (output_path_SA, "r") as myfile:
-    g2=myfile.read()
-myfile.close()
+if args.SABinary is not None:
+    run_SA = args.SABinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand + ' > '+ log_path + 'SA.log'
+    print run_SA
+    execute(run_SA,"Suffix Array",log_path)
 
-fail = "TESTS FAILED!!"
-success  = "TESTS PASS"
-flag =  True
 
-print "len(SP) = ",len(g1)," len(SA) ",len(g2)-1
 
-pos = 0
-for a,b in itertools.izip_longest(g1,g2):
-    if(a!=b):
-        if((ord(b) != 10)): # SA adds a LF ascii charater to the end
-            print "The first position where the output files differ is ", pos
-            print "SP:", a, "SA:", ord(b),"at pos",pos
-            print fail
-            flag = False
-            break
-    pos+=1
+if args.output_path_updated_genome is not None:
+    with open (output_path_SP, "r") as myfile:
+        g1=myfile.read()
+    myfile.close()
 
-if(flag):
-    print success
+    with open (output_path_SA, "r") as myfile:
+        g2=myfile.read()
+    myfile.close()
+
+    fail = "TESTS FAILED!!"
+    success  = "TESTS PASS"
+    flag =  True
+
+    print "len(SP) = ",len(g1)," len(SA) ",len(g2)-1
+
+    pos = 0
+    for a,b in itertools.izip_longest(g1,g2):
+        if(a!=b):
+            if((ord(b) != 10)): # SA adds a LF ascii charater to the end
+                print "The first position where the output files differ is ", pos
+                print "SP:", a, "SA:", b,"at pos",pos
+                print fail
+                flag = False
+                break
+        pos+=1
+
+    if(flag):
+        print success
 
 print "\n\n"
 #sb.call("aplay "+args.alert,shell = True) 

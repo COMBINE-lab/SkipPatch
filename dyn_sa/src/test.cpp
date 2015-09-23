@@ -33,6 +33,11 @@ extern "C" {
 
 using namespace ez;
 
+void format_path(std::string &path){
+        if(path[path.length()-1]!='/')
+                    path+="/";
+}
+
 uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
   std::ifstream file(filename);
   if (!file)
@@ -480,8 +485,8 @@ int main(int argc, const char *argv[]) {
 	opt.add("", 0, 1, 0, "The number of iterations of edits and searches to perform (to be used only when benchmarking search).", "-it", "--iterations");
 
 	opt.add("", 0, 1, 0, "The substrings file.", "-s", "--substrFile");
-
-	opt.add("", 0, 1, 0, "File path to store the updated genome", "-o", "--outputUpdatedGenomeFile");
+    opt.add("", 0, 1, 0, "Directory for writing logs", "-l", "--logPath");
+    opt.add("", 0, 1, 0, "File path for writing the updated genome", "-o", "--output");
 
 	opt.parse(argc, argv);
 
@@ -536,9 +541,11 @@ int main(int argc, const char *argv[]) {
 	}
 
 	std::string outputUpdatedGenomeFile="";
-	if (opt.isSet("--outputUpdatedGenomeFile")) {
-		opt.get("--outputUpdatedGenomeFile")->getString(outputUpdatedGenomeFile);
-	}
+      if (opt.isSet("--output")) {
+          opt.get("--output")->getString(outputUpdatedGenomeFile);
+          format_path(outputUpdatedGenomeFile);
+          outputUpdatedGenomeFile+="SAGenome.fa";
+    }
 
 	if (opt.isSet("--editsFile")) {
 		std::cout << "Benchmarking edits" << std::endl;

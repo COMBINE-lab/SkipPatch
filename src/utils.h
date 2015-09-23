@@ -34,6 +34,8 @@ std::vector<long> find_substr(std::string, std::string);
 
 std::vector<std::pair<long,char>> generate_random_inserts(int,long);
 
+void format_path(std::string &path);
+
 inline void log_trace(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->trace() << file << " " << function << "() line " << line << ": " << msg;
 }

@@ -57,18 +57,20 @@ int main(int argc, const char* argv[]) {
 
 	opt.add("", 0, 1, 0, "The substrings file.", "-s", "--substrFile");
 
-	opt.add("", 0, 1, 0, "File path for logs", "-l", "--logFile");
+	opt.add("", 0, 1, 0, "Directory for writing logs", "-l", "--logPath");
 	opt.add("", 0, 1, 0, "File path for writing the updated genome", "-o", "--output");
 
 	opt.parse(argc, argv);
 
 	//If the log file path is specified as an input parameter, use it, or use the default location.
-	std::string logFile = "../logs/skippatch.log";
-	if (opt.isSet("--logFile")) {
-		opt.get("--logFile")->getString(logFile);
+	std::string logPath = "../logs/SP.log";
+	if (opt.isSet("--logPath")) {
+		opt.get("--logPath")->getString(logPath);
+		format_path(logPath);
+		logPath+="SP.log";
 	}
 
-	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logFile);
+	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath);
 	auto console_logger = spdlog::stdout_logger_mt("console");
 	spd::set_level(spd::level::info); //level of logging
 	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
@@ -98,7 +100,6 @@ int main(int argc, const char* argv[]) {
 		opt.get("--numEdits")->getLong(numEdits);
 	}
 
-
 	std::string substrFile = "";
 	if (opt.isSet("--substrFile")) {
 		opt.get("--substrFile")->getString(substrFile);
@@ -124,7 +125,7 @@ int main(int argc, const char* argv[]) {
 		opt.get("--iterations")->getLong(iterations);
 	}
 
-	console_logger->info() << "Log file: " << logFile;
+	console_logger->info() << "Log file: " << logPath;
 
 	genome g;
 	g.get_input(genomeFile);
@@ -161,12 +162,16 @@ int main(int argc, const char* argv[]) {
 				"Query file or one of the other parameters required for benchmarking search were not provided.");
 	}
 
-   string outputFile;
+   string outputPath;
    if (opt.isSet("--output")) {
-		opt.get("--output")->getString(outputFile);
+	   LOGINFO(FILE_LOGGER,
+	   				"Writing the updated genome to disk.");
+		opt.get("--output")->getString(outputPath);
+		format_path(outputPath);
+		outputPath+="SPGenome.fa";
 		ofstream myfile;
-		myfile.open (outputFile);
-		//myfile << "Writing this to a file.\n";
+		myfile.open (outputPath);
+
 		myfile <<g.read_reference_at(0,0,g.get_length());
 		myfile.close();
 	}

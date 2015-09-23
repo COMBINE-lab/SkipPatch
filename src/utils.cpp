@@ -115,3 +115,8 @@ std::vector<std::pair<long, char>> generate_random_inserts(int insert_count,
 
 	return random_inserts;
 }
+
+void format_path(std::string &path){
+	if(path[path.length()-1]!='/')
+		path+="/";
+}

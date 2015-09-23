@@ -47,11 +47,6 @@ int main(int argc, const char* argv[]) {
 
 	opt.add("", 0, 1, 0, "The genome file.", "-g", "--genome");
 
-	//TODO: The value of K isn't used yet.
-	opt.add("", 0, 1, 0, "Value of K.", "-k", "--k");
-
-	opt.add("", 0, 1, 0, "Type of benchmark to perform: edit/substr/search ", "-t", "--benchmarkType");
-
 	opt.add("", 0, 1, 0, "The edit file.", "-e", "--editsFile");
 	opt.add("", 0, 1, 0, "The number of edits to perform.", "-n", "--numEdits");
 
@@ -63,6 +58,7 @@ int main(int argc, const char* argv[]) {
 	opt.add("", 0, 1, 0, "The substrings file.", "-s", "--substrFile");
 
 	opt.add("", 0, 1, 0, "File path for logs", "-l", "--logFile");
+	opt.add("", 0, 1, 0, "File path for writing the updated genome", "-o", "--output");
 
 	opt.parse(argc, argv);
 
@@ -92,45 +88,38 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
 
-	int k;
-	if (opt.isSet("--k")) {
-		opt.get("--k")->getInt(k);
-	}
-
-	std::string benchmarkType;
-	if (opt.isSet("--benchmarkType")) {
-		opt.get("--benchmarkType")->getString(benchmarkType);
-	} else {
-		console_logger->warn() << "Type of benchmark to be performed has not been specified!";
-	}
-
-	std::string editsFile;
+	std::string editsFile = "";
 	if (opt.isSet("--editsFile")) {
 		opt.get("--editsFile")->getString(editsFile);
 	}
 
-	long numEdits;
+	long numEdits = 0;
 	if (opt.isSet("--numEdits")) {
 		opt.get("--numEdits")->getLong(numEdits);
 	}
 
 
-	std::string substrFile;
+	std::string substrFile = "";
 	if (opt.isSet("--substrFile")) {
 		opt.get("--substrFile")->getString(substrFile);
 	}
 
-	long queryFrequency;
+	std::string editsQueriesFile = "";
+	if (opt.isSet("--editsQueriesFile")) {
+		opt.get("--editsQueriesFile")->getString(editsQueriesFile);
+	}
+
+	long queryFrequency = 0;
 	if (opt.isSet("--queryFrequency")) {
 		opt.get("--queryFrequency")->getLong(queryFrequency);
 	}
 
-	long queryCount;
+	long queryCount = 0;
 	if (opt.isSet("--queryCount")) {
 		opt.get("--queryCount")->getLong(queryCount);
 	}
 
-	long iterations;
+	long iterations = 0;
 	if (opt.isSet("--iterations")) {
 		opt.get("--iterations")->getLong(iterations);
 	}
@@ -143,17 +132,33 @@ int main(int argc, const char* argv[]) {
 //	test();
 
 
-	if (benchmarkType == "edit") {
+	if (opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
 		benchmark_edits(g, editsFile, numEdits);
+	} else {
+		LOGINFO(FILE_LOGGER,
+				"Edits file required for benchmarking edits was not provided.");
 	}
-	if (benchmarkType == "substr") {
+
+	if (opt.isSet("--substrFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
 		benchmark_substring(g, substrFile);
+	} else {
+		LOGINFO(FILE_LOGGER,
+				"Substring file required for benchmarking substring extraction was not provided.");
 	}
-	if (benchmarkType == "search") {
-		LOGINFO(FILE_LOGGER, "Benchmarking search");
-		benchmark_search(g, editsFile, queryFrequency, queryCount, iterations);
+
+	if(opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations") ) {
+		if(queryFrequency>0 && queryCount>0 && iterations>0 ){
+			LOGINFO(FILE_LOGGER, "Benchmarking search");
+			benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
+		} else {
+			LOGINFO(FILE_LOGGER,
+					"There was a problem with one or more of the parameters provided for benchmarking search.");
+		}
+	} else {
+		LOGINFO(FILE_LOGGER,
+				"Query file or one of the other parameters required for benchmarking search were not provided.");
 	}
 
    string outputFile;

@@ -93,7 +93,7 @@ parser.add_argument('-log_path','-l', type = str, action = writeable_dir, help='
 parser.add_argument('-comments', '-c', type=str, help='why are you running this test?' )
 parser.add_argument('-runCommand','-rc', type = str, help='the cli params to run the tests with')
 parser.add_argument('-mem', action='store_true', default=False, help = "do a memory analysis")
-
+parser.add_argument('-dontMake','-dm', action='store_true', default=False, help = "dont make before running")
 args = parser.parse_args()
 
 import datetime
@@ -119,6 +119,11 @@ if args.log_path is not None:
 
 if args.SPBinary is not None:
     run_SP = args.SPBinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand
+
+    if args.dontMake is False and args.mem is False:
+        print "Executing make for SP .."
+        sb.call("make -C "+ args.SPBinary[:(args.SPBinary.rfind('/') +1 )],shell = True)  #getting dir name from path
+
     if args.mem is True:
         run_SP+= ' ) 2> ' + log_path + 'SPMem.txt'
         run_SP = '( /usr/bin/time -v ' + run_SP
@@ -127,6 +132,9 @@ if args.SPBinary is not None:
 
 if args.SABinary is not None:
     run_SA = args.SABinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand + ' > '+ log_path + 'SA.log'
+    if args.dontMake is False and args.mem is False:
+        print "Executing make for SA .."
+        sb.call("make -C "+ args.SABinary[:(args.SABinary.rfind('/') + 1 )],shell = True)  #getting dir name from path
     if args.mem is True:
         run_SA+= ' ) 2> ' + log_path + 'SAMem.txt'
         run_SA = '( /usr/bin/time -v ' + run_SA

@@ -50,7 +50,8 @@ def make_output_dir(output_path,timestamp):
     output_path_dirname =  format_path(output_path)+format_path(timestamp)
     
     if os.path.isdir(output_path_dirname):
-        print "\nThe benchmark and updated genome files being saved in same directory!\n"
+        #print "\nThe benchmark and updated genome files being saved in same directory!\n"
+        pass
     else:
         mknewdir = "mkdir "+ output_path_dirname
         sb.call([mknewdir],shell=True)
@@ -68,7 +69,7 @@ def write_args(path,args):
 def execute(runCommand,name,output_path):
     print "\n"
     print "running",name,"...\n"
-    #print "runcommand:", runCommand,"\n"
+    print "runcommand:", runCommand,"\n"
     write_args(output_path,runCommand)
     retValSA = sb.call(runCommand,shell = True)
     print '\n'
@@ -83,7 +84,7 @@ def format_args(arg, option):
 
 #TODO: write a script which does this naively instead of using the SA
 
-parser = argparse.ArgumentParser(description='Test the correctness of the Skip Patch (currently by diff with SA output) \n ')
+parser = argparse.ArgumentParser(description='Benchmark, do a memory analysis or test the correctness of the Skip Patch (currently by diff with SA output) \n ')
 
 parser.add_argument('-SPBinary','-sp', type=str, help = "path to the Skip Patch binary")
 parser.add_argument('-SABinary', '-sa', type=str, help = "path to the Suffix Array binary")
@@ -91,6 +92,7 @@ parser.add_argument('-output_path_updated_genome','-o', type = str, action = wri
 parser.add_argument('-log_path','-l', type = str, action = writeable_dir, help='directory to write the logs')
 parser.add_argument('-comments', '-c', type=str, help='why are you running this test?' )
 parser.add_argument('-runCommand','-rc', type = str, help='the cli params to run the tests with')
+parser.add_argument('-mem', action='store_true', default=False, help = "do a memory analysis")
 
 args = parser.parse_args()
 
@@ -111,20 +113,25 @@ if args.output_path_updated_genome is not None:
     output_path_formatted = format_args(output_path,'o')
 
 log_path = ""
-if args.output_path_updated_genome is not None:
+if args.log_path is not None:
     log_path = make_output_dir(args.log_path,timestamp)
     log_path_formatted = format_args(format_path(log_path),'l')
 
 if args.SPBinary is not None:
     run_SP = args.SPBinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand
-    print run_SP
+    if args.mem is True:
+        run_SP+= ' ) 2> ' + log_path + 'SPMem.txt'
+        run_SP = '( /usr/bin/time -v ' + run_SP
+    #print run_SP
     execute(run_SP,"Skip Patch",log_path)
 
 if args.SABinary is not None:
     run_SA = args.SABinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand + ' > '+ log_path + 'SA.log'
-    print run_SA
+    if args.mem is True:
+        run_SA+= ' ) 2> ' + log_path + 'SAMem.txt'
+        run_SA = '( /usr/bin/time -v ' + run_SA
+    #print run_SA
     execute(run_SA,"Suffix Array",log_path)
-
 
 
 if args.output_path_updated_genome is not None:

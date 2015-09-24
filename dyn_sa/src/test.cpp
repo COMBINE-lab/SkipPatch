@@ -560,7 +560,7 @@ int main(int argc, const char *argv[]) {
 		benchmark_substr(genomeFile, substrFile);
 	} else {
 		std::cerr <<
-				"Substring file required for benchmarking substring extraction was not provided.";
+				"Substring file required for benchmarking substring extraction was not provided."<< std::endl;
 	}
 
 
@@ -570,13 +570,11 @@ int main(int argc, const char *argv[]) {
 			benchmark_search(genomeFile, editsQueriesFile, queryFrequency, queryCount, iterations);
 		} else {
 			std::cerr
-					<< "There was a problem with one or more of the parameters provided for benchmarking search."
-					<< std::cout;
+					<< "There was a problem with one or more of the parameters provided for benchmarking search"<<std::endl;
 		}
 	} else {
 		std::cerr
-				<< "Query file or one of the other parameters required for benchmarking search were not provided."
-				<< std::cout;
+				<< "Query file or one of the other parameters required for benchmarking search were not provided."<<std::endl;
 	}
 
 }

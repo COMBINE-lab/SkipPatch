@@ -120,7 +120,7 @@ if args.log_path is not None:
 if args.SPBinary is not None:
     run_SP = args.SPBinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand
 
-    if args.dontMake is False and args.mem is False:
+    if args.dontMake is False:
         print "Executing make for SP .."
         sb.call("make -C "+ args.SPBinary[:(args.SPBinary.rfind('/') +1 )],shell = True)  #getting dir name from path
 
@@ -132,7 +132,7 @@ if args.SPBinary is not None:
 
 if args.SABinary is not None:
     run_SA = args.SABinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand + ' > '+ log_path + 'SA.log'
-    if args.dontMake is False and args.mem is False:
+    if args.dontMake is False:
         print "Executing make for SA .."
         sb.call("make -C "+ args.SABinary[:(args.SABinary.rfind('/') + 1 )],shell = True)  #getting dir name from path
     if args.mem is True:

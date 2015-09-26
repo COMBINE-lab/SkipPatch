@@ -320,6 +320,7 @@ std::vector<long> genome::search(std::string read) {
 /*
  * reads the reference from the specified genome(origional) position and offset (in the skip list)
  * up to the specified length or until it reaches the end of the genome.
+ * TODO: inefficint
  *
  */
 
@@ -383,7 +384,7 @@ void genome::read_reference_abs_at(const long abs_pos, const long len,
 /**
  * Get "kmer_count" k-mers from a "start" position on the updated genome
  *
- * TODO: Handle edge cases
+ * TODO: Handle edge cases, inefficient, reads the refernce everytime
  */
 vector<pair<string, long>> genome::get_kmers(const long start,
 		const unsigned long kmer_count) {
@@ -402,7 +403,7 @@ vector<pair<string, long>> genome::get_kmers(const long start,
  * Get "kmer_count" k-mers from a "start" position on the updated genome,
  * including the offset at which the k-mer occurs.
  *
- * TODO: Handle edge cases
+ * TODO: Handle edge cases, inefficient
  */
 vector<tuple<string, long, unsigned long>> genome::get_kmers_with_offset(
 		const long start, const unsigned long kmer_count) {
@@ -490,7 +491,7 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 	long genome_position;
 	const string end_kmer = read_reference_abs_at(delete_pos_abs + del_len,
 	K - 1, genome_position);
-	genome_position -= del_len; //will not work for generic case
+	//genome_position -= del_len; //will not work for generic case
 
 	LOGDEBUG(FILE_LOGGER, std::to_string(delete_pos_abs+del_len) + " " + std::to_string(genome_position));
 

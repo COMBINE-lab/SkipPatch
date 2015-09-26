@@ -30,23 +30,26 @@ genome::genome() {
 }
 
 void genome::get_input(string path) {
-	//ignore_first_line();
-	ifstream myfile(path);
-	if (myfile.is_open()) {
 
-		std::string input;
-		while (getline(myfile, input)) {
-			reference += input;
-			input.clear();
+	if (fileExists(path)) {
+
+		ifstream myfile(path);
+		if (myfile.is_open()) {
+
+			std::string input;
+			while (getline(myfile, input)) {
+				reference += input;
+				input.clear();
+			}
+			LOGDEBUG(FILE_LOGGER,"Input taken!");
+
+			ins = std::vector<bool>(get_length(), false);
+			del = std::vector<bool>(get_length(), false);
+		} else {
+			LOGWARN(FILE_LOGGER,"File is not open!");
+			LOGWARN(FILE_LOGGER,"Quitting.. Bye!");
+			exit(-1);
 		}
-#ifdef DEBUG
-		std::cout<<"Input taken! "<<std::endl;
-#endif
-
-		ins = std::vector<bool>(get_length(), false);
-		del = std::vector<bool>(get_length(), false);
-	} else {
-		cout << "File is not open";
 	}
 }
 

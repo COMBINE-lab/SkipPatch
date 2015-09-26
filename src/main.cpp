@@ -135,31 +135,28 @@ int main(int argc, const char* argv[]) {
 
 	if (opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
-		benchmark_edits(g, editsFile, numEdits);
-	} else {
-		LOGINFO(FILE_LOGGER,
-				"Edits file required for benchmarking edits was not provided.");
+		if (fileExists(editsFile)) {
+			benchmark_edits(g, editsFile, numEdits);
+		}
 	}
 
 	if (opt.isSet("--substrFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
-		benchmark_substring(g, substrFile);
-	} else {
-		LOGINFO(FILE_LOGGER,
-				"Substring file required for benchmarking substring extraction was not provided.");
+		if (fileExists(substrFile)) {
+			benchmark_substring(g, substrFile);
+		}
 	}
 
 	if(opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations") ) {
 		if(queryFrequency>0 && queryCount>0 && iterations>0 ){
 			LOGINFO(FILE_LOGGER, "Benchmarking search");
-			benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
+			if (fileExists(editsQueriesFile)) {
+				benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
+			}
 		} else {
 			LOGINFO(FILE_LOGGER,
 					"There was a problem with one or more of the parameters provided for benchmarking search.");
 		}
-	} else {
-		LOGINFO(FILE_LOGGER,
-				"Query file or one of the other parameters required for benchmarking search were not provided.");
 	}
 
    string outputPath;

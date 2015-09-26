@@ -120,3 +120,17 @@ void format_path(std::string &path){
 	if(path[path.length()-1]!='/')
 		path+="/";
 }
+
+/**
+ * Checks if a file exists. If it doesn't, exit the program
+ */
+bool fileExists(std::string filePath) {
+
+	if (!std::ifstream(filePath)) {
+		LOGALERT(FILE_LOGGER, "File not found: " + filePath);
+		LOGALERT(FILE_LOGGER, "Quitting.. Bye!");
+		exit(-1);
+		return false;
+	}
+	return true;
+}

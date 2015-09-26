@@ -27,10 +27,6 @@ extern "C" {
 
 #include "../../src/include/ezOptionParser.hpp"
 
-#define QF 4641
-#define QC 5000
-#define N 10
-
 using namespace ez;
 
 void format_path(std::string &path){
@@ -42,7 +38,7 @@ uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
   std::ifstream file(filename);
   if (!file)
     {
-      cerr << "error reading file: " << filename << endl;
+      std::cout << "Error reading file: " << filename << std::endl;
       exit(EXIT_FAILURE);
     }
 
@@ -71,8 +67,8 @@ uchar *get_reference_sequence(char *filename, size_t &n, int termin) {
 }
 
 void usage(char *program) {
-    cerr << "ezOptionParser should tell you \n";
-    //cerr << "Usage (EARLIER): " << program << " <filename> [lcp] [getSA <num_queries>] [insert (<file to ins.> <pos of ins.>)+] [delete (<pos. to delete> <length of deletion>)+] " << endl;
+    cout << "ezOptionParser should tell you \n";
+    //cout << "Usage (EARLIER): " << program << " <filename> [lcp] [getSA <num_queries>] [insert (<file to ins.> <pos of ins.>)+] [delete (<pos. to delete> <length of deletion>)+] " << endl;
     exit(1);
 }
 
@@ -91,6 +87,15 @@ void print_time_elapsed(std::string desc, struct timeval* start, struct timeval*
     std::cout << desc << " Total Time Elapsed = " << time_elapsed << " seconds" <<std::endl;
 
     return;
+}
+
+bool fileExists(std::string filePath) {
+
+	if (!std::ifstream(filePath)) {
+		std::cout << "File not found: " << filePath << std::endl;
+		return false;
+	}
+	return true;
 }
 
 /**
@@ -125,8 +130,8 @@ void parse_edit_file(std::vector<std::tuple<std::string, std::string, std::strin
     		}
     	}
     } else {
-		std:: cerr << "Failed to open file: " << edits_file_path << std::endl;
-		std:: cerr << "Quitting." << std::endl;
+		std::cout << "Failed to open file: " << edits_file_path << std::endl;
+		std::cout << "Quitting." << std::endl;
 		exit(-1);
 	}
 
@@ -238,7 +243,7 @@ void benchmark_edits(std::string genome_file, std::string edits_file,
 
 	/*
 	 if (n!=length) { // Clearly, if length is different from the expected length, we have a big problem!
-	 cerr << "Houston, we have a problem...   " << " n = " << n << ", length = " << length << endl;
+	 cout << "Houston, we have a problem...   " << " n = " << n << ", length = " << length << endl;
 	 exit(2);
 	 } else {
 	 //Verify here if the generated string is correct
@@ -314,7 +319,7 @@ void parse_query_file(const std::string edits_queries_file_path,
 			}
 		}
 	}  else {
-		std::cerr <<  "Failed to open file: " << edits_queries_file_path << std::endl << "Exiting program" << std::endl ;
+		std::cout <<  "Failed to open file: " << edits_queries_file_path << std::endl << "Exiting program" << std::endl ;
 		exit(-1);
 	}
 }
@@ -383,7 +388,7 @@ void benchmark_search(std::string genome_file,
 		for (int j = 0; j < querycount; j++) {
 			uchar *query = new uchar[(get<1>(*q)).length() + 1];
 			strcpy((char*) query, (get<1>(*q)).c_str());
-			//std::cerr << i*querycount+j << "   Locating: " << query << endl;	
+			//std::cout << i*querycount+j << "   Locating: " << query << endl;
 			wt->locate(query);
 			q++;
 		}
@@ -444,8 +449,8 @@ void benchmark_substr(std::string genome_file, std::string substr_file_path) {
 			}
 		}
 	} else {
-		std::cerr << "Failed to open file: " << substr_file_path << std::endl;
-		std::cerr << "Exiting program" << std::endl;
+		std::cout << "Failed to open file: " << substr_file_path << std::endl;
+		std::cout << "Exiting program" << std::endl;
 		exit(-1);
 	}
 
@@ -493,7 +498,7 @@ int main(int argc, const char *argv[]) {
 	if (opt.isSet("-h")) {
 		std::string usage;
 		opt.getUsage(usage, 80, ezOptionParser::ALIGN);
-		std::cerr << usage;
+		std::cout << usage;
 		return 1;
 	}
 
@@ -501,7 +506,7 @@ int main(int argc, const char *argv[]) {
 	if (opt.isSet("--genome")) {
 		opt.get("--genome")->getString(genomeFile);
 	} else {
-		std::cerr << "You can't build an index without a genome!" << std::endl;
+		std::cout << "You can't build an index without a genome!" << std::endl;
 		return 1;
 	}
 
@@ -548,33 +553,28 @@ int main(int argc, const char *argv[]) {
     }
 
 	if (opt.isSet("--editsFile")) {
-		std::cout << "Benchmarking edits" << std::endl;
-		benchmark_edits(genomeFile, editsFile, numEdits, outputUpdatedGenomeFile);
-	} else {
-		std::cerr <<
-				"Edits file required for benchmarking edits was not provided." << std::endl;
+		if (fileExists(editsFile)) {
+			std::cout <<  "Benchmarking edits" << std::endl;
+			benchmark_edits(genomeFile, editsFile, numEdits, outputUpdatedGenomeFile);
+		}
 	}
 
-	if (opt.isSet("--substrFile")) {
+	if (opt.isSet("--substrFile") && fileExists(substrFile)) {
 		std::cout <<  "Benchmarking substring extraction" << std::endl;
-		benchmark_substr(genomeFile, substrFile);
-	} else {
-		std::cerr <<
-				"Substring file required for benchmarking substring extraction was not provided."<< std::endl;
+		if (fileExists(substrFile)) {
+			benchmark_substr(genomeFile, substrFile);
+		}
 	}
 
-
-	if (opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations")) {
+	if (opt.isSet("--editsQueriesFile") && fileExists(editsQueriesFile) && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations")) {
 		if (queryFrequency > 0 && queryCount > 0 && iterations > 0) {
 			std::cout << "Benchmarking search" << std::endl;
-			benchmark_search(genomeFile, editsQueriesFile, queryFrequency, queryCount, iterations);
+			if (fileExists(editsQueriesFile)) {
+				benchmark_search(genomeFile, editsQueriesFile, queryFrequency, queryCount, iterations);
+			}
 		} else {
-			std::cerr
-					<< "There was a problem with one or more of the parameters provided for benchmarking search"<<std::endl;
+			std::cout << "There was a problem with one or more of the parameters provided for benchmarking search"<<std::endl;
 		}
-	} else {
-		std::cerr
-				<< "Query file or one of the other parameters required for benchmarking search were not provided."<<std::endl;
 	}
 
 }

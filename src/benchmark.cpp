@@ -159,15 +159,22 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
+	LOGINFO(FILE_LOGGER,"Total number of edits to be performed: " + std::to_string(edit.size()));
 	long ins_count = 0, del_count = 0, snp_count = 0;
 
 	struct timeval start, end;
 	struct timezone tzp;
 
-	gettimeofday(&start, &tzp);
-	long total_edits = number_of_edits;
+	//TODO: Fix corner cases and remove
+	long total_edits = edit.size();
+	//only if the number of edits has been specified
+	if (number_of_edits > 0) {
+		total_edits = number_of_edits;
+	}
 	std::vector<long> invalid_deletes;
 	long edit_index = 0;
+
+	gettimeofday(&start, &tzp);
 
 	for (auto it : edit) {
 

@@ -1,0 +1,1 @@
+extern std::string loadHashPath;

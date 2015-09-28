@@ -1,6 +1,6 @@
 #include "benchmark.h"
 #include "utils.h"
-
+#include "common.h"
 #define TESTS 100
 using namespace std;
 
@@ -13,7 +13,10 @@ void benchmark_construction(genome &g) {
 	struct timezone tzp;
 
 	gettimeofday(&start, &tzp);
-	g.construct_hash();
+    if(loadHashPath.empty())
+        g.construct_hash();
+    else
+	    g.load_hash(loadHashPath);
 	gettimeofday(&end, &tzp);
 
 	print_time_elapsed("Constructing Hash: ", &start, &end);

@@ -12,6 +12,7 @@
 using namespace ez;
 using namespace std;
 
+string loadHashPath="";
 void wabi_example() {
 
 	genome example;
@@ -59,6 +60,9 @@ int main(int argc, const char* argv[]) {
 
 	opt.add("", 0, 1, 0, "Directory for writing logs", "-l", "--logPath");
 	opt.add("", 0, 1, 0, "File path for writing the updated genome", "-o", "--output");
+	opt.add("", 0, 1, 0, "Run unit tests", "-t", "--runUnitTests");
+	opt.add("", 0, 1, 0, "Path to save the hash", "-sh", "--saveHashPath");
+	opt.add("", 0, 1, 0, "Path from where to load the hash", "-lh", "--loadHashPath");
 
 	opt.parse(argc, argv);
 
@@ -130,8 +134,11 @@ int main(int argc, const char* argv[]) {
 	genome g;
 	g.get_input(genomeFile);
 
-//	test();
 
+	if (opt.isSet("--runUnitTests")) {
+		LOGINFO(FILE_LOGGER, "running tests");
+        test();
+	}
 
 	if (opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
@@ -172,7 +179,16 @@ int main(int argc, const char* argv[]) {
 		myfile <<g.read_reference_at(0,0,g.get_length());
 		myfile.close();
 	}
-
+   
+   if (opt.isSet("--loadHashPath")) {
+		opt.get("--loadHashPath")->getString(loadHashPath);
+	}
+   
+   string saveHashPath="";
+   if (opt.isSet("--saveHashPath")) {
+		opt.get("--saveHashPath")->getString(saveHashPath);
+        g.save_hash(saveHashPath);
+	}
 	return 0;
 
 }

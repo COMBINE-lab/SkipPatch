@@ -1,5 +1,0 @@
-fix indentation
-has snp been tested?
-write unit tests for snp
-fix multiple header inclusions
-fruitfly update section in report is empty

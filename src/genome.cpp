@@ -14,7 +14,7 @@
 
 #include "genome.h"
 #include "utils.h"
-
+#include "spdlog/spdlog.h"
 using namespace std;
 
 /*
@@ -41,7 +41,7 @@ void genome::get_input(string path) {
 				reference += input;
 				input.clear();
 			}
-			LOGDEBUG(FILE_LOGGER,"Input taken!");
+			LOGDEBUG(FILE_LOGGER,"Input taken!!");
 
 			ins = std::vector<bool>(get_length(), false);
 			del = std::vector<bool>(get_length(), false);
@@ -96,7 +96,7 @@ long genome::get_length() {
 	return reference.length();
 }
 
-std::unordered_map<std::string, std::vector<long>> genome::get_hash() {
+std::unordered_map<std::string, std::vector<long>>& genome::get_hash() {
 	return m;
 }
 
@@ -126,10 +126,15 @@ void genome::save_hash(const std::string& fname) {
 void genome::construct_hash() {
 	for (auto it = reference.begin(); it <= reference.end() - K; it++) {
 		std::string temp(it, it + K);
+        //TODO: this if needed?
 		if (!(temp.find('n') != std::string::npos)
-				&& !(temp.find('N') != std::string::npos))
+				&& !(temp.find('N') != std::string::npos)){
+            if(std::distance(reference.begin(),it)%100000000 == 0){
+                LOGINFO(FILE_LOGGER, std::to_string(std::distance(reference.begin(),it))+" k mers inserted");
+            }
 			m[temp].push_back(it - reference.begin());
 	}
+    }
 }
 
 float genome::get_load_factor() {

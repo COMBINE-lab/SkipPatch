@@ -12,7 +12,7 @@
 
 #include "./skip_list/skip_list.h"
 
-#define K 20 //user defined parameter
+#define K 20 //user defined parameteri
 
 class genome {
 
@@ -36,7 +36,7 @@ public:
     void set_reference(std::string);
     std::string get_reference();
     long get_length();
-    std::unordered_map<std::string, std::vector<long>> get_hash();
+    std::unordered_map<std::string, std::vector<long>>& get_hash();
     //std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> get_hash();
     skip_list get_skip_list();
 

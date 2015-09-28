@@ -131,6 +131,10 @@ int main(int argc, const char* argv[]) {
 
 	console_logger->info() << "Log file: " << logPath;
 
+	if (opt.isSet("--loadHashPath")) {
+		opt.get("--loadHashPath")->getString(loadHashPath);
+	}
+
 	genome g;
 	g.get_input(genomeFile);
 
@@ -180,10 +184,7 @@ int main(int argc, const char* argv[]) {
 		myfile.close();
 	}
    
-   if (opt.isSet("--loadHashPath")) {
-		opt.get("--loadHashPath")->getString(loadHashPath);
-	}
-   
+
    string saveHashPath="";
    if (opt.isSet("--saveHashPath")) {
 		opt.get("--saveHashPath")->getString(saveHashPath);

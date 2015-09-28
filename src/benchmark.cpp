@@ -12,16 +12,19 @@ void benchmark_construction(genome &g) {
 	struct timeval start, end;
 	struct timezone tzp;
 
-	gettimeofday(&start, &tzp);
-    if(loadHashPath.empty())
+	    if(loadHashPath.empty()){
+	    gettimeofday(&start, &tzp);
         g.construct_hash();
+        gettimeofday(&end, &tzp);
+        print_time_elapsed("Constructing Hash: ", &start, &end);
+    }
     else
+    {
+    	gettimeofday(&start, &tzp);
 	    g.load_hash(loadHashPath);
-	gettimeofday(&end, &tzp);
-
-	print_time_elapsed("Constructing Hash: ", &start, &end);
-
-	return;
+	    gettimeofday(&end, &tzp);
+	    print_time_elapsed("Loading Hash: ", &start, &end);
+    }
 }
 
 /**

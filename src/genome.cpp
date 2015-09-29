@@ -97,16 +97,10 @@ long genome::get_length() {
 	return reference.length();
 }
 
+//used only in test
 std::unordered_map<std::string, std::vector<long>>& genome::get_hash() {
 	return m;
 }
-
-/*
- std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> genome::get_hash()
- {
- return m;
- }
- */
 
 skip_list genome::get_skip_list() {
 	return s;
@@ -326,7 +320,7 @@ std::vector<long> genome::search(std::string read) {
 /*
  * reads the reference from the specified genome(origional) position and offset (in the skip list)
  * up to the specified length or until it reaches the end of the genome.
- * TODO: inefficint
+ * TODO: inefficient
  *
  */
 

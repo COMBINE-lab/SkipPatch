@@ -13,7 +13,9 @@ using namespace ez;
 using namespace std;
 
 string loadHashPath="";
-void wabi_example() {
+string resultsPath="";
+
+void example() {
 
 	genome example;
 	example.set_reference("AGCTTTTCATTCTGA");
@@ -38,6 +40,22 @@ void wabi_example() {
 
 }
 
+/**
+ * Temporary - for testing.
+ * Just loads the hash so that we can check its actual size,
+ * and exits the program.
+ */
+void checkHashSize(std::string loadHashPath) {
+	struct timeval start, end;
+	struct timezone tzp;
+	gettimeofday(&start, &tzp);
+	genome g;
+	g.load_hash(loadHashPath);
+	gettimeofday(&end, &tzp);
+	print_time_elapsed("Checking the actual size of the hash: ", &start, &end);
+	exit(1);
+}
+
 int main(int argc, const char* argv[]) {
 
 	ezOptionParser opt;
@@ -60,6 +78,8 @@ int main(int argc, const char* argv[]) {
 
 	opt.add("", 0, 1, 0, "Directory for writing logs", "-l", "--logPath");
 	opt.add("", 0, 1, 0, "File path for writing the updated genome", "-o", "--output");
+	opt.add("", 0, 1, 0, "File path for writing the output queries or substrings", "-r", "--resultsPath");
+
 	opt.add("", 0, 1, 0, "Run unit tests", "-t", "--runUnitTests");
 	opt.add("", 0, 1, 0, "Path to save the hash", "-sh", "--saveHashPath");
 	opt.add("", 0, 1, 0, "Path from where to load the hash", "-lh", "--loadHashPath");
@@ -74,10 +94,13 @@ int main(int argc, const char* argv[]) {
 		logPath+="SP.log";
 	}
 
-	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath);
+	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
+	LOGINFO(FILE_LOGGER, "Happy Cows!");
 	auto console_logger = spdlog::stdout_logger_mt("console");
 	spd::set_level(spd::level::info); //level of logging
 	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
+
+	console_logger->info() << "Log path: " << logPath;
 
 	if (opt.isSet("-h")) {
 		std::string usage;
@@ -95,54 +118,40 @@ int main(int argc, const char* argv[]) {
 	}
 
 	std::string editsFile = "";
-	if (opt.isSet("--editsFile")) {
-		opt.get("--editsFile")->getString(editsFile);
-	}
+	if (opt.isSet("--editsFile")) { opt.get("--editsFile")->getString(editsFile); }
 
 	long numEdits = 0;
-	if (opt.isSet("--numEdits")) {
-		opt.get("--numEdits")->getLong(numEdits);
-	}
+	if (opt.isSet("--numEdits")) { opt.get("--numEdits")->getLong(numEdits); }
 
 	std::string substrFile = "";
-	if (opt.isSet("--substrFile")) {
-		opt.get("--substrFile")->getString(substrFile);
-	}
+	if (opt.isSet("--substrFile")) { opt.get("--substrFile")->getString(substrFile); }
 
 	std::string editsQueriesFile = "";
-	if (opt.isSet("--editsQueriesFile")) {
-		opt.get("--editsQueriesFile")->getString(editsQueriesFile);
-	}
+	if (opt.isSet("--editsQueriesFile")) { opt.get("--editsQueriesFile")->getString(editsQueriesFile); }
 
 	long queryFrequency = 0;
-	if (opt.isSet("--queryFrequency")) {
-		opt.get("--queryFrequency")->getLong(queryFrequency);
-	}
+	if (opt.isSet("--queryFrequency")) { opt.get("--queryFrequency")->getLong(queryFrequency); }
 
 	long queryCount = 0;
-	if (opt.isSet("--queryCount")) {
-		opt.get("--queryCount")->getLong(queryCount);
-	}
+	if (opt.isSet("--queryCount")) { opt.get("--queryCount")->getLong(queryCount); }
 
 	long iterations = 0;
-	if (opt.isSet("--iterations")) {
-		opt.get("--iterations")->getLong(iterations);
-	}
+	if (opt.isSet("--iterations")) { opt.get("--iterations")->getLong(iterations); }
 
-	console_logger->info() << "Log file: " << logPath;
+	if (opt.isSet("--loadHashPath")) { opt.get("--loadHashPath")->getString(loadHashPath);}
 
-	if (opt.isSet("--loadHashPath")) {
-		opt.get("--loadHashPath")->getString(loadHashPath);
-	}
-
-	genome g;
-	g.get_input(genomeFile);
-
+	if (opt.isSet("--resultsPath")) { opt.get("--resultsPath")->getString(resultsPath); }
+	else { resultsPath = logPath;}
 
 	if (opt.isSet("--runUnitTests")) {
 		LOGINFO(FILE_LOGGER, "running tests");
-        test();
+		test();
 	}
+
+	//checkHashSize(loadHashPath);
+
+	genome g;
+	g.get_input(genomeFile);
 
 	if (opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
@@ -170,26 +179,24 @@ int main(int argc, const char* argv[]) {
 		}
 	}
 
-   string outputPath;
-   if (opt.isSet("--output")) {
-	   LOGINFO(FILE_LOGGER,
-	   				"Writing the updated genome to disk.");
+	string outputPath;
+	if (opt.isSet("--output")) {
+		LOGINFO(FILE_LOGGER, "Writing the updated genome to disk.");
 		opt.get("--output")->getString(outputPath);
 		format_path(outputPath);
-		outputPath+="SPGenome.fa";
+		outputPath += "SPGenome.fa";
 		ofstream myfile;
-		myfile.open (outputPath);
-
-		myfile <<g.read_reference_at(0,0,g.get_length());
+		myfile.open(outputPath);
+		myfile << g.read_reference_at(0, 0, g.get_length());
 		myfile.close();
 	}
-   
 
-   string saveHashPath="";
-   if (opt.isSet("--saveHashPath")) {
+   string saveHashPath = "";
+	if (opt.isSet("--saveHashPath")) {
 		opt.get("--saveHashPath")->getString(saveHashPath);
-        g.save_hash(saveHashPath);
+		g.save_hash(saveHashPath);
 	}
+
 	return 0;
 
 }

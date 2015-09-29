@@ -41,7 +41,6 @@ public:
     skip_list get_skip_list();
 
     //Generate the updated reference, or a segment of the updated reference
-    std::string get_updated_reference();
     std::string read_reference_at(const long ,const long,const long);
     std::string read_reference_abs_at(const long,const long,long &);
     void read_reference_abs_at(const long ,const long ,long&,unsigned long&,std::string&);

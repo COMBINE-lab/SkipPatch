@@ -53,6 +53,7 @@ void genome::get_input(string path) {
 	}
 }
 
+//used only in tests
 void genome::set_reference(std::string input) {
 	reference = input;
 	ins = std::vector<bool>(get_length(), false);

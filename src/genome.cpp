@@ -1,11 +1,5 @@
-#include <utility>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <unordered_map>
 #include <algorithm>
 #include <fstream>
-#include <string>
 
 #include "cereal/archives/binary.hpp"
 #include "cereal/types/vector.hpp"
@@ -15,6 +9,7 @@
 #include "genome.h"
 #include "utils.h"
 #include "spdlog/spdlog.h"
+
 using namespace std;
 
 /*

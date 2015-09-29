@@ -1,7 +1,6 @@
 #include "benchmark.h"
-#include "utils.h"
 #include "common.h"
-#define TESTS 100
+
 using namespace std;
 
 /**

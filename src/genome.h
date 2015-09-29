@@ -8,11 +8,9 @@
 #include <unordered_map>
 #include <functional>
 
-#include "xxhash.h"
-
 #include "./skip_list/skip_list.h"
 
-#define K 20 //user defined parameteri
+#define K 20 //user defined parameter
 
 class genome {
 

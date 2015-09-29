@@ -1,8 +1,6 @@
 #ifndef TEST_H
 #define TEST_H
 
-#include <iostream>
-
 void test_hash_fwd(std::unordered_map<std::string, std::vector<long>>,
 		std::unordered_map<std::string, std::vector<long>>, skip_list);
 void test_hash_rev(std::unordered_map<std::string, std::vector<long>>,

@@ -3,6 +3,7 @@
 #include "genome.h"
 #include "utils.h"
 #include "test.h"
+#include "test_prob.h"
 #include "benchmark.h"
 #include "ezOptionParser.hpp"
 #include "spdlog/spdlog.h"
@@ -152,6 +153,8 @@ int main(int argc, const char* argv[]) {
 
 	genome g;
 	g.get_input(genomeFile);
+	//genome gt;
+	//gt.get_input(genomeFile);
 
 	if (opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
@@ -172,6 +175,7 @@ int main(int argc, const char* argv[]) {
 			LOGINFO(FILE_LOGGER, "Benchmarking search");
 			if (fileExists(editsQueriesFile)) {
 				benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
+				//test_search_naive(gt, editsQueriesFile, queryFrequency, queryCount, iterations);
 			}
 		} else {
 			LOGINFO(FILE_LOGGER,

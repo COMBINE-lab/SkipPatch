@@ -12,6 +12,7 @@
 #include "spdlog/spdlog.h"
 
 #define FILE_LOGGER "file_logger"
+#define CONSOLE_LOGGER "console"
 
 #define LOGTRACE(logger, msg) log_trace(logger, __FILE__, __FUNCTION__, __LINE__, msg)
 #define LOGDEBUG(logger, msg) log_debug(logger, __FILE__, __FUNCTION__, __LINE__, msg)
@@ -40,34 +41,42 @@ bool fileExists(std::string filePath);
 
 inline void log_trace(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->trace() << file << " " << function << "() line " << line << ": " << msg;
+		spdlog::get(logger)->flush();
 }
 
 inline void log_debug(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->debug() << file << " " << function << "() line " << line << ": " << msg;
+		spdlog::get(logger)->flush();
 }
 
 inline void log_info(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->info() << file << " " << function << "() line " << line << ": " << msg;
+		spdlog::get(logger)->flush();
 }
 
 inline void log_notice(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->notice() << file << " " << function << "() line " << line << ": " << msg;
+		spdlog::get(logger)->flush();
 }
 
 inline void log_warn(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->warn() << file << " " << function << "() line " << line << ": " << msg;
+		spdlog::get(logger)->flush();
 }
 
 inline void log_alert(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->alert() << file << " " << function << "() line " << line << ": " << msg;
+		spdlog::get(logger)->flush();
 }
 
 inline void log_critical(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->critical() << file << " " << function << "() line " << line << ": " << msg;
+		spdlog::get(logger)->flush();
 }
 
 inline void log_emergency(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->emerg() << file << " " << function << "() line " << line << ": " << msg;
+		spdlog::get(logger)->flush();
 }
 
 #endif

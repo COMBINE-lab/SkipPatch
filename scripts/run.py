@@ -41,13 +41,13 @@ def format_path(s):
         s= s+delim
     return s
 
-def make_output_dir(output_path,timestamp):
+def make_output_dir(output_path,timestamp,comment):
     #print ("op path type ",type( (output_path)))
     #print ("op timestamp formatted ",type( (timestamp)))
     output_path_dirname = ""
     if output_path is None:
         return output_path_dirname
-    output_path_dirname =  format_path(output_path)+format_path(timestamp)
+    output_path_dirname = format_path(output_path)+comment+'_'+format_path(timestamp)
     
     if os.path.isdir(output_path_dirname):
         #print "\nThe benchmark and updated genome files being saved in same directory!\n"
@@ -101,12 +101,13 @@ timestamp = str(datetime.datetime.now()).replace(" ","-")
 
 #building args for running SA and SP
 
+
 output_path_formatted = ''
 output_path_SP = ""
 output_path_SA = ""
-
+formatted_comments = str(args.comments).replace(' ','')
 if args.output_path_updated_genome is not None:
-    output_path = make_output_dir(args.output_path_updated_genome,timestamp)
+    output_path = make_output_dir(args.output_path_updated_genome,timestamp,formatted_comments)
 
     output_path_SP = format_path(output_path) + 'SPGenome.fa'
     output_path_SA = format_path(output_path) + 'SAGenome.fa'
@@ -114,7 +115,7 @@ if args.output_path_updated_genome is not None:
 
 log_path = ""
 if args.log_path is not None:
-    log_path = make_output_dir(args.log_path,timestamp)
+    log_path = make_output_dir(args.log_path,timestamp,formatted_comments)
     log_path_formatted = format_args(format_path(log_path),'l')
 
 if args.SPBinary is not None:

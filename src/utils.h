@@ -39,6 +39,8 @@ void format_path(std::string &path);
 
 bool fileExists(std::string filePath);
 
+uint64_t str_to_int(std::string str);
+
 inline void log_trace(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->trace() << file << " " << function << "() line " << line << ": " << msg;
 		spdlog::get(logger)->flush();

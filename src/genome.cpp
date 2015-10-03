@@ -63,7 +63,7 @@ long genome::get_length() {
 	return reference.length();
 }
 
-std::unordered_map<std::string, std::vector<long>>& genome::get_hash() {
+std::unordered_map<uint64_t, std::vector<long>>& genome::get_hash() {
 	return m;
 }
 
@@ -100,7 +100,7 @@ void genome::construct_hash() {
                 LOGINFO(FILE_LOGGER, std::to_string(std::distance(reference.begin(),it))+" k mers inserted");
                 //display_load();
             }
-			m[temp].push_back(it - reference.begin());
+			m[str_to_int(temp)].push_back(it - reference.begin());
 	}
     }
 }
@@ -136,8 +136,9 @@ void genome::display_load() {
 	LOGINFO(FILE_LOGGER, "Load Factor: " + std::to_string(m.load_factor()));
 }
 
-void genome::remove_kmer_from_hash_at(long position_to_remove,
-		std::string curr_kmer) {
+void genome::remove_kmer_from_hash_at(long position_to_remove, std::string kmer) {
+
+	uint64_t curr_kmer = str_to_int(kmer);
 
 	if (!m[curr_kmer].empty()) {
 		if (std::find(m[curr_kmer].begin(), m[curr_kmer].end(),
@@ -156,7 +157,7 @@ void genome::remove_kmer_from_hash_at(long position_to_remove,
 }
 
 void genome::add_kmer_from_hash_at(long position, std::string new_kmer) {
-	m[new_kmer].push_back(position);
+	m[str_to_int(new_kmer)].push_back(position);
 }
 
 long genome::get_genome_position_from_virtual_position(long virtual_position) {
@@ -237,7 +238,7 @@ std::vector<long> genome::search(std::string read) {
 
 	//Read the first k-mer of the read and find all the positions it occurs at
 	std::string read_kmer = read.substr(0, K);
-	auto f = m.find(read_kmer);
+	auto f = m.find(str_to_int(read_kmer));
 
 	if (f != m.end()) {
 		auto& search = f->second;

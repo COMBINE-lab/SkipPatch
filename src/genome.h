@@ -17,7 +17,7 @@ class genome {
 private:
 
     std::string reference;
-    std::unordered_map<std::string, std::vector<long>> m;
+    std::unordered_map<uint64_t, std::vector<long>> m;
     //std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m;
     skip_list s;
     std::vector<bool> ins;
@@ -34,7 +34,7 @@ public:
     void set_reference(std::string);
     std::string get_reference();
     long get_length();
-    std::unordered_map<std::string, std::vector<long>>& get_hash();
+    std::unordered_map<uint64_t, std::vector<long>>& get_hash();
     //std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> get_hash();
     skip_list get_skip_list();
 

@@ -294,7 +294,7 @@ std::vector<long> genome::search(std::string read) {
 /*
  * reads the reference from the specified genome(original) position and offset (in the skip list)
  * up to the specified length or until it reaches the end of the genome.
- * TODO: inefficint
+ * TODO: inefficient
  *
  */
 
@@ -452,12 +452,13 @@ void genome::insert_at(const std::string insertion,
  * Deletes from the updated genome position, a string of length "del_len"
  *
  */
-bool genome::delete_at(const unsigned long delete_pos_abs, const unsigned long del_len) {
 
-	if (!s.is_valid_delete(delete_pos_abs, del_len)) {
+bool genome::delete_at(const unsigned long delete_pos_abs,
+		const unsigned long del_len) {
+	/*if (!s.is_valid_delete(delete_pos_abs, del_len)) {
 		cout << ".";
 		return false;
-	}
+	}*/
 	auto kmers_to_replace = get_kmers(delete_pos_abs - K + 1, K - 1);
 	int i = 0;
 

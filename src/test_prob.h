@@ -7,4 +7,6 @@
 
 void test_search_naive(genome&, std::string, long, long, long);
 
+void test_edits_naive(genome&, std::string, long);
+
 #endif

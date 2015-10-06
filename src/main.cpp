@@ -81,7 +81,7 @@ int main(int argc, const char* argv[]) {
 	opt.add("", 0, 1, 0, "File path for writing the updated genome", "-o", "--output");
 	opt.add("", 0, 1, 0, "File path for writing the output queries or substrings", "-r", "--resultsPath");
 
-	opt.add("", 0, 1, 0, "Run unit tests", "-t", "--runUnitTests");
+	opt.add("", 0, 1, 0, "Run all the tests", "-t", "--runTests");
 	opt.add("", 0, 1, 0, "Path to save the hash", "-sh", "--saveHashPath");
 	opt.add("", 0, 1, 0, "Path from where to load the hash", "-lh", "--loadHashPath");
 
@@ -144,17 +144,36 @@ int main(int argc, const char* argv[]) {
 	if (opt.isSet("--resultsPath")) { opt.get("--resultsPath")->getString(resultsPath); }
 	else { resultsPath = logPath;}
 
-	if (opt.isSet("--runUnitTests")) {
-		LOGINFO(FILE_LOGGER, "running tests");
-		test();
-	}
-
 	//checkHashSize(loadHashPath);
 
 	genome g;
 	g.get_input(genomeFile);
-	//genome gt;
-	//gt.get_input(genomeFile);
+
+
+	if (opt.isSet("--runTests")) {
+
+		//LOGINFO(FILE_LOGGER, "Running unit tests");
+		//test();
+
+		LOGINFO(FILE_LOGGER, "Running tests..");
+		if (opt.isSet("--editsFile") && fileExists(editsFile)) {
+			LOGINFO(FILE_LOGGER, "Testing Naive Edits..");
+			test_edits_naive(g, editsFile, numEdits);
+		}
+
+		if (opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations")) {
+			if (queryFrequency > 0 && queryCount > 0 && iterations > 0) {
+				test_search_naive(g, editsQueriesFile, queryFrequency, queryCount, iterations);
+			} else {
+				LOGINFO(FILE_LOGGER,
+						"There was a problem with one or more of the parameters provided for benchmarking search.");
+			}
+		}
+
+		LOGINFO(FILE_LOGGER, "Completed all tests successfully!");
+		LOGINFO(FILE_LOGGER, "Quitting... Bye!");
+		exit(0);
+	}
 
 	if (opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
@@ -171,11 +190,10 @@ int main(int argc, const char* argv[]) {
 	}
 
 	if(opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations") ) {
-		if(queryFrequency>0 && queryCount>0 && iterations>0 ){
+		if(queryFrequency>0 && queryCount>0 && iterations>0 ) {
 			LOGINFO(FILE_LOGGER, "Benchmarking search");
 			if (fileExists(editsQueriesFile)) {
 				benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
-				//test_search_naive(gt, editsQueriesFile, queryFrequency, queryCount, iterations);
 			}
 		} else {
 			LOGINFO(FILE_LOGGER,

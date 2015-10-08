@@ -7,7 +7,7 @@ using namespace std;
 //put this in utils
 int coinToss()
 {
-    return rand()%2;
+    return 0;
 }
 
 skip_list::skip_list()

@@ -11,6 +11,7 @@
 
 std::string alphabet = "AGCT"; //used for generating random string
 
+enum DNA {A='A', T='T', C='C', G='G'};
 /**
  * Logs time elapsed in seconds
  */
@@ -133,4 +134,40 @@ bool fileExists(std::string filePath) {
 		return false;
 	}
 	return true;
+}
+
+uint64_t str_to_int(std::string str) {
+
+	uint64_t strint = 0;
+
+	for (auto it = str.begin(); it != str.end(); it++) {
+
+		uint8_t curr = 0;
+
+		switch (*it) {
+			case DNA::A: {
+				curr = 0;
+				break;
+			}
+			case DNA::T: {
+				curr = 1;
+				break;
+			}
+			case DNA::C: {
+				curr = 2;
+				break;
+			}
+			case DNA::G: {
+				curr = 3;
+				break;
+			}
+			default:{
+				///?
+			}
+		}
+		strint = strint | curr;
+	    strint = strint << 2;
+	}
+
+	return strint >> 2;
 }

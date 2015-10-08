@@ -8,18 +8,16 @@
 #include <unordered_map>
 #include <functional>
 
-#include "xxhash.h"
-
 #include "./skip_list/skip_list.h"
 
-#define K 20 //user defined parameteri
+#define K 20 //user defined parameter
 
 class genome {
 
 private:
 
     std::string reference;
-    std::unordered_map<std::string, std::vector<long>> m;
+    std::unordered_map<uint64_t, std::vector<long>> m;
     //std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m;
     skip_list s;
     std::vector<bool> ins;
@@ -36,12 +34,11 @@ public:
     void set_reference(std::string);
     std::string get_reference();
     long get_length();
-    std::unordered_map<std::string, std::vector<long>>& get_hash();
+    std::unordered_map<uint64_t, std::vector<long>>& get_hash();
     //std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> get_hash();
     skip_list get_skip_list();
 
     //Generate the updated reference, or a segment of the updated reference
-    std::string get_updated_reference();
     std::string read_reference_at(const long ,const long,const long);
     std::string read_reference_abs_at(const long,const long,long &);
     void read_reference_abs_at(const long ,const long ,long&,unsigned long&,std::string&);

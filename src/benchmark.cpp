@@ -1,7 +1,6 @@
 #include "benchmark.h"
-#include "utils.h"
 #include "common.h"
-#define TESTS 100
+
 using namespace std;
 
 /**
@@ -245,6 +244,10 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
 
 	parse_query_file(path_to_query_file, edit, query, queryFrequency, queryCount, iterations);
 
+	std::string resultsFile = resultsPath + ".query.out";
+	std::ofstream query_out_file(resultsFile);
+	LOGINFO(FILE_LOGGER, "Queries output file: "+resultsFile);
+
 	for (int j = 0; j < iterations; j++) {
 
 		long c = j * queryFrequency;
@@ -265,10 +268,16 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
 		gettimeofday(&start, &tzp);
 		for (int i = 0; i < queryCount; i++) {
 			long c = j * queryCount;
-			g.search(get<1>(query[i + c]));
+			std::string read = get<1>(query[i + c]);
+			std::vector<long> positions = g.search(read);
+			query_out_file << read << "\t";
+			for (long p : positions) {
+				query_out_file << p << " ";
+			}
+			query_out_file << std::endl;
 		}
 		gettimeofday(&end, &tzp);
-		std::string message = "Search Iteration " + j;
+		std::string message = "Search Iteration " + std::to_string(j);
 		print_time_elapsed(message, &start, &end);
 
 	}
@@ -300,6 +309,10 @@ void benchmark_substring(genome &g, std::string substr_file_path) {
 	std::ifstream substr_file(substr_file_path);
 	std::string line, pos, len;
 
+	std::string resultsFile = resultsPath + ".substr.out";
+	std::ofstream substr_out_file(resultsFile);
+	LOGINFO(FILE_LOGGER, "Substrings output file: " + resultsFile);
+
 	if (substr_file.is_open()) {
 		while (!substr_file.eof())
     	{
@@ -329,7 +342,8 @@ void benchmark_substring(genome &g, std::string substr_file_path) {
 	gettimeofday(&start, &tzp);
 
 	for (auto substr : substrings) {
-		g.read_reference_abs_at(substr.first, substr.second, temp);
+		std::string substring = g.read_reference_abs_at(substr.first, substr.second, temp);
+		substr_out_file << substr.first << "\t" << substr.second << "\t" << substring << std::endl;
 	}
 
 	gettimeofday(&end, &tzp);

@@ -1,11 +1,5 @@
-#include <utility>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <unordered_map>
 #include <algorithm>
 #include <fstream>
-#include <string>
 
 #include "cereal/archives/binary.hpp"
 #include "cereal/types/vector.hpp"
@@ -15,6 +9,7 @@
 #include "genome.h"
 #include "utils.h"
 #include "spdlog/spdlog.h"
+
 using namespace std;
 
 /*
@@ -64,41 +59,13 @@ std::string genome::get_reference() {
 	return reference;
 }
 
-std::string genome::get_updated_reference() {
-
-	std::string updated_reference;
-
-	node *temp = s.get_head();
-	while (temp->down) {
-		temp = temp->down;
-	}
-	temp = temp->next;
-
-	long start = 0, end = 0;
-
-	while (temp->next) {
-		end = (temp->val) + 1;
-		updated_reference += std::string(reference.begin() + start,
-				reference.begin() + end);
-		updated_reference += temp->str;
-		start = end;
-		temp = temp->next;
-	}
-	updated_reference += std::string(reference.begin() + start,
-			reference.end());
-
-	return updated_reference;
-
-	//return read_reference_at(0,0,get_length());
-
-}
-
 long genome::get_length() {
 	return reference.length();
 }
 
+
 //used only in test
-std::unordered_map<std::string, std::vector<long>>& genome::get_hash() {
+std::unordered_map<uint64_t, std::vector<long>>& genome::get_hash() {
 	return m;
 }
 
@@ -124,10 +91,11 @@ void genome::construct_hash() {
         //TODO: this if needed?
 		if (!(temp.find('n') != std::string::npos)
 				&& !(temp.find('N') != std::string::npos)){
-            if(std::distance(reference.begin(),it)%100000000 == 0){
+            if(std::distance(reference.begin(),it)%10000000 == 0){
                 LOGINFO(FILE_LOGGER, std::to_string(std::distance(reference.begin(),it))+" k mers inserted");
+                //display_load();
             }
-			m[temp].push_back(it - reference.begin());
+			m[str_to_int(temp)].push_back(it - reference.begin());
 	}
     }
 }
@@ -141,7 +109,7 @@ void genome::display_genome() {
 }
 
 void genome::display_updated_genome() {
-	std::cout << get_updated_reference() << std::endl;
+	std::cout << read_reference_at(0,0,get_length()) << std::endl;
 }
 
 void genome::display_hash() {
@@ -158,13 +126,14 @@ void genome::display_hash() {
 }
 
 void genome::display_load() {
-	std::cout << "size = " << m.size() << std::endl;
-	std::cout << "bucket_count = " << m.bucket_count() << std::endl;
-	std::cout << "max_load_factor = " << m.max_load_factor() << std::endl;
+	LOGINFO(FILE_LOGGER, "Size: " + std::to_string(m.size()));
+	LOGINFO(FILE_LOGGER, "Bucket Count:  " + std::to_string(m.bucket_count()));
+	LOGINFO(FILE_LOGGER, "Load Factor: " + std::to_string(m.load_factor()));
 }
 
-void genome::remove_kmer_from_hash_at(long position_to_remove,
-		std::string curr_kmer) {
+void genome::remove_kmer_from_hash_at(long position_to_remove, std::string kmer) {
+
+	uint64_t curr_kmer = str_to_int(kmer);
 
 	if (!m[curr_kmer].empty()) {
 		if (std::find(m[curr_kmer].begin(), m[curr_kmer].end(),
@@ -183,7 +152,7 @@ void genome::remove_kmer_from_hash_at(long position_to_remove,
 }
 
 void genome::add_kmer_from_hash_at(long position, std::string new_kmer) {
-	m[new_kmer].push_back(position);
+	m[str_to_int(new_kmer)].push_back(position);
 }
 
 long genome::get_genome_position_from_virtual_position(long virtual_position) {
@@ -202,7 +171,7 @@ void genome::get_genome_position_from_virtual_position(long virtual_position,
 }
 
 long genome::get_virtual_position_from_genome_position(long genome_position,
-		long offset) //arguement must be a tuple
+		long offset) //argument must be a tuple
 		{
 	return genome_position + s.get_cumulative_count(genome_position) + offset;
 }
@@ -262,9 +231,9 @@ std::vector<long> genome::search(std::string read) {
 
 	std::vector<long> positions;
 
-	//Read the first k-mer of the read and find all the positions it occurrs at
+	//Read the first k-mer of the read and find all the positions it occurs at
 	std::string read_kmer = read.substr(0, K);
-	auto f = m.find(read_kmer);
+	auto f = m.find(str_to_int(read_kmer));
 
 	if (f != m.end()) {
 		auto& search = f->second;
@@ -293,7 +262,7 @@ std::vector<long> genome::search(std::string read) {
 			} else {
 				LOGDEBUG(FILE_LOGGER,"POS(I): " + std::to_string(pos));
 
-				//A read can occurr multiple times within an insertion itself
+				//A read can occur multiple times within an insertion itself
 				//And hence might have different offsets for those locations
 				//Eureka! It works! ;) And that's how horrible some test cases can get :P
 
@@ -318,7 +287,7 @@ std::vector<long> genome::search(std::string read) {
 }
 
 /*
- * reads the reference from the specified genome(origional) position and offset (in the skip list)
+ * reads the reference from the specified genome(original) position and offset (in the skip list)
  * up to the specified length or until it reaches the end of the genome.
  * TODO: inefficient
  *
@@ -478,11 +447,10 @@ void genome::insert_at(const std::string insertion,
  * Deletes from the updated genome position, a string of length "del_len"
  *
  */
-bool genome::delete_at(const unsigned long delete_pos_abs,
-		const unsigned long del_len) {
+bool genome::delete_at(const unsigned long delete_pos_abs, const unsigned long del_len) {
+
 	if (!s.is_valid_delete(delete_pos_abs, del_len)) {
 		cout << ".";
-		// cout<<"Invalid delete caught!"<<endl;
 		return false;
 	}
 	auto kmers_to_replace = get_kmers(delete_pos_abs - K + 1, K - 1);

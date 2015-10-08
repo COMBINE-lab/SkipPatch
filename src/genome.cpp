@@ -1,14 +1,18 @@
+#include "genome.h"
+
 #include <algorithm>
+#include <array>
+#include <cstdbool>
+#include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
+#include <iterator>
+#include <tuple>
 
 #include "cereal/archives/binary.hpp"
-#include "cereal/types/vector.hpp"
-#include "cereal/types/unordered_map.hpp"
-#include "cereal/types/string.hpp"
-
-#include "genome.h"
+#include "cereal/cereal.hpp"
 #include "utils.h"
-#include "spdlog/spdlog.h"
 
 using namespace std;
 
@@ -79,15 +83,9 @@ skip_list genome::get_skip_list() {
 }
 
 void genome::load_hash(const std::string& fname) {
-	std::ifstream is(fname);
+/*	std::ifstream is(fname);
 	cereal::BinaryInputArchive iarchive(is);
-	iarchive(m);
-}
-
-void genome::save_hash(const std::string& fname) {
-	std::ofstream is(fname);
-	cereal::BinaryOutputArchive oarchive(is);
-	oarchive(m);
+	iarchive(m);*/
 }
 
 void genome::construct_hash() {
@@ -101,6 +99,8 @@ void genome::construct_hash() {
                 //display_load();
             }
 			m[str_to_int(temp)].push_back(it - reference.begin());
+			int num_pos = m[str_to_int(temp)].size();
+			existing_kmer_hash[str_to_int(temp)]=(make_tuple(0,0,num_pos));
 	}
     }
 }
@@ -130,6 +130,35 @@ void genome::display_hash() {
 	std::cout << std::endl;
 }
 
+void genome::save_hash(string filename, bool existing) {
+
+	string sep = "\t";
+	if(existing){
+
+		ofstream of;
+		of.open(filename);
+		LOGWARN(FILE_LOGGER,"writing existing hash to file...");
+
+		for(auto it:existing_kmer_hash){
+			of<<to_string(it.first)<<sep<<to_string(get<0>(it.second))<<sep<<to_string(get<1>(it.second))<<sep<<to_string(get<2>(it.second))<<endl;
+		}
+		LOGWARN(FILE_LOGGER,"finished writing existing hash to file...");
+	}
+
+
+	else{
+
+		ofstream of;
+		of.open(filename);
+		LOGWARN(FILE_LOGGER,"writing new kmer hash to file...");
+
+		for(auto it:new_kmer_hash){
+			of<<to_string(it.first)<<"\t"<<to_string(get<0>(it.second))<<"\t"<<to_string(get<1>(it.second))<<endl;
+		}
+		LOGWARN(FILE_LOGGER,"finished writing new kmer hash to file...");
+	}
+}
+
 void genome::display_load() {
 	LOGINFO(FILE_LOGGER, "Size: " + std::to_string(m.size()));
 	LOGINFO(FILE_LOGGER, "Bucket Count:  " + std::to_string(m.bucket_count()));
@@ -146,6 +175,21 @@ void genome::remove_kmer_from_hash_at(long position_to_remove, std::string kmer)
 			m[curr_kmer].erase(
 					std::find(m[curr_kmer].begin(), m[curr_kmer].end(),
 							position_to_remove));
+			string new_kmer = kmer;
+			auto got = existing_kmer_hash.find(str_to_int(new_kmer));
+				if ( got == existing_kmer_hash.end() ){
+					auto got = new_kmer_hash.find(str_to_int(new_kmer));
+					if(got==new_kmer_hash.end()){
+						new_kmer_hash[str_to_int(new_kmer)] = make_pair(0,0);
+					}
+					else
+						new_kmer_hash[str_to_int(new_kmer)] = make_pair((get<0>(got->second)),++(get<1>(got->second)));
+				}
+				else{
+					auto got1 = existing_kmer_hash.find(str_to_int(new_kmer));
+							auto t= make_tuple((get<0>(got1->second)),++(get<1>(got1->second)),(get<2>(got1->second)));
+							existing_kmer_hash[str_to_int(new_kmer)] =t;
+			}
 		}
 	}
 	//Having a very long "vector/list" of positions (~1 million) causes a bottleneck here
@@ -157,6 +201,21 @@ void genome::remove_kmer_from_hash_at(long position_to_remove, std::string kmer)
 }
 
 void genome::add_kmer_from_hash_at(long position, std::string new_kmer) {
+	auto got = existing_kmer_hash.find(str_to_int(new_kmer));
+	if ( got == existing_kmer_hash.end() ){
+		auto got = new_kmer_hash.find(str_to_int(new_kmer));
+		if(got==new_kmer_hash.end()){
+			new_kmer_hash[str_to_int(new_kmer)] = make_pair(0,0);
+		}
+		else
+			new_kmer_hash[str_to_int(new_kmer)] = make_pair(++(get<0>(got->second)),(get<1>(got->second)));
+	}
+	else{
+		auto got1 = existing_kmer_hash.find(str_to_int(new_kmer));
+		auto t= make_tuple(++(get<0>(got1->second)),(get<1>(got1->second)),(get<2>(got1->second)));
+
+		existing_kmer_hash[str_to_int(new_kmer)] = t;
+	}
 	m[str_to_int(new_kmer)].push_back(position);
 }
 

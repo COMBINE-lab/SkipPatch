@@ -19,6 +19,8 @@ private:
     std::string reference;
     std::unordered_map<uint64_t, std::vector<long>> m;
     //std::unordered_map<std::string, std::vector<long>, std::function<unsigned long(std::string)>> m;
+    std::unordered_map<uint64_t, std::tuple<int,int,int>> existing_kmer_hash;
+    std::unordered_map<uint64_t, std::pair<int,int>> new_kmer_hash;
     skip_list s;
     std::vector<bool> ins;
     std::vector<bool> del;
@@ -45,7 +47,7 @@ public:
 
     //Hash table functions
     void load_hash(const std::string& fname);
-    void save_hash(const std::string& fname);
+    void save_hash(std::string, bool);
     void construct_hash();
     float get_load_factor();
 
@@ -53,6 +55,8 @@ public:
     void display_genome();
     void display_updated_genome();
     void display_hash();
+    void display_hash1();
+    void display_hash2();
     void display_load();
 
     //Modify the hash table to add/remove positions at which a k-mer occurs

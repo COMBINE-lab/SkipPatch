@@ -83,6 +83,7 @@ int main(int argc, const char* argv[]) {
 
 	opt.add("", 0, 1, 0, "Run unit tests", "-t", "--runUnitTests");
 	opt.add("", 0, 1, 0, "Path to save the hash", "-sh", "--saveHashPath");
+	//opt.add("", 0, 1, 0, "Path to save the hash", "-sh1", "--saveHashPath1");
 	opt.add("", 0, 1, 0, "Path from where to load the hash", "-lh", "--loadHashPath");
 
 	opt.parse(argc, argv);
@@ -96,7 +97,7 @@ int main(int argc, const char* argv[]) {
 	}
 
 	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
-	LOGINFO(FILE_LOGGER, "Happy Cows!");
+	//LOGINFO(FILE_LOGGER, "Happy Cows!");
 	auto console_logger = spdlog::stdout_logger_mt("console");
 	spd::set_level(spd::level::info); //level of logging
 	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
@@ -149,12 +150,8 @@ int main(int argc, const char* argv[]) {
 		test();
 	}
 
-	//checkHashSize(loadHashPath);
-
 	genome g;
 	g.get_input(genomeFile);
-	//genome gt;
-	//gt.get_input(genomeFile);
 
 	if (opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
@@ -198,7 +195,8 @@ int main(int argc, const char* argv[]) {
    string saveHashPath = "";
 	if (opt.isSet("--saveHashPath")) {
 		opt.get("--saveHashPath")->getString(saveHashPath);
-		g.save_hash(saveHashPath);
+		g.save_hash(saveHashPath,true);
+		g.save_hash(saveHashPath+"1",false);
 	}
 
 	return 0;

@@ -4,6 +4,7 @@
 
 #include "skip_list.h"
 #include "skip_list_test.h"
+#include "utils.h"
 
 void test_find_ordered(){
 
@@ -156,18 +157,23 @@ void test_delete_and_update_abs_standalone(){
     skip_list s;
 
     s.delete_and_update_abs(2,1);
+    s.print_list();
     assert(s.find(2)->str=="");
     assert(s.find(2)->offset==-1); 
+    //LOGDEBUG(FILE_LOGGER, "test_delete_and_update_abs_standalone(): Passed All Test Cases!");
     
     s.delete_and_update_abs(8,2);
+    s.print_list();
     assert(s.find(9)->str==""); 
     assert(s.find(9)->offset==-2); 
     
     s.delete_and_update_abs(20,2);
+    s.print_list();
     assert(s.find(23)->str==""); 
     assert(s.find(23)->offset==-2);
 
     s.delete_and_update_abs(15,2);
+    s.print_list();
     assert(s.find(18)->str==""); 
     assert(s.find(18)->offset==-2); 
 
@@ -205,25 +211,38 @@ void test_delete_and_update_abs_insertion_standalone(){
 
 void test_delete_and_update_abs_insertion_overlap(){
 
-    skip_list s;
 
+    skip_list s;
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap()");
     s.insert_and_update_abs(4,"TTA");
     s.insert_and_update_abs(12,"AG");
     s.insert_and_update_abs(18,"CGAT");
     s.insert_and_update_abs(26,"A");
 
-    s.delete_and_update_abs(5,1); //Deletion within insertions (overlap) 
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after insertions");
+    s.delete_and_update_abs(5,1); //Deletion within insertions (overlap)
+
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after first deletion");
     assert(s.find(4)->str=="TA"); 
     assert(s.find(4)->offset==2); 
-    s.delete_and_update_abs(5,1); //Deletion within insertions (overlap) 
-    assert(s.find(4)->str=="T");
+    s.delete_and_update_abs(5,1); //Deletion within insertions (overlap)
+
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(5,1)");
+    assert(s.find(4)->str=="A");
     assert(s.find(4)->offset==1); 
 
-    s.delete_and_update_abs(10,2); //Deletion within insertions (deleting entire insertion) 
+    s.print_list();
+    s.delete_and_update_abs(10,2);
+    s.print_list();
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(10,2)");
     assert(s.find(9)->str==""); 
-    assert(s.find(9)->offset==0); 
+    assert(s.find(9)->offset==-1);
 
+    assert(s.find(8)->str=="G");
+    assert(s.find(8)->offset==1);
     s.delete_and_update_abs(14,6); //Deletion within insertions (overlap extending into genome) 
+
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(14,6)");
     assert(s.find(13)->str=="");
     assert(s.find(13)->offset==-2);
 
@@ -242,20 +261,20 @@ void test_skip_list(){
     std::cout <<  std::endl << "Testing Skip List.." << std::endl;
 
     test_find();
-    std::cout << "find(): Passed All Test Cases!" << std::endl;
+    LOGINFO(FILE_LOGGER, "find(): Passed All Test Cases!");
 
     test_get_cumulative_count();
-    std::cout << "get_cumulative_count(): Passed All Test Cases!" << std::endl;
+    LOGINFO(FILE_LOGGER, "get_cumulative_count(): Passed All Test Cases!");
 
     test_insert_and_update_abs();
-    std::cout << "test_insert_and_update_abs(): Passed All Test Cases!" << std::endl;
+    LOGINFO(FILE_LOGGER, "test_insert_and_update_abs(): Passed All Test Cases!");
 
     test_get_prev_node();
-    std::cout << "test_get_prev_node(): Passed All Test Cases!" << std::endl;
+    LOGINFO(FILE_LOGGER, "test_get_prev_node(): Passed All Test Cases!");
 
     test_delete_and_update_abs();
-    std::cout << "test_delete_and_update_abs(): Passed All Test Cases!" << std::endl;
+    LOGINFO(FILE_LOGGER, "test_delete_and_update_abs(): Passed All Test Cases!");
 
-    std::cout << "Skip List: Passed All Test Cases!" << std::endl << std::endl ;
+    LOGINFO(FILE_LOGGER, "Skip List: Passed All Test Cases!");
 
 }

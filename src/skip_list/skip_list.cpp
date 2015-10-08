@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include "utils.h"
 
 using namespace std;
 
@@ -147,34 +148,40 @@ void skip_list::delete_and_update_abs(const long abs_val,
 				temp->offset += offset;
 				temp = temp->down;
 			} else { //bottom level of the skip list
-
+				LOGDEBUG(FILE_LOGGER,"Reached bottom level of skip list");
 				string collect_ins = "";
 				long initial_pos = 0;
 				long remaining_deletion = len;
-				if (abs_val <= (cumulative_count + temp->offset)) { //the deletion starts from within an insertion
+				if (abs_val <= (cumulative_count + temp->offset + temp->val)) { //the deletion starts from within an insertion
 					//TODO: what to do when all the bases in of the inserted segment get deleted?
-					long deletion_start_offset = abs_val - cumulative_count - 1;
-					long deletion_len = min(deletion_len,
+					LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion");
+					long deletion_start_offset = abs_val - temp->val- cumulative_count - 1;
+					long deletion_len  = len;
+					deletion_len = min(deletion_len,
 							temp->offset - deletion_start_offset);
 					temp->str.erase(deletion_start_offset, len);
+					temp->offset-=deletion_len;
 					remaining_deletion -= deletion_len;
 					node *trav = temp;
 					remaining_deletion -= (trav->next->val - trav->val);
 
 					while (remaining_deletion > 0) {
-
+						LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and there is some deletion remaining");
 						if (trav->next->offset < 0) { //if the next node is a deletion, we coalesce it, the upper level nodes would have been deleted before reaching this node.
+							LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and coalescing a deletion");
 							trav->offset -= trav->next->offset;
 							trav->next = trav->next->next;
 							trav->next->prev = trav;
 						} else {
+							LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and trying to remove a node with insertion");
 							long len_copy = len;
 							long deletion_len_within_ins = min(
-									(len_copy - (trav->next->val - trav->val) - 1),
-									trav->next->offset);
+									(len_copy - (trav->next->val - trav->val)
+											- 1), trav->next->offset);
 							remaining_deletion -= deletion_len_within_ins;
 							if (deletion_len_within_ins != trav->next->offset) //the entire insertion in not deleted
 									{
+								LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and the entire insertion in not deleted");
 								collect_ins += trav->next->str.substr(
 										deletion_len_within_ins,
 										temp->offset - deletion_len_within_ins);
@@ -187,19 +194,19 @@ void skip_list::delete_and_update_abs(const long abs_val,
 					}
 					// if there are any nodes which are incompletely deleted, we need to shift any nodes which have been incompletely deleted to the node where the deletion began!
 					// also we must adjust the offset of the skip list bottom up.
-					if(!collect_ins.empty()){
-						trav->str+=collect_ins;
-						trav->offset+=collect_ins.length();
+					if (!collect_ins.empty()) {
+						LOGDEBUG(FILE_LOGGER,"there are any nodes which are incompletely deleted, we must adjust the offset of the skip list bottom up");
+						trav->str += collect_ins;
+						trav->offset += collect_ins.length();
 						//bottom_up_update(trav->prev,collect_ins.length());
 						node *temp = trav;
-						while(temp!=head){
-						if(temp->up){
-							temp->up->offset+=collect_ins.length();
-							temp=temp->up;
-						}
-						else{
-							temp=temp->prev;
-						}
+						while (temp != head) {
+							if (temp->up) {
+								temp->up->offset += collect_ins.length();
+								temp = temp->up;
+							} else {
+								temp = temp->prev;
+							}
 						}
 					}
 
@@ -207,9 +214,12 @@ void skip_list::delete_and_update_abs(const long abs_val,
 
 				} //TODO: change the variable names - temp and abs_pos, len, collect_ins
 
-				else { //deletion starts from a position where there has been no insertion (or deletion)
+				else { //deletion starts from a position where there has been no insertion (or deletion) EXCEPT the case where the deletion starts from the a genome position which has an insertion
+						//which essentially means that a new deletion node must be created.
+					LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position");
 					cumulative_count = cumulative_count + temp->offset;
 					initial_pos = abs_val - (cumulative_count);
+
 
 					//create and insert a new node
 					node *new_node = new node(initial_pos,
@@ -224,19 +234,22 @@ void skip_list::delete_and_update_abs(const long abs_val,
 
 					remaining_deletion -= (trav->next->val - trav->val);
 					while (remaining_deletion > 0) {
-
+						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and there is some deletion remaining");
 						if (trav->next->offset < 0) { //if the next node is a deletion, we coalesce it, the upper level nodes would have been deleted before reaching this node.
+							LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and coalescing a deletion");
 							trav->offset -= trav->next->offset;
 							trav->next = trav->next->next;
 							trav->next->prev = trav;
 						} else {
+							LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and trying to remove an insertion");
 							long len_copy = len;
 							long deletion_len_within_ins = min(
-									(len_copy - (trav->next->val - trav->val) - 1),
-									trav->next->offset);
+									(len_copy - (trav->next->val - trav->val)
+											- 1), trav->next->offset);
 							remaining_deletion -= deletion_len_within_ins;
 							if (deletion_len_within_ins != trav->next->offset) //the entire insertion in not deleted
 									{
+								LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and entire insertion in not deleted");
 								collect_ins += trav->next->str.substr(
 										deletion_len_within_ins,
 										temp->offset - deletion_len_within_ins);
@@ -252,12 +265,14 @@ void skip_list::delete_and_update_abs(const long abs_val,
 					//the node should be initial position just before the deletion node, unless that position has a deletion
 					//also, we must update the upper levels of the skip list since we may be transferring the insertion across a skip list boundary,whici may effect the upper levels
 					if (!collect_ins.empty()) {
+						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and trying to move a node which has been deleted incompleltely");
 						node *trav = new_node;
 						long new_node_val = initial_pos;
 						node* boundary_node = NULL;
 
+						LOGDEBUG(FILE_LOGGER,"find out which initial pos to put the insertion (to be moved)");
 						while (trav->prev->val == (--new_node_val) //find out which initial pos to put the insertion (to be moved).
-								&& (trav->prev->offset < 0)) {
+						&& (trav->prev->offset < 0)) {
 							trav = trav->prev;
 							if (trav->up) {
 								boundary_node = trav;
@@ -266,44 +281,45 @@ void skip_list::delete_and_update_abs(const long abs_val,
 
 						//now we should insert at trav->prev
 
-						//if the initial position to be inserted already has an insertion,
-						if(new_node_val == trav->prev->val){
-							trav->prev->str+=collect_ins;
-							trav->prev->offset+=collect_ins.length();
-						}
-						else{ //create a new node. TODO: bubble this up?
-
-							node *new_node = new node(new_node_val,collect_ins.length());
+						//if the initial position to be inserted already has an insertion
+						if (new_node_val == trav->prev->val) {
+							LOGDEBUG(FILE_LOGGER,"if the initial position to be inserted already has an insertion");
+							trav->prev->str += collect_ins;
+							trav->prev->offset += collect_ins.length();
+						} else { //create a new node. TODO: bubble this up?
+							LOGDEBUG(FILE_LOGGER,"create a new node");
+							node *new_node = new node(new_node_val,
+									collect_ins.length());
 							new_node->next = trav;
 							new_node->prev = trav->prev;
-							trav->prev->next=new_node;
-							trav->prev=new_node;
+							trav->prev->next = new_node;
+							trav->prev = new_node;
 						}
+						//TODO: correct this
 						//if the insertion to be moved crosses the boundary, update the one before list before the boundary
-						if(boundary_node){
+						if (boundary_node) {
+							LOGDEBUG(FILE_LOGGER,"if the insertion to be moved crosses the boundary, update the one before list before the boundary");
 							//bottom_up_update(boundary_node->prev,collect_ins.length());
 							node *temp = boundary_node->prev;
-							while(temp!=head){
-							if(temp->up){
-								temp->up->offset+=collect_ins.length();
-								temp=temp->up;
+							while (temp != head) {
+								if (temp->up) {
+									temp->up->offset += collect_ins.length();
+									temp = temp->up;
+								} else {
+									temp = temp->prev;
+								}
 							}
-							else{
-								temp=temp->prev;
-							}
-							}
-						}
-						else{
+						} else {
+							LOGDEBUG(FILE_LOGGER,"if the insertion to be moved crosses the boundary, update the one after the boundary");
 							//bottom_up_update(trav->prev,collect_ins.length());
 							node *temp = trav->prev;
-							while(temp!=head){
-							if(temp->up){
-								temp->up->offset+=collect_ins.length();
-								temp=temp->up;
-							}
-							else{
-								temp=temp->prev;
-							}
+							while (temp != head) {
+								if (temp->up) {
+									temp->up->offset += collect_ins.length();
+									temp = temp->up;
+								} else {
+									temp = temp->prev;
+								}
 							}
 						}
 						//traverse the skip list to update the upper levels if the insertion moves across a boundary
@@ -312,33 +328,37 @@ void skip_list::delete_and_update_abs(const long abs_val,
 				}
 				break;
 				/*
-				//pair<node*,unsigned long> p;
-				if (abs_val <= (temp->val + cumulative_count + temp->offset)) { //deletion begins from within an insetion
-					prev = temp->prev;
-					val = temp->val;
-					pos = abs_val - cumulative_count - temp->val;
+				 //pair<node*,unsigned long> p;
+				 if (abs_val <= (temp->val + cumulative_count + temp->offset)) { //deletion begins from within an insetion
+				 prev = temp->prev;
+				 val = temp->val;
+				 pos = abs_val - cumulative_count - temp->val;
 
-				} else {
-					prev = temp;
-					val = abs_val - cumulative_count - temp->offset;
-					pos = 0;
-				}
-				break;*/
+				 } else {
+				 prev = temp;
+				 val = abs_val - cumulative_count - temp->offset;
+				 pos = 0;
+				 }
+				 break;*/
 			}
 		}
 	}
 
-		/*node *new_node = new node(val, offset);
-		//new_node->str = str;
-		new_node->next = prev->next;
-		new_node->prev = prev;
-		prev->next = new_node;
-		new_node->next->prev = new_node;
-*/
-		//promote the node up.
-	{
-		node *new_node = node_to_promote;
-		node *node_to_copy = new_node;
+	/*node *new_node = new node(val, offset);
+	 //new_node->str = str;
+	 new_node->next = prev->next;
+	 new_node->prev = prev;
+	 prev->next = new_node;
+	 new_node->next->prev = new_node;
+	 */
+	//promote the node up.
+
+	node *new_node = node_to_promote;
+	node *node_to_copy = new_node;
+	if (node_to_copy) {
+		LOGDEBUG(FILE_LOGGER,"promote the node up");
+		val = node_to_copy->val;
+		offset = node_to_copy->offset;
 		while (coinToss()) {
 			node *temp = node_to_copy;
 			//find the closest upper level node.
@@ -375,6 +395,7 @@ void skip_list::delete_and_update_abs(const long abs_val,
 
 			} else //create new level
 			{
+				LOGDEBUG(FILE_LOGGER,"creating a new level");
 				//create 1 new nodes - 2 sentinel nodes.
 				//node *new_node_upper =  new node(val,offset);
 
@@ -419,7 +440,7 @@ void skip_list::delete_and_update_abs(const long abs_val,
 			node_to_copy = new_node_upper;
 		}
 	}
-	}
+}
 
 //node *prev = find_and_update_prev(val,len);
 //node *temp = prev;
@@ -744,6 +765,8 @@ node* skip_list::get_head() {
 }
 void skip_list::print_node(node *temp) {
 	cout << "(" << temp->val << "," << temp->offset << ")" << "\t";
+	LOGDEBUG(FILE_LOGGER, "(" + std::to_string(temp->val) + "," + ")" + "\t");
+
 }
 void skip_list::print_base_level() {
 	cout << endl << endl << "Base of the skip_list:" << endl;
@@ -782,6 +805,8 @@ void skip_list::get_stats(long &num_updates, long &num_levels) {
 }
 void skip_list::print_list() {
 	cout << endl << "Skip_list:" << endl;
+
+	LOGDEBUG(FILE_LOGGER, "Skip_list:");
 	node *temp = head;
 	while (temp) {
 		node *temp_row = temp;
@@ -791,6 +816,7 @@ void skip_list::print_list() {
 		}
 		temp = temp->down;
 		cout << endl;
+		LOGDEBUG(FILE_LOGGER, "\n");
 	}
 }
 /*

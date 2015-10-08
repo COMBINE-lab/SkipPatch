@@ -33,7 +33,7 @@ void test_hash_fwd(std::unordered_map<uint64_t, std::vector<long>> m_temp,
 		}
 
 		sort(it->second.begin(), it->second.end());
-		sort(m_genome[it->first].begin(), m_genome[it->first].end());
+		sort(m_genome[it->first].begin(), m_genome[it->first].end()); 
 
 		assert(it->second == m_genome[it->first]);
 	}
@@ -735,6 +735,7 @@ void test() {
 
 	LOGINFO(FILE_LOGGER, "Starting.. ");
 
+	test_skip_list();
 	test_insert_at();
 	test_delete_at();
 	test_indels();

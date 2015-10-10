@@ -233,18 +233,22 @@ void test_delete_and_update_abs_insertion_overlap(){
 
     s.print_list();
     s.delete_and_update_abs(10,2);
-    s.print_list();
     LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(10,2)");
     assert(s.find(9)->str==""); 
     assert(s.find(9)->offset==-1);
 
+    s.print_list();
     assert(s.find(8)->str=="G");
     assert(s.find(8)->offset==1);
     s.delete_and_update_abs(14,6); //Deletion within insertions (overlap extending into genome) 
 
+    s.print_list();
     LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(14,6)");
     assert(s.find(13)->str=="");
     assert(s.find(13)->offset==-2);
+    s.print_list();
+
+
 
 }
 

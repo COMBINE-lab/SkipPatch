@@ -110,6 +110,152 @@ bool skip_list::is_valid_delete(const long abs_val, const unsigned long len) {
 }
 
 /*
+ * inserts at initial position val, offset pos a string str.
+ * If pos is LONG MAX, then the value is after the end of an insertion node
+ */
+void skip_list::insert_and_update(long val, unsigned long pos, string str) {
+//find place to insertnode
+//node *prev = find_and_update_prev(val,str);
+
+	long offset = str.length();
+	node *temp = head;
+	node *prev;
+
+	while (temp) {
+		if (temp->next->val <= val) // next val is >= next ; = since a node contains offset between that node and the next.
+				{
+			temp = temp->next;
+		} else  //current val is lesser than next val
+		{
+			if (temp->down) {
+				temp->offset += offset;
+				temp = temp->down;
+			} else {
+				if (temp->val == val) {
+					prev = temp->prev;
+					break;
+				}
+				prev = temp;
+				break;
+			}
+		}
+	}
+
+//node *prev = find_and_update_prev(val,str);
+
+	offset = str.length();
+	if (prev->next->val == val) //if the value already exists
+			{
+		//update the offset pointers..
+		if (pos == LONG_MAX){
+			pos = (prev->next->str).length();
+		}
+		if ((prev->next->str).length() < pos) { //sanity check
+			cout << "Invalid value.. skip list inconsistent!" << endl;
+			return;
+		}
+		(prev->next->str).insert(pos, str);
+		prev->next->offset += offset;
+	} else {
+
+		if (pos > 0) { //sanity check
+			cout << "Invalid value.. skip list inconsistent!" << endl;
+			return;
+		}
+
+		node *new_node = new node(val, offset);
+		new_node->str = str;
+		new_node->next = prev->next;
+		new_node->prev = prev;
+		prev->next = new_node;
+		new_node->next->prev = new_node;
+
+		//promote the node up.
+		node *node_to_copy = new_node;
+		while (coinToss()) {
+			node *temp = node_to_copy;
+			//find the closest upper level node.
+			long offset_sum = 0; //keeps track of offset in that level
+			while (temp) {
+				if (temp->up) {
+					//temp=temp->up;
+					offset_sum += temp->offset;
+					offset_sum -= node_to_copy->offset;
+					break;
+				}
+				if (temp->val == LONG_MIN) {
+					offset_sum += temp->offset;
+					offset_sum -= node_to_copy->offset;
+					break;
+				}
+				offset_sum += temp->offset;
+				temp = temp->prev;
+
+			}
+			node *new_node_upper = new node(val, offset);
+			//if the upper level exists
+			if (temp->up) {
+
+				temp = temp->up;
+				long total_offset = temp->offset;
+				new_node_upper->next = temp->next;
+				new_node_upper->prev = temp;
+				new_node_upper->next->prev = new_node_upper;
+				temp->next = new_node_upper;
+
+				temp->offset = offset_sum;
+				new_node_upper->offset = total_offset - offset_sum;
+
+			} else //create new level
+			{
+				//create 1 new nodes - 2 sentinel nodes.
+				//node *new_node_upper =  new node(val,offset);
+
+				node *new_node_upper_head = new node(LONG_MIN, 0);
+				node *new_node_upper_tail = new node(LONG_MAX, 0);
+
+				new_node_upper_head->next = new_node_upper;
+				new_node_upper_head->down = head;
+
+				new_node_upper->prev = new_node_upper_head;
+				new_node_upper->next = new_node_upper_tail;
+
+				new_node_upper_tail->prev = new_node_upper;
+				new_node_upper_tail->down = tail;
+
+				head->up = new_node_upper_head;
+				tail->up = new_node_upper_tail;
+
+				head = new_node_upper_head;
+				tail = new_node_upper_tail;
+
+				//get_total_offset
+				long forward_offset = 0;
+				node *temp_node_to_copy = node_to_copy;
+				while (temp_node_to_copy) {
+					forward_offset += temp_node_to_copy->offset;
+					temp_node_to_copy = temp_node_to_copy->next;
+				}
+				long backward_offset = 0;
+				temp_node_to_copy = node_to_copy;
+
+				while (temp_node_to_copy->prev) {
+					temp_node_to_copy = temp_node_to_copy->prev;
+					backward_offset += temp_node_to_copy->offset;
+				}
+				new_node_upper_head->offset = backward_offset;
+				new_node_upper->offset = forward_offset;
+
+			}
+			new_node_upper->down = node_to_copy;
+			node_to_copy->up = new_node_upper;
+			node_to_copy = new_node_upper;
+		}
+	}
+
+}
+
+/*
  * deletes len bases starting at current_pos (the position wrt to the updated genome) or until the end of the genome
  * TODO: should we bubble up the insertion?
  */
@@ -135,8 +281,8 @@ void skip_list::delete_and_update_abs(const long abs_val,
 		{
 			if (temp->down) {
 				node *trav = temp;
-				while (abs_val + len
-						>= (cumulative_count + trav->offset + trav->next->val)) { //if the deletion touches the next node, remove it.
+				while ((abs_val + len)
+						> (cumulative_count + trav->offset + trav->next->val)) { //if the deletion touches the next node, remove it.
 
 					//delete the node
 					trav->next = trav->next->next;
@@ -152,7 +298,7 @@ void skip_list::delete_and_update_abs(const long abs_val,
 				string collect_ins = "";
 				long initial_pos = 0;
 				long remaining_deletion = len;
-				if (abs_val <= (cumulative_count + temp->offset + temp->val)) { //the deletion starts from within an insertion
+				if (abs_val < (cumulative_count + temp->offset + temp->val)) { //the deletion starts from within an insertion
 					//TODO: what to do when all the bases in of the inserted segment get deleted?
 					LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion");
 					long deletion_start_offset = abs_val - temp->val- cumulative_count - 1;
@@ -214,21 +360,64 @@ void skip_list::delete_and_update_abs(const long abs_val,
 
 				} //TODO: change the variable names - temp and abs_pos, len, collect_ins
 
-				else { //deletion starts from a position where there has been no insertion (or deletion) EXCEPT the case where the deletion starts from the a genome position which has an insertion
+				else { //deletion starts from a position where there has been no insertion (or deletion) EXCEPT the case where the deletion starts from the a genome position (of a node) that has an insertion
 						//which essentially means that a new deletion node must be created.
 					LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position");
+
+
 					cumulative_count = cumulative_count + temp->offset;
 					initial_pos = abs_val - (cumulative_count);
 
+					node *new_node;
+					if((temp->next->val == initial_pos) && temp->next->offset>0){
+						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position which has an insertion");
+						if((abs_val + len) > (temp->next->val + temp->next->offset+ cumulative_count)) //the deletion spans over the next node
+						{
+							remaining_deletion-=(temp->next->offset);
+						}
+						else{
+							 new_node = new node(initial_pos,
+														-1);
+							remaining_deletion=0;
+							collect_ins+=temp->next->str.substr(len-1,LONG_MAX);
+							//delete temp->next and put new node instead
 
+							new_node->prev = temp;
+							new_node->next = temp->next->next;
+							temp->next->next->prev = new_node;
+							temp->next = new_node;
+
+							node *trav = new_node;
+							long new_node_val = initial_pos;
+							LOGDEBUG(FILE_LOGGER,"find out which initial pos to put the insertion (to be moved)");
+							while (trav->prev->val == (--new_node_val) //find out which initial pos to put the insertion (to be moved).
+							&& (trav->prev->offset < 0)) {
+								trav = trav->prev;
+							}
+							//bottom_up_update(new_node,collect_ins.length());
+							node *temp = new_node;
+							while (temp != head) {
+								if (temp->up) {
+									temp->up->offset -= collect_ins.length();
+									temp = temp->up;
+								} else {
+									temp = temp->prev;
+								}
+							}
+							LOGDEBUG(FILE_LOGGER,"if the initial position to be inserted already has an insertion");
+							insert_and_update(new_node_val,LONG_MAX,collect_ins);
+						}
+					}
+
+					if(remaining_deletion>0){
 					//create and insert a new node
-					node *new_node = new node(initial_pos,
+					new_node = new node(initial_pos,
 							remaining_deletion * -1);
 					new_node->next = temp->next;
 					new_node->prev = temp;
 					temp->next = new_node;
 					new_node->next->prev = new_node;
-
+					}
 					//node_to_promote = new_node;
 					node *trav = new_node;
 
@@ -268,21 +457,33 @@ void skip_list::delete_and_update_abs(const long abs_val,
 						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and trying to move a node which has been deleted incompleltely");
 						node *trav = new_node;
 						long new_node_val = initial_pos;
-						node* boundary_node = NULL;
-
 						LOGDEBUG(FILE_LOGGER,"find out which initial pos to put the insertion (to be moved)");
 						while (trav->prev->val == (--new_node_val) //find out which initial pos to put the insertion (to be moved).
 						&& (trav->prev->offset < 0)) {
 							trav = trav->prev;
-							if (trav->up) {
-								boundary_node = trav;
+						}
+
+						//bottom_up_update(new_node,collect_ins.length());
+						node *temp = new_node;
+						while (temp != head) {
+							if (temp->up) {
+								temp->up->offset -= collect_ins.length();
+								temp = temp->up;
+							} else {
+								temp = temp->prev;
 							}
 						}
 
 						//now we should insert at trav->prev
-
-						//if the initial position to be inserted already has an insertion
 						if (new_node_val == trav->prev->val) {
+							LOGDEBUG(FILE_LOGGER,"if the initial position to be inserted already has an insertion");
+							insert_and_update(new_node_val,LONG_MAX,collect_ins);
+						} else { //create a new node.
+							LOGDEBUG(FILE_LOGGER,"create a new node");
+							insert_and_update(new_node_val,0,collect_ins);
+						}
+						//if the initial position to be inserted already has an insertion
+						/*if (new_node_val == trav->prev->val) {
 							LOGDEBUG(FILE_LOGGER,"if the initial position to be inserted already has an insertion");
 							trav->prev->str += collect_ins;
 							trav->prev->offset += collect_ins.length();
@@ -294,10 +495,9 @@ void skip_list::delete_and_update_abs(const long abs_val,
 							new_node->prev = trav->prev;
 							trav->prev->next = new_node;
 							trav->prev = new_node;
-						}
-						//TODO: correct this
+						}*/
 						//if the insertion to be moved crosses the boundary, update the one before list before the boundary
-						if (boundary_node) {
+						/*if (boundary_node) {
 							LOGDEBUG(FILE_LOGGER,"if the insertion to be moved crosses the boundary, update the one before list before the boundary");
 							//bottom_up_update(boundary_node->prev,collect_ins.length());
 							node *temp = boundary_node->prev;
@@ -322,8 +522,9 @@ void skip_list::delete_and_update_abs(const long abs_val,
 								}
 							}
 						}
+						*/
 						//traverse the skip list to update the upper levels if the insertion moves across a boundary
-						//TODO: bubble this up.
+
 					}
 				}
 				break;
@@ -440,148 +641,6 @@ void skip_list::delete_and_update_abs(const long abs_val,
 			node_to_copy = new_node_upper;
 		}
 	}
-}
-
-//node *prev = find_and_update_prev(val,len);
-//node *temp = prev;
-//while((temp->next->val+temp->next->offset) - (temp->val+pos))
-void skip_list::insert_and_update(long val, unsigned long pos, string str) {
-//find place to insertnode
-//node *prev = find_and_update_prev(val,str);
-
-	long offset = str.length();
-	node *temp = head;
-	node *prev;
-
-	while (temp) {
-		if (temp->next->val <= val) // next val is >= next ; = since a node contains offset between that node and the next.
-				{
-			temp = temp->next;
-		} else  //current val is lesser than next val
-		{
-			if (temp->down) {
-				temp->offset += offset;
-				temp = temp->down;
-			} else {
-				if (temp->val == val) {
-					prev = temp->prev;
-					break;
-				}
-				prev = temp;
-				break;
-			}
-		}
-	}
-
-//node *prev = find_and_update_prev(val,str);
-
-	offset = str.length();
-	if (prev->next->val == val) //if the value already exists
-			{
-		//update the offset pointers..
-		if ((prev->next->str).length() < pos) {
-			cout << "Invalid value.. skip list inconsistent!" << endl;
-			return;
-		}
-		(prev->next->str).insert(pos, str);
-		prev->next->offset += offset;
-	} else {
-
-		if (pos > 0) {
-			cout << "Invalid value.. skip list inconsistent!" << endl;
-			return;
-		}
-
-		node *new_node = new node(val, offset);
-		new_node->str = str;
-		new_node->next = prev->next;
-		new_node->prev = prev;
-		prev->next = new_node;
-		new_node->next->prev = new_node;
-
-		//promote the node up.
-		node *node_to_copy = new_node;
-		while (coinToss()) {
-			node *temp = node_to_copy;
-			//find the closest upper level node.
-			long offset_sum = 0; //keeps track of offset in that level
-			while (temp) {
-				if (temp->up) {
-					//temp=temp->up;
-					offset_sum += temp->offset;
-					offset_sum -= node_to_copy->offset;
-					break;
-				}
-				if (temp->val == LONG_MIN) {
-					offset_sum += temp->offset;
-					offset_sum -= node_to_copy->offset;
-					break;
-				}
-				offset_sum += temp->offset;
-				temp = temp->prev;
-
-			}
-			node *new_node_upper = new node(val, offset);
-			//if the upper level exists
-			if (temp->up) {
-
-				temp = temp->up;
-				long total_offset = temp->offset;
-				new_node_upper->next = temp->next;
-				new_node_upper->prev = temp;
-				new_node_upper->next->prev = new_node_upper;
-				temp->next = new_node_upper;
-
-				temp->offset = offset_sum;
-				new_node_upper->offset = total_offset - offset_sum;
-
-			} else //create new level
-			{
-				//create 1 new nodes - 2 sentinel nodes.
-				//node *new_node_upper =  new node(val,offset);
-
-				node *new_node_upper_head = new node(LONG_MIN, 0);
-				node *new_node_upper_tail = new node(LONG_MAX, 0);
-
-				new_node_upper_head->next = new_node_upper;
-				new_node_upper_head->down = head;
-
-				new_node_upper->prev = new_node_upper_head;
-				new_node_upper->next = new_node_upper_tail;
-
-				new_node_upper_tail->prev = new_node_upper;
-				new_node_upper_tail->down = tail;
-
-				head->up = new_node_upper_head;
-				tail->up = new_node_upper_tail;
-
-				head = new_node_upper_head;
-				tail = new_node_upper_tail;
-
-				//get_total_offset
-				long forward_offset = 0;
-				node *temp_node_to_copy = node_to_copy;
-				while (temp_node_to_copy) {
-					forward_offset += temp_node_to_copy->offset;
-					temp_node_to_copy = temp_node_to_copy->next;
-				}
-				long backward_offset = 0;
-				temp_node_to_copy = node_to_copy;
-
-				while (temp_node_to_copy->prev) {
-					temp_node_to_copy = temp_node_to_copy->prev;
-					backward_offset += temp_node_to_copy->offset;
-				}
-				new_node_upper_head->offset = backward_offset;
-				new_node_upper->offset = forward_offset;
-
-			}
-			new_node_upper->down = node_to_copy;
-			node_to_copy->up = new_node_upper;
-			node_to_copy = new_node_upper;
-		}
-	}
-
 }
 void skip_list::insert_and_update_abs(const long abs_val, string str) {
 

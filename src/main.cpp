@@ -147,6 +147,7 @@ int main(int argc, const char* argv[]) {
 	if (opt.isSet("--runUnitTests")) {
 		LOGINFO(FILE_LOGGER, "running tests");
 		test();
+		return 0;
 	}
 
 	genome g;

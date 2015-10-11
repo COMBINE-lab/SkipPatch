@@ -211,7 +211,6 @@ void test_delete_and_update_abs_insertion_standalone(){
 
 void test_delete_and_update_abs_insertion_overlap(){
 
-
     skip_list s;
     LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap()");
     s.insert_and_update_abs(4,"TTA");
@@ -231,24 +230,58 @@ void test_delete_and_update_abs_insertion_overlap(){
     assert(s.find(4)->str=="A");
     assert(s.find(4)->offset==1); 
 
-    s.print_list();
+    //s.print_list();
     s.delete_and_update_abs(10,2);
     LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(10,2)");
     assert(s.find(9)->str==""); 
     assert(s.find(9)->offset==-1);
 
-    s.print_list();
+    //s.print_list();
     assert(s.find(8)->str=="G");
     assert(s.find(8)->offset==1);
-    s.delete_and_update_abs(14,6); //Deletion within insertions (overlap extending into genome) 
 
-    s.print_list();
+    s.delete_and_update_abs(14,6); //Deletion within insertions (overlap extending into genome) 
     LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(14,6)");
+    s.print_list();
     assert(s.find(13)->str=="");
     assert(s.find(13)->offset==-2);
+
+    s.insert_and_update_abs(14,"AGC");
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(14,AGC)");
     s.print_list();
+    assert(s.find(15)->str=="AGC");
+    assert(s.find(15)->offset==3);
 
+    s.delete_and_update_abs(15,2);
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(15,-2)");
+    s.print_list();
+    assert(s.find(15)->str=="C");
+    assert(s.find(15)->offset==1);
 
+    s.delete_and_update_abs(15,1);
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(15,-1)");
+    s.print_list();
+    assert(s.find(15)->str=="");
+    assert(s.find(15)->offset==0);
+
+    s.insert_and_update_abs(14,"T");
+	s.print_list();
+
+	s.delete_and_update_abs(14,1);
+    LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(15,-1)");
+    s.print_list();
+    assert(s.find(12)->str=="T");
+    assert(s.find(12)->offset==1);
+
+    s.insert_and_update_abs(11,"AGCT");
+	LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(15,-1)");
+	s.print_list();
+	assert(s.find(10)->str=="AGCT");
+	assert(s.find(10)->offset==4);
+
+	s.delete_and_update_abs(13,7);
+	LOGDEBUG(FILE_LOGGER, "In test_delete_and_update_abs_insertion_overlap(),after s.delete_and_update_abs(15,-1)");
+	s.print_list();
 
 }
 

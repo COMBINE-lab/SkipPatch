@@ -312,7 +312,12 @@ string genome::read_reference_at(const long genome_position, const long offset,
 				rem_len--;
 				curr_offset = 1;
 			} else {
+				s.print_list();
+				cout<<"\nCurr genome pos: "<<curr_genome_pos<<endl;
 				node *n = s.find(curr_genome_pos);
+				if(!n){
+					cout<<"n is null!";
+				}
 				string temp(n->str, curr_offset - 1, rem_len);
 				kmer += temp;
 				rem_len -= temp.length();

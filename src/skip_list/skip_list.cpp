@@ -143,7 +143,7 @@ void skip_list::insert_and_update(long val, unsigned long pos, string str) {
 
 //node *prev = find_and_update_prev(val,str);
 
-	offset = str.length();
+	//offset = str.length();
 	if (prev->next->val == val) //if the value already exists
 			{
 		//update the offset pointers..
@@ -151,15 +151,15 @@ void skip_list::insert_and_update(long val, unsigned long pos, string str) {
 			pos = (prev->next->str).length();
 		}
 		if ((prev->next->str).length() < pos) { //sanity check
-			cout << "Invalid value.. skip list inconsistent!" << endl;
+			LOGALERT(FILE_LOGGER,"Skip list inconsistent, pos> offset");
 			return;
 		}
 		(prev->next->str).insert(pos, str);
 		prev->next->offset += offset;
 	} else {
 
-		if (pos > 0) { //sanity check
-			cout << "Invalid value.. skip list inconsistent!" << endl;
+		if (pos > 0 && pos!=LONG_MAX) { //sanity check
+			LOGALERT(FILE_LOGGER,"Skip list inconsistent, pos > 0");
 			return;
 		}
 
@@ -271,8 +271,10 @@ void skip_list::delete_and_update_abs(const long abs_val,
 	node *node_to_promote = NULL;
 	while (temp) {
 
-		if (abs_val
-				> (temp->next->val + cumulative_count + temp->offset)&&temp->next->val!=LONG_MAX) {
+		if ((abs_val
+				> (temp->next->val + cumulative_count + temp->offset)&&temp->next->val!=LONG_MAX) ||
+				((abs_val ==(temp->next->val + cumulative_count + temp->offset)) && temp->next->offset<0))
+						{
 			cumulative_count += temp->offset;
 			temp = temp->next;
 		}
@@ -284,12 +286,13 @@ void skip_list::delete_and_update_abs(const long abs_val,
 				while ((abs_val + len)
 						> (cumulative_count + trav->offset + trav->next->val)) { //if the deletion touches the next node, remove it.
 
-					//delete the node
-					trav->next = trav->next->next;
-					trav->next->next->prev = trav;
-
 					//update the offset
 					trav->offset += trav->next->offset;
+
+					//delete the node
+					trav->next = trav->next->next;
+					trav->next->prev = trav;
+
 				}
 				temp->offset += offset;
 				temp = temp->down;
@@ -298,7 +301,7 @@ void skip_list::delete_and_update_abs(const long abs_val,
 				string collect_ins = "";
 				long initial_pos = 0;
 				long remaining_deletion = len;
-				if (abs_val < (cumulative_count + temp->offset + temp->val)) { //the deletion starts from within an insertion
+				if (abs_val <= (cumulative_count + temp->offset + temp->val)) { //the deletion starts from within an insertion
 					//TODO: what to do when all the bases in of the inserted segment get deleted?
 					LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion");
 					long deletion_start_offset = abs_val - temp->val- cumulative_count - 1;
@@ -309,11 +312,11 @@ void skip_list::delete_and_update_abs(const long abs_val,
 					temp->offset-=deletion_len;
 					remaining_deletion -= deletion_len;
 					node *trav = temp;
-					remaining_deletion -= (trav->next->val - trav->val);
-
-					while (remaining_deletion > 0) {
-						LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and there is some deletion remaining");
-						if (trav->next->offset < 0) { //if the next node is a deletion, we coalesce it, the upper level nodes would have been deleted before reaching this node.
+					//remaining_deletion -= (trav->next->val - trav->val  -1);
+					//--START HERE: create a node for insertion
+					while ((remaining_deletion - (trav->next->val - trav->val  -1))>0) {
+						LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and there is some deletion remaining which touches the next node");
+						if (trav->next->offset <= 0) { //if the next node is a deletion, we coalesce it, the upper level nodes would have been deleted before reaching this node.
 							LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and coalescing a deletion");
 							trav->offset -= trav->next->offset;
 							trav->next = trav->next->next;
@@ -332,11 +335,10 @@ void skip_list::delete_and_update_abs(const long abs_val,
 										deletion_len_within_ins,
 										temp->offset - deletion_len_within_ins);
 							}
-
+							//remaining_deletion -= (trav->next->next->val - trav->next->val -1);
 							trav->next = trav->next->next;
 							trav->next->prev = trav;
 						}
-						remaining_deletion -= (trav->next->val - trav->val);
 					}
 					// if there are any nodes which are incompletely deleted, we need to shift any nodes which have been incompletely deleted to the node where the deletion began!
 					// also we must adjust the offset of the skip list bottom up.
@@ -390,10 +392,20 @@ void skip_list::delete_and_update_abs(const long abs_val,
 							node *trav = new_node;
 							long new_node_val = initial_pos;
 							LOGDEBUG(FILE_LOGGER,"find out which initial pos to put the insertion (to be moved)");
-							while (trav->prev->val == (--new_node_val) //find out which initial pos to put the insertion (to be moved).
+							while(trav->prev->offset<0){
+								long valid_pos = trav->prev->val+ (-1 * trav->prev->offset);
+								if(valid_pos>=trav->val){
+									trav=trav->prev;
+									new_node_val = trav->val;
+								}
+								else{
+									break;
+								}
+							}
+							/*while (trav->prev->val == (--new_node_val) //find out which initial pos to put the insertion (to be moved).
 							&& (trav->prev->offset < 0)) {
 								trav = trav->prev;
-							}
+							}*/
 							//bottom_up_update(new_node,collect_ins.length());
 							node *temp = new_node;
 							while (temp != head) {
@@ -405,7 +417,10 @@ void skip_list::delete_and_update_abs(const long abs_val,
 								}
 							}
 							LOGDEBUG(FILE_LOGGER,"if the initial position to be inserted already has an insertion");
-							insert_and_update(new_node_val,LONG_MAX,collect_ins);
+							insert_and_update(--new_node_val,LONG_MAX,collect_ins);
+
+							collect_ins.clear();
+
 						}
 					}
 
@@ -420,8 +435,36 @@ void skip_list::delete_and_update_abs(const long abs_val,
 					}
 					//node_to_promote = new_node;
 					node *trav = new_node;
+					//remaining_deletion -= (trav->next->val - trav->val  -1);
 
-					remaining_deletion -= (trav->next->val - trav->val);
+					while ((remaining_deletion - (trav->next->val - trav->val  -1))>0) {
+						LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and there is some deletion remaining which touches the next node");
+						if (trav->next->offset <= 0) { //if the next node is a deletion, we coalesce it, the upper level nodes would have been deleted before reaching this node.
+							LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and coalescing a deletion");
+							trav->offset -= trav->next->offset;
+							trav->next = trav->next->next;
+							trav->next->prev = trav;
+						} else {
+							LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and trying to remove a node with insertion");
+							long len_copy = len;
+							long deletion_len_within_ins = min(
+									(len_copy - (trav->next->val - trav->val)
+											- 1), trav->next->offset);
+							remaining_deletion -= deletion_len_within_ins;
+							if (deletion_len_within_ins != trav->next->offset) //the entire insertion in not deleted
+									{
+								LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion and the entire insertion in not deleted");
+								collect_ins += trav->next->str.substr(
+										deletion_len_within_ins,
+										temp->offset - deletion_len_within_ins);
+							}
+							//remaining_deletion -= (trav->next->next->val - trav->next->val -1);
+							trav->next = trav->next->next;
+							trav->next->prev = trav;
+						}
+					}
+
+/*					remaining_deletion -= (trav->next->val - trav->val);
 					while (remaining_deletion > 0) {
 						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and there is some deletion remaining");
 						if (trav->next->offset < 0) { //if the next node is a deletion, we coalesce it, the upper level nodes would have been deleted before reaching this node.
@@ -448,7 +491,7 @@ void skip_list::delete_and_update_abs(const long abs_val,
 							trav->next->prev = trav;
 						}
 						remaining_deletion -= (trav->next->val - trav->val);
-					}
+					}*/
 					node_to_promote = new_node;
 					//now find/create the node where the coalesced insertions must be inserted.
 					//the node should be initial position just before the deletion node, unless that position has a deletion
@@ -456,12 +499,26 @@ void skip_list::delete_and_update_abs(const long abs_val,
 					if (!collect_ins.empty()) {
 						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and trying to move a node which has been deleted incompleltely");
 						node *trav = new_node;
+
 						long new_node_val = initial_pos;
 						LOGDEBUG(FILE_LOGGER,"find out which initial pos to put the insertion (to be moved)");
+						while(trav->prev->offset<0){
+							long valid_pos = trav->prev->val+ (-1 * trav->prev->offset);
+							if(valid_pos>=trav->val){
+								trav=trav->prev;
+								new_node_val = trav->val;
+							}
+							else{
+								break;
+							}
+						}
+						/*long new_node_val = initial_pos;
+						LOGDEBUG(FILE_LOGGER,"find out which initial pos to put the insertion (to be moved)");
+
 						while (trav->prev->val == (--new_node_val) //find out which initial pos to put the insertion (to be moved).
 						&& (trav->prev->offset < 0)) {
 							trav = trav->prev;
-						}
+						}*/
 
 						//bottom_up_update(new_node,collect_ins.length());
 						node *temp = new_node;
@@ -686,8 +743,7 @@ void skip_list::insert_and_update_abs(const long abs_val, string str) {
 			{
 		//update the offset pointers..
 		if ((prev->next->str).length() < pos) {
-			cout << "Invalid value..pos = " << pos << " skip list inconsistent!"
-					<< endl;
+			LOGALERT(FILE_LOGGER, "Invalid value..pos = "+ to_string(pos)+ " skip list inconsistent!");
 			return;
 		}
 		(prev->next->str).insert(pos, str);
@@ -695,8 +751,7 @@ void skip_list::insert_and_update_abs(const long abs_val, string str) {
 	} else {
 
 		if (pos > 0) {
-			cout << "Invalid value.. pos = " << pos
-					<< " skip list inconsistent!" << endl;
+			LOGALERT(FILE_LOGGER, "Invalid value..pos = "+ to_string(pos)+ " skip list inconsistent!");
 			return;
 		}
 

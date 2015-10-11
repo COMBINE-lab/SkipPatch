@@ -736,6 +736,7 @@ void test() {
 	LOGINFO(FILE_LOGGER, "Starting.. ");
 
 	test_skip_list();
+	return ;
 	test_insert_at();
 	test_delete_at();
 	test_indels();

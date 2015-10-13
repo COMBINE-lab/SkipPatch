@@ -3,7 +3,7 @@
 #include "genome.h"
 #include "utils.h"
 #include "test.h"
-#include "test_prob.h"
+#include "test_skippatch.h"
 #include "benchmark.h"
 #include "ezOptionParser.hpp"
 #include "spdlog/spdlog.h"

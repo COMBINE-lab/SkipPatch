@@ -98,7 +98,7 @@ int main(int argc, const char* argv[]) {
 	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
 	LOGINFO(FILE_LOGGER, "Happy Cows!");
 	auto console_logger = spdlog::stdout_logger_mt("console");
-	spd::set_level(spd::level::info); //level of logging
+	spd::set_level(spd::level::debug); //level of logging
 	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
 
 	console_logger->info() << "Log path: " << logPath;
@@ -108,6 +108,14 @@ int main(int argc, const char* argv[]) {
 		opt.getUsage(usage, 80, ezOptionParser::ALIGN);
 		std::cerr << usage;
 		return 1;
+	}
+
+	if (S > K) {
+		console_logger->critical() << "The value of S(" << S << ")(sampling factor) cannot be greater than K(" << K << "). This will result in loss of data.";
+		LOGCRITICAL(FILE_LOGGER, "The value of S(" + std::to_string(S) + ")(sampling factor) cannot be greater than K(" + std::to_string(K) + "). This will result in loss of data.");
+		console_logger->info() << "Quitting... Bye!";
+		LOGINFO(FILE_LOGGER, "Quitting... Bye!");
+		exit(-1);
 	}
 
 	std::string genomeFile;
@@ -149,6 +157,11 @@ int main(int argc, const char* argv[]) {
 	genome g;
 	g.get_input(genomeFile);
 
+	if (K > 32) {
+		console_logger->alert() << "K cannot be more than 32 because reads are stored as uint64_t in the hash.";
+		LOGALERT(FILE_LOGGER, "K cannot be more than 32 because reads are stored as uint64_t in the hash.");
+		exit(-1);
+	}
 
 	if (opt.isSet("--runTests")) {
 
@@ -204,6 +217,10 @@ int main(int argc, const char* argv[]) {
 			LOGINFO(FILE_LOGGER, "Benchmarking search");
 			if (fileExists(editsQueriesFile)) {
 				benchmark_construction(g);
+				if (S > K) {
+					//console_logger->alert() << "The search algorithm has not yet been modified to handle sampling. The results will be incorrect.";
+					//LOGALERT(FILE_LOGGER, "The search algorithm has not yet been modified to handle sampling. The results will be incorrect.");
+				}
 				benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
 			}
 		} else {

@@ -6,12 +6,13 @@
 #include <cassert>
 
 #include "common.h"
-#include "test_prob.h"
+#include "test_skippatch.h"
 #include "benchmark.h"
+#include "genome.h"
 
 /**
  * Naively inserts, deletes and searches for substrings to
- * test if SkipPatch works correctly
+ * test if SkipPatch search works correctly
  *
  * I 442077 ATC
  * D 3975001 3975005
@@ -36,11 +37,17 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 	std::ofstream query_out_file(resultsFile);
 	LOGINFO(FILE_LOGGER, "Naive queries output file: "+resultsFile);
 
+	long err_count = 0;
+
 	for (int j = 0; j < iterations; j++) {
 
 		long c = j * queryFrequency;
 
 		for (int i = 0; i < queryFrequency; i++) {
+
+			if(reference.length()<=200){
+				LOGDEBUG(FILE_LOGGER, "Before:   " + reference);
+			}
 
 			if (std::get<0>(edit[i + c]) == "I") {
 
@@ -67,12 +74,21 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 				g.snp_at(pos, snp);
 
 			}
+
+			LOGDEBUG(FILE_LOGGER, "After: "+ reference);
+
 			if (!(reference == g.read_reference_at(0, 0, reference.length()))) {
 				LOGALERT(FILE_LOGGER, "Testing Error...");
 				LOGALERT(FILE_LOGGER, "For: " + std::get<0>(edit[i + c])  + " " + std::get<1>(edit[i + c])+ " " + std::get<2>(edit[i + c]) );
+				if(reference.length()<=200){
+					LOGDEBUG(FILE_LOGGER, "Actual:   "+ g.read_reference_at(0, 0, reference.length()));
+					LOGDEBUG(FILE_LOGGER, "Expected: "+ reference);
+				}
 				LOGALERT(FILE_LOGGER, "Quitting.");
 				exit(-1);
 			}
+
+			test_hash(g, reference);
 
 		}
 
@@ -100,6 +116,9 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 			for(auto p: positions_naive){
 				LOGDEBUG(FILE_LOGGER, read + " Expected: " + std::to_string(p));
 			}
+			for(auto p: positions){
+				LOGDEBUG(FILE_LOGGER, read + " Actual: " + std::to_string(p));
+			}
 
 			std::sort(positions.begin(), positions.end());
 			std::sort(positions_naive.begin(), positions_naive.end());
@@ -109,14 +128,13 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 				LOGALERT(FILE_LOGGER, "While searching for: " + read);
 
 				for(auto p: positions_naive){
-					LOGALERT(FILE_LOGGER, read + " Found: " + std::to_string(p));
+					LOGALERT(FILE_LOGGER, read + " Expected: " + std::to_string(p));
 				}
 				for(auto p: positions){
 					LOGALERT(FILE_LOGGER, read + " Actual: " + std::to_string(p));
 				}
 
-				LOGALERT(FILE_LOGGER, "Quitting.");
-				exit(-1);
+				err_count++;
 			}
 
 			query_out_file << read << "\t";
@@ -128,7 +146,14 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 		gettimeofday(&end, &tzp);
 		std::string message = "Search Iteration " + std::to_string(j);
 		print_time_elapsed(message, &start, &end);
+		LOGINFO(FILE_LOGGER,"----------------------------------------------------------------------");
 
+	}
+
+	if(err_count>0){
+		LOGALERT(FILE_LOGGER, "Found " + std::to_string(err_count) + " errors");
+		LOGALERT(FILE_LOGGER, "Quitting... Bye!");
+		exit(-1);
 	}
 
 	LOGINFO(FILE_LOGGER, "Complete: Testing Naive Search");
@@ -139,6 +164,7 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
  * Performs edits on the input sequence using the genome functions
  * and the naive string insert, erase and replace functions.
  * Compares at each stage if the reference generated is correct.
+ * Calls test_hash() to verify if the hash is correct.
  *
  * I 4439799 T
  * S 2261415 C
@@ -152,7 +178,7 @@ void test_edits_naive(genome &g, std::string edits_file, const long number_of_ed
 	//Create a copy of the genome, and the reference.
 	//Naively edit the copy of the reference sequence and check if the updated reference sequence is the same.
 	std::string reference = g.get_reference();
-
+	g.construct_hash();
 	std::vector<std::tuple<std::string, std::string, std::string>> edits;
 	parse_edit_file(edits, edits_file);
 
@@ -192,15 +218,16 @@ void test_edits_naive(genome &g, std::string edits_file, const long number_of_ed
 
 			total_edits--;
 
-			if (!(reference == g.read_reference_at(0, 0, reference.length()))) {
+			if (reference != g.read_reference_at(0, 0, reference.length())) {
 				LOGALERT(FILE_LOGGER, "Testing Error...");
 				LOGALERT(FILE_LOGGER, "For: " + std::get<0>(it)  + " " + std::get<1>(it)+ " " + std::get<2>(it) );
 				LOGALERT(FILE_LOGGER, "Quitting.");
 				exit(-1);
 			}
-
 		}
 	}
+
+	test_hash(g, reference);
 
 	gettimeofday(&end, &tzp);
 
@@ -213,3 +240,91 @@ void test_edits_naive(genome &g, std::string edits_file, const long number_of_ed
 	LOGINFO(FILE_LOGGER, "End: Testing Naive Edits");
 
 }
+
+/**
+ * Validates the hash which is constructed and modified (due to indels and SNPs).
+ * Ensures that sampling does not result in any part of the genome not being hashed, and therefore not searchable
+ * Validates three required conditions:
+ *  - Two consecutive k-mers hashed should not be more than distance S apart, where S represents the sampling factor
+ *  	(in order to avoid segments of the reference which have not been hashed)
+ *  - No k-mer which should have been deleted must be present in the hash
+ *  - Every k-mer present in the hash must be present at the correct genome position
+ *  	(The set of positions of a hashed kmer must at least be a subset of all the positions it occurrs in the updated reference)
+ */
+void test_hash(genome &g, std::string updated_reference) {
+
+	LOGINFO(FILE_LOGGER, "START: Testing Hash");
+
+	std::unordered_map<uint64_t, std::vector<long>> hash = g.get_hash();
+
+	LOGINFO(FILE_LOGGER,"Checking if at least every Sth k-mer is hashed");
+	bool valid_hash = true;
+	int off = 0;
+	for (auto it = updated_reference.begin(); it < updated_reference.end()-K-1; it++) {
+
+		std::string kmer(it, it + K);
+
+		auto f = hash.find(str_to_int(kmer));
+		if (f != hash.end()) { //kmer is found
+			LOGTRACE(FILE_LOGGER, kmer);
+			valid_hash = true;
+			off = 0;
+		} else {
+			off++;
+			if (off > S) {
+				valid_hash = false;
+				LOGALERT(FILE_LOGGER, "Invalid hash. Two hashed kmers are more than S apart.");
+				LOGDEBUG(FILE_LOGGER, kmer);
+				LOGALERT(FILE_LOGGER, "Quitting.. Bye!");
+				exit(-1);
+			}
+		}
+	}
+	LOGINFO(FILE_LOGGER,"SUCCESS. At least every Sth k-mer is hashed");
+
+	//Check if every k-mer in the hash actually exists in the updated genome
+	//Ensure that no kmer which should have been deleted from a position was actually deleted
+	LOGINFO(FILE_LOGGER,"Checking if every kmer in tha hash is present at valid positions and no nonexistent kmers are present in the hash");
+	for (auto entry : hash) {
+
+		std::string key = int_to_str(entry.first);
+
+		//Make sure there isn't a kmer in the hash table which was supposed to be deleted
+		if(updated_reference.find(key) == std::string::npos){
+			LOGALERT(FILE_LOGGER, "Nonexistent k-mer present in hash: " + key);
+			exit(-1);
+		}
+
+		//Find all positions in the hash
+		std::vector<long> p_found = entry.second;
+		std::sort(p_found.begin(), p_found.end()); // genome positions
+
+		//Find all positions in the updated reference
+		std::vector<long> p_actual;
+		long pos = updated_reference.find(key);
+		while (pos != std::string::npos) {
+			p_actual.push_back(g.get_genome_position_from_virtual_position(pos));
+			pos = updated_reference.find(key, pos + 1);
+		}
+		std::sort(p_actual.begin(), p_actual.end());
+
+		//p_found should be a subset of p_actual
+		if (!std::includes(p_actual.begin(), p_actual.end(), p_found.begin(), p_found.end())) {
+			LOGALERT(FILE_LOGGER, "K-mer present at incorrect position: " + key);
+			for(auto p: p_actual){
+				LOGALERT(FILE_LOGGER, key + " Actual: " + std::to_string(p));
+			}
+			for(auto p: p_found){
+				LOGALERT(FILE_LOGGER, key + " Found: " + std::to_string(p));
+			}
+
+			LOGALERT(FILE_LOGGER, "Quitting.. Bye!");
+			exit(-1);
+		}
+	}
+	LOGINFO(FILE_LOGGER,"SUCCESS. Every kmer in tha hash is present at valid positions and no nonexistent kmers are present in the hash");
+
+	LOGINFO(FILE_LOGGER, "COMPLETE: Testing Hash");
+
+}
+

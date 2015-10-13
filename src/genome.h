@@ -10,7 +10,8 @@
 
 #include "./skip_list/skip_list.h"
 
-#define K 20 //user defined parameter
+#define K 10 //user defined parameter
+#define S 5
 
 class genome {
 
@@ -22,6 +23,7 @@ private:
     skip_list s;
     std::vector<bool> ins;
     std::vector<bool> del;
+    //long length;
 
 public:
 
@@ -57,7 +59,7 @@ public:
 
     //Modify the hash table to add/remove positions at which a k-mer occurs
     void remove_kmer_from_hash_at(long, std::string);
-    void add_kmer_from_hash_at(long, std::string);
+    void add_kmer_to_hash_at(long, std::string);
 
     //Translating positions between the genome and virtual coordinate systems
     long get_genome_position_from_virtual_position(long);
@@ -76,9 +78,12 @@ public:
     //Search for all the occurrences of a read
     std::vector<long> search(std::string);
 
+    //Get kmers
     std::vector<std::string> generate_kmers(std::string);
     std::vector<std::pair<std::string,long>> get_kmers(const long, const unsigned long);
     std::vector<std::tuple<std::string,long,unsigned long>> get_kmers_with_offset(const long,const unsigned long );
+
+    bool is_kmer_hashed(std::string kmer, long position);
 };
 
 #endif

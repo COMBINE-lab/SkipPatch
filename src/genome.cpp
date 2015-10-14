@@ -312,8 +312,8 @@ string genome::read_reference_at(const long genome_position, const long offset,
 				rem_len--;
 				curr_offset = 1;
 			} else {
-				s.print_list();
-				cout<<"\nCurr genome pos: "<<curr_genome_pos<<endl;
+				//s.print_list();
+				//cout<<"\nCurr genome pos: "<<curr_genome_pos<<endl;
 				node *n = s.find(curr_genome_pos);
 				if(!n){
 					cout<<"n is null!";
@@ -512,6 +512,20 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 		}
 	}
 	//Update the skip list
-	s.delete_and_update_abs(delete_pos_abs, del_len);
+	mod_kmers m_kmers = s.delete_and_update_abs(delete_pos_abs, del_len);
+
+	if(m_kmers.num_kmers_moved>0){
+	ins[m_kmers.final_genome_pos]=1;
+	del[m_kmers.final_genome_pos]=1;
+
+	ins[m_kmers.initial_genome_pos]=0;
+	del[m_kmers.initial_genome_pos]=1;
+	string ref=read_reference_at(m_kmers.final_genome_pos,m_kmers.final_offset,m_kmers.num_kmers_moved+K-1);
+
+	for(int i=0;i<m_kmers.num_kmers_moved;i++){
+		remove_kmer_from_hash_at(m_kmers.initial_genome_pos,ref.substr(i,K));
+		add_kmer_from_hash_at(m_kmers.final_genome_pos,ref.substr(i,K));
+	}
+	}
 	return true;
 }

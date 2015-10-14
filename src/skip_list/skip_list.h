@@ -15,6 +15,30 @@ struct node
     }
 };
 
+struct mod_kmers{
+	long initial_genome_pos;
+	long initial_offset;
+	long final_genome_pos;
+	long final_offset;
+	long num_kmers_moved;
+
+	mod_kmers(long l1,long l2,long l3,long l4,long l5){
+		initial_genome_pos=l1;
+		initial_offset=l2;
+		final_genome_pos=l3;
+		final_offset=l4;
+		num_kmers_moved=l5;
+	}
+
+	mod_kmers(){
+			initial_genome_pos=-1;
+			initial_offset=-1;
+			final_genome_pos=-1;
+			final_offset=-1;
+			num_kmers_moved=-1;
+		}
+
+};
 //must use short? instead of long for offset
 class skip_list {
 
@@ -39,7 +63,7 @@ public:
     void get_stats(long &,long &);
     //void delete_and_update_abs(unsigned long,unsigned long,unsigned long);
     bool is_valid_delete(const long ,const unsigned long );
-    void delete_and_update_abs(const long ,const unsigned long);
+    mod_kmers delete_and_update_abs(const long ,const unsigned long);
     //long get_offset(node*);
 };
 

@@ -164,17 +164,54 @@ void benchmark_edits(std::string genome_file, std::string edits_file,
 	gettimeofday(&end, &tzp);
 	print_time_elapsed("DynSA: Building Index: ", &start, &end);
 
-	int test_count = 0;
+	int test_count = 1;
 
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
+	if(num_edits==0){
+		num_edits=edit.size();
+	}
 
+	cout<<"Number of edits: "<<num_edits<<endl;
 	gettimeofday(&start, &tzp);
 
 	for (auto it : edit) {
 
 		if (test_count >= num_edits)
+		{
+			gettimeofday(&end, &tzp);
+			std::string message = std::string("DynSA: 5% Updates: ");
+			print_time_elapsed(message, &start, &end);
 			break;
+		}
+
+		if (test_count == num_edits/5)
+		{
+			gettimeofday(&end, &tzp);
+			std::string message = std::string("DynSA: 1% Updates: ");
+			print_time_elapsed(message, &start, &end);
+		}
+
+		if (test_count == num_edits/10)
+		{
+			gettimeofday(&end, &tzp);
+			std::string message = std::string("DynSA: 0.5% Updates: ");
+			print_time_elapsed(message, &start, &end);
+		}
+
+		if (test_count == num_edits/50)
+		{
+			gettimeofday(&end, &tzp);
+			std::string message = std::string("DynSA: 0.1% Updates: ");
+			print_time_elapsed(message, &start, &end);
+		}
+
+		if (test_count == num_edits/500)
+		{
+			gettimeofday(&end, &tzp);
+			std::string message = std::string("DynSA: 0.01% Updates: ");
+			print_time_elapsed(message, &start, &end);
+		}
 
 		if (get<0>(it) == "I") {
 			//cout<<"Inserting "<<get<2>(it)<<" at "<<get<1>(it) << endl;
@@ -186,13 +223,13 @@ void benchmark_edits(std::string genome_file, std::string edits_file,
 			test_count++;
 		}
 		if (get<0>(it) == "D") {
-			//cout<<"Deleting from "<< get<1>(it)+1 <<" to "<< stoi(get<2>(it))+1 << endl;
+			//cout<<"Deleting from "<< get<1>(it)+1 <<" to "<< stol(get<2>(it))+1 << endl;
 			wt->deleteChars(
-					stoi(get<2>(it), nullptr, 10)
-							- stoi(get<1>(it), nullptr, 10) + 1,
-					stoi(get<1>(it), nullptr, 10) + 1); //wt->deleteChars(length_del[i], del_indexes[i]+1);
-			total_length_del += (stoi(get<2>(it), nullptr, 10)
-					- stoi(get<1>(it), nullptr, 10));
+					stol(get<2>(it), nullptr, 10)
+							- stol(get<1>(it), nullptr, 10) + 1,
+					stol(get<1>(it), nullptr, 10) + 1); //wt->deleteChars(length_del[i], del_indexes[i]+1);
+			total_length_del += (stol(get<2>(it), nullptr, 10)
+					- stol(get<1>(it), nullptr, 10));
 			test_count++;
 		}
 		if (get<0>(it) == "S") {
@@ -209,9 +246,7 @@ void benchmark_edits(std::string genome_file, std::string edits_file,
 			test_count++;
 		}
 	}
-	gettimeofday(&end, &tzp);
-	std::string message = std::string("DynSA: Updates: ");
-	print_time_elapsed(message, &start, &end);
+
 
 	if (outputUpdatedGenomeFile != "") {
 
@@ -232,6 +267,7 @@ void benchmark_edits(std::string genome_file, std::string edits_file,
 		}
 
 		//Write updated genome to file 
+		std::cout<<"Writing the updated genome to file"<<std::endl;
 		std::string output_file(outputUpdatedGenomeFile);
 		std::ofstream outfile(output_file);
 		outfile << newtext;
@@ -374,13 +410,13 @@ void benchmark_search(std::string genome_file,
 				total_length_ins += get<2>(*it).length();
 			}
 			else if (get<0>(*it) == "D") {
-				//cout<<"Deleting from "<< get<1>(*it)+1 <<" to "<< stoi(get<2>(*it))+1 << endl;
+				//cout<<"Deleting from "<< get<1>(*it)+1 <<" to "<< stol(get<2>(*it))+1 << endl;
 				wt->deleteChars(
-						stoi(get<2>(*it), nullptr, 10)
-								- stoi(get<1>(*it), nullptr, 10) + 1,
-						stoi(get<1>(*it), nullptr, 10) + 1); //wt->deleteChars(length_del[i], del_indexes[i]+1);
-				total_length_del += (stoi(get<2>(*it), nullptr, 10)
-						- stoi(get<1>(*it), nullptr, 10));
+						stol(get<2>(*it), nullptr, 10)
+								- stol(get<1>(*it), nullptr, 10) + 1,
+						stol(get<1>(*it), nullptr, 10) + 1); //wt->deleteChars(length_del[i], del_indexes[i]+1);
+				total_length_del += (stol(get<2>(*it), nullptr, 10)
+						- stol(get<1>(*it), nullptr, 10));
 			}
 		}
 
@@ -515,7 +551,7 @@ int main(int argc, const char *argv[]) {
 		opt.get("--editsFile")->getString(editsFile);
 	}
 
-	long numEdits;
+	long numEdits=0;
 	if (opt.isSet("--numEdits")) {
 		opt.get("--numEdits")->getLong(numEdits);
 	}

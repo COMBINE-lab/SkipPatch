@@ -144,7 +144,9 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 	//TODO: Remove after deletion corner case is fixed
 	//Store every invalid delete in a file
-	std::ofstream invalid_deletes_file("/home/komal/data/invalid_deletes");
+	LOGINFO(FILE_LOGGER, "Number of invalid deletes= "+ to_string(invalid_deletes.size()));;
+	std::ofstream invalid_deletes_file("/mnt/scratch2/nirm/invalid_deletes");
+	//LOGINFO(FILE_LOGGER, "Number of invalid deletes= "+ to_string(invalid_deletes.size()));;
 	for (auto invalid_delete : invalid_deletes)
 		invalid_deletes_file << invalid_delete << "\n";
 	invalid_deletes_file.close();

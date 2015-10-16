@@ -152,9 +152,6 @@ int main(int argc, const char* argv[]) {
 
 	if (opt.isSet("--runTests")) {
 
-		//LOGINFO(FILE_LOGGER, "Running unit tests");
-		//test();
-
 		LOGINFO(FILE_LOGGER, "Running tests..");
 		if (opt.isSet("--editsFile") && fileExists(editsFile)) {
 			LOGINFO(FILE_LOGGER, "Testing Naive Edits..");
@@ -209,7 +206,7 @@ int main(int argc, const char* argv[]) {
 		outputPath += "SPGenome.fa";
 		ofstream myfile;
 		myfile.open(outputPath);
-		myfile << g.read_reference_at(0, 0, g.get_length());
+		myfile << g.read_reference_at(0, 0, LONG_MAX);
 		myfile.close();
 	}
 

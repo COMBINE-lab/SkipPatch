@@ -82,8 +82,6 @@ def format_args(arg, option):
     return ""
 
 
-#TODO: write a script which does this naively instead of using the SA
-
 parser = argparse.ArgumentParser(description='Benchmark, do a memory analysis or test the correctness of the Skip Patch (currently by diff with SA output) \n ')
 
 parser.add_argument('-SPBinary','-sp', type=str, help = "path to the Skip Patch binary")
@@ -144,33 +142,38 @@ if args.SABinary is not None:
 
 
 if args.output_path_updated_genome is not None:
-    with open (output_path_SP, "r") as myfile:
-        g1=myfile.read()
-    myfile.close()
+    if os.path.isfile(output_path_SP) and os.path.isfile(output_path_SA):
+        with open (output_path_SP, "r") as myfile:
+            g1=myfile.read()
+        myfile.close()
 
-    with open (output_path_SA, "r") as myfile:
-        g2=myfile.read()
-    myfile.close()
+        with open (output_path_SA, "r") as myfile:
+            g2=myfile.read()
+        myfile.close()
 
-    fail = "TESTS FAILED!!"
-    success  = "TESTS PASS"
-    flag =  True
+        fail = "TESTS FAILED!!"
+        success  = "TESTS PASS"
+        flag =  True
 
-    print "len(SP) = ",len(g1)," len(SA) ",len(g2)-1
+        print "len(SP) = ",len(g1)," len(SA) ",len(g2)-1
 
-    pos = 0
-    for a,b in itertools.izip_longest(g1,g2):
-        if(a!=b):
-            if((ord(b) != 10)): # SA adds a LF ascii charater to the end
-                print "The first position where the output files differ is ", pos
-                print "SP:", a, "SA:", b,"at pos",pos
-                print fail
-                flag = False
-                break
-        pos+=1
+        pos = 0
+        for a,b in itertools.izip_longest(g1,g2):
+            if(a!=b):
+                if((ord(b) != 10)): # SA adds a LF ascii charater to the end
+                    print "The first position where the output files differ is ", pos
+                    print "SP:", a, "SA:", b,"at pos",pos
+                    print fail
+                    flag = False
+                    break
+                else:
+                    print "Found null in SA output genome! break!"
+                    break
+            pos+=1
 
-    if(flag):
-        print success
+        if(flag):
+            print success
+    else:
+        print "Either the SAGenome or SPGenome is not written to disk, aborting matching the genomes!!"
 
 print "\n\n"
-#sb.call("aplay "+args.alert,shell = True) 

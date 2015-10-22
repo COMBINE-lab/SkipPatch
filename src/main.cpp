@@ -153,9 +153,18 @@ int main(int argc, const char* argv[]) {
 	if (opt.isSet("--runTests")) {
 
 		LOGINFO(FILE_LOGGER, "Running tests..");
-		if (opt.isSet("--editsFile") && fileExists(editsFile)) {
+		if (opt.isSet("--editsFile") && !opt.isSet("--substrFile")) {
 			LOGINFO(FILE_LOGGER, "Testing Naive Edits..");
-			test_edits_naive(g, editsFile, numEdits);
+			if (fileExists(editsFile)) {
+				test_edits_naive(g, editsFile, numEdits);
+			}
+		}
+
+		if (opt.isSet("--substrFile") && opt.isSet("--editsFile")) {
+			LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
+			if (fileExists(substrFile) && fileExists(editsFile)) {
+				test_substr_naive(g, substrFile, editsFile, numEdits);
+			}
 		}
 
 		if (opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations")) {
@@ -167,22 +176,26 @@ int main(int argc, const char* argv[]) {
 			}
 		}
 
+		//TODO: test substring
+
 		LOGINFO(FILE_LOGGER, "Completed all tests successfully!");
 		LOGINFO(FILE_LOGGER, "Quitting... Bye!");
 		exit(0);
 	}
 
-	if (opt.isSet("--editsFile")) {
+	if (opt.isSet("--editsFile") && !opt.isSet("--substrFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
 		if (fileExists(editsFile)) {
+			benchmark_construction(g);
 			benchmark_edits(g, editsFile, numEdits);
 		}
 	}
 
-	if (opt.isSet("--substrFile")) {
+	if (opt.isSet("--substrFile") && opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
-		if (fileExists(substrFile)) {
-			benchmark_substring(g, substrFile);
+		if (fileExists(substrFile) && fileExists(editsFile)) {
+			benchmark_construction(g);
+			benchmark_substring(g, substrFile, editsFile, numEdits);
 		}
 	}
 
@@ -190,6 +203,7 @@ int main(int argc, const char* argv[]) {
 		if(queryFrequency>0 && queryCount>0 && iterations>0 ) {
 			LOGINFO(FILE_LOGGER, "Benchmarking search");
 			if (fileExists(editsQueriesFile)) {
+				benchmark_construction(g);
 				benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
 			}
 		} else {

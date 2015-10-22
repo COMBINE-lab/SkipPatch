@@ -213,3 +213,78 @@ void test_edits_naive(genome &g, std::string edits_file, const long number_of_ed
 	LOGINFO(FILE_LOGGER, "End: Testing Naive Edits");
 
 }
+
+
+/**
+ * Performs edits on the input sequence as specified in the edits_file_path
+ * Then extracts substrings
+ *
+ */
+void test_substr_naive(genome &g, const std::string substr_file_path, const std::string edits_file_path, long num_edits) {
+
+	LOGINFO(FILE_LOGGER, "Start: Testing Naive Substring Extraction");
+	g.construct_hash();
+	//benchmark_edits(g, edits_file_path, num_edits);
+	test_edits_naive(g, edits_file_path, num_edits);
+
+	//TODO: Incorrect. Fix this.
+	std::string edited_reference = g.read_reference_at(0, 0, g.get_reference().length());
+
+	std::vector<std::pair<long, long>> substrings;
+	std::ifstream substr_file(substr_file_path);
+	std::string line, pos, len;
+
+	if (substr_file.is_open()) {
+		while (!substr_file.eof())
+    	{
+    		std::getline(substr_file,line);
+    		if(line.length()>0){
+				std::stringstream stream(line);
+				std::string l;
+				std::vector<std::string> substr_details;
+				while (std::getline(stream, l, ',')) {
+					substr_details.push_back(l);
+				}
+				substrings.push_back(
+						std::make_pair(stol(substr_details[0], nullptr, 10),
+								stol(substr_details[1], nullptr, 10)));
+    		}
+    	}
+	} else {
+		std::string error_message = "Failed to open file: " + substr_file_path;
+		LOGALERT(FILE_LOGGER, error_message);
+		LOGALERT(FILE_LOGGER, "Exiting program");
+		exit(-1);
+	}
+
+	struct timeval start, end;
+	struct timezone tzp;
+	long temp = 0;
+	gettimeofday(&start, &tzp);
+
+	for (auto substr : substrings) {
+		std::string substring = g.read_reference_abs_at(substr.first, substr.second, temp);
+		std::string substring_naive = edited_reference.substr(substr.first, substr.second);
+
+		if (substring != substring_naive) {
+			LOGALERT(FILE_LOGGER, "Testing Error...");
+			LOGALERT(FILE_LOGGER, "For: " + std::to_string(substr.first)  + " " + std::to_string(substr.second));
+			LOGALERT(FILE_LOGGER, "Expected: " + substring_naive);
+			LOGALERT(FILE_LOGGER, "Found: " + substring);
+			//exit(-1);
+		}
+
+	}
+
+	gettimeofday(&end, &tzp);
+
+	std::string message = "Extracted " + std::to_string(substrings.size())
+			+ " substrings: ";
+	print_time_elapsed(message, &start, &end);
+
+
+
+
+	LOGINFO(FILE_LOGGER, "Complete: Testing Naive Substring Extraction");
+
+}

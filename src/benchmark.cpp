@@ -81,8 +81,6 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 	LOGINFO(FILE_LOGGER, "Start: Benchmarking Edits");
 
-	benchmark_construction(g);
-
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
 	LOGINFO(FILE_LOGGER,"Total number of edits to be performed: " + std::to_string(edit.size()));
@@ -239,8 +237,6 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
 
 	LOGINFO(FILE_LOGGER, "Start: Benchmarking Search");
 
-	benchmark_construction(g);
-
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	std::vector<std::tuple<std::string, std::string, std::string, long>> query;
 
@@ -301,11 +297,12 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
  * 3887129,39
  *
  */
-void benchmark_substring(genome &g, std::string substr_file_path) {
+void benchmark_substring(genome &g, std::string substr_file_path, std::string edits_file_path, long num_edits) {
+
+	LOGINFO(FILE_LOGGER, "Editing the genome before extracting substrings");
+	benchmark_edits(g, edits_file_path, num_edits);
 
 	LOGINFO(FILE_LOGGER, "Starting: Benchmarking Substring Extraction");
-
-	benchmark_construction(g);
 
 	std::vector<std::pair<long, long>> substrings;
 	std::ifstream substr_file(substr_file_path);

@@ -57,7 +57,7 @@ extern "C" {
 #include "types.h"
 
 #ifndef SAMPLE
-#define SAMPLE 1
+#define SAMPLE 16
 #endif
 
 #ifndef BUFFER

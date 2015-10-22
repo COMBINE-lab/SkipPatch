@@ -1,6 +1,9 @@
 #ifndef SKIP_LIST_H
 #define SKIP_LIST_H
-#include <bits/stdc++.h>
+
+#include <string>
+#include <vector>
+
 struct node
 {
     long val,offset;
@@ -21,13 +24,17 @@ struct mod_kmers{
 	long final_genome_pos;
 	long final_offset;
 	long num_kmers_moved;
+	std::vector<long> insertions;
+	std::vector<long> deletions;
 
-	mod_kmers(long l1,long l2,long l3,long l4,long l5){
+	mod_kmers(long l1,long l2,long l3,long l4,long l5, std::vector<long> ins, std::vector<long> del){
 		initial_genome_pos=l1;
 		initial_offset=l2;
 		final_genome_pos=l3;
 		final_offset=l4;
 		num_kmers_moved=l5;
+		insertions = ins;
+		deletions= del;
 	}
 
 	mod_kmers(){
@@ -53,6 +60,7 @@ public:
     skip_list();
     node* get_head();
     node* find(long); //obsolete, only for testing //if not found return null, else return the node itself.
+    node* naive_find(long); //obsolete, only for testing //if not found return null, else return the node itself.
     void print_base_level();
     void print_list();
     void print_node(node*);
@@ -64,6 +72,7 @@ public:
     //void delete_and_update_abs(unsigned long,unsigned long,unsigned long);
     bool is_valid_delete(const long ,const unsigned long );
     mod_kmers delete_and_update_abs(const long ,const unsigned long);
+
     //long get_offset(node*);
 };
 

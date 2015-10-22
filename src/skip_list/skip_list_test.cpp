@@ -1,10 +1,10 @@
-#include <bits/stdc++.h>
-#include <iostream>
-#include <cassert>
-
 #include "skip_list.h"
 #include "skip_list_test.h"
-#include "utils.h"
+
+#include <cassert>
+#include <iostream>
+
+#include "../utils.h"
 
 void test_find_ordered(){
 

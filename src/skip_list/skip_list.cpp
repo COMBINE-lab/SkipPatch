@@ -5,8 +5,8 @@
 #include <cstdbool>
 #include <cstdlib>
 #include <iostream>
-#include <string>
-#include "utils.h"
+
+#include "../utils.h"
 
 using namespace std;
 
@@ -43,6 +43,23 @@ node* skip_list::find(long val) {
 	}
 	return temp;
 }
+
+node* skip_list::naive_find(long val) {
+	node *temp = head;
+	while(temp->down){
+		temp=temp->down;
+	}
+	while(temp){
+		if(temp->val>val)
+			return temp->prev;
+		if(temp->val==val){
+			return temp;
+		}
+		temp=temp->next;
+	}
+	return temp;
+}
+
 void skip_list::get_prev_node(long abs_val, long &val, unsigned long &pos,
 		node **n) {
 
@@ -276,14 +293,15 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 	long final_genome_pos=0;
 	long final_offset=0;
 	long num_kmers_moved=0;
-
+	vector<long> insertions;
+	vector<long> deletions;
 	mod_kmers m_kmers = mod_kmers();
 
 	while (temp) {
 
 		if ((abs_val
 				> (temp->next->val + cumulative_count + temp->offset)&&temp->next->val!=LONG_MAX) ||
-				((abs_val ==(temp->next->val + cumulative_count + temp->offset)) && temp->next->offset<0))
+				((abs_val ==(temp->next->val + cumulative_count + temp->offset)) && (temp->next->offset<0) && (!(temp->down)) ))
 						{
 			cumulative_count += temp->offset;
 			temp = temp->next;
@@ -318,10 +336,17 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 					long deletion_len  = len;
 					deletion_len = min(deletion_len,
 							temp->offset - deletion_start_offset);
+					LOGDEBUG(FILE_LOGGER,"trying to erase the string: "+to_string(temp->next->offset)+" "+to_string(temp->next->val));
+					LOGDEBUG(FILE_LOGGER,"trying to erase the string: "+to_string(temp->prev->offset)+" "+to_string(temp->prev->val));
+					LOGDEBUG(FILE_LOGGER,"trying to erase the string: "+to_string(abs_val)+ " "+to_string(cumulative_count)+" "+to_string(temp->offset)+" "+to_string(temp->val));
+					LOGDEBUG(FILE_LOGGER,"trying to erase the string: "+to_string(deletion_start_offset)+ " "+to_string(len));
 					temp->str.erase(deletion_start_offset, len);
 					temp->offset-=deletion_len;
 					remaining_deletion -= deletion_len;
 
+					if(remaining_deletion<=0){
+						break;
+					}
 					//find out where to create the new node
 					//node *trav = temp;
 					initial_pos = temp->val+1;
@@ -355,7 +380,8 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 						if((abs_val + len) > (temp->next->val + temp->next->offset+ cumulative_count)) //the deletion spans over the next node
 						{
 							remaining_deletion-=temp->next->offset;
-							//delete that node
+
+							//deletions.push_back(temp->next->val);
 							temp->next = temp->next->next;
 							temp->next->prev=temp;
 						}
@@ -411,6 +437,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 							} else { //create a new node.
 								LOGDEBUG(FILE_LOGGER,"create a new node");
 								insert_and_update(new_node_val,0,collect_ins);
+								insertions.push_back(new_node_val);
 								final_offset=0;
 							}
 							final_genome_pos=new_node_val;
@@ -421,8 +448,10 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 
 					if(remaining_deletion>0){
 					//create and insert a new node
+					LOGDEBUG(FILE_LOGGER,"There is still some remaining deletion");
 					new_node = new node(initial_pos,
 							remaining_deletion * -1);
+
 					new_node->next = temp->next;
 					new_node->prev = temp;
 					temp->next = new_node;
@@ -467,6 +496,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 							trav->offset+=deletion_len_within_ins;
 							prev=trav->next->val;
 							prev_offset=trav->next->offset;
+							deletions.push_back(trav->next->val);
 							trav->next = trav->next->next;
 							trav->next->prev = trav;
 						}
@@ -504,7 +534,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 					//the node should be initial position just before the deletion node, unless that position has a deletion
 					//also, we must update the upper levels of the skip list since we may be transferring the insertion across a skip list boundary,whici may effect the upper levels
 					if (!collect_ins.empty()) {
-						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and trying to move a node which has been deleted incompleltely");
+						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position and trying to move a node which has been deleted incompletely");
 						node *trav = new_node;
 
 						long new_node_val = initial_pos;
@@ -547,10 +577,12 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 						} else { //create a new node.
 							LOGDEBUG(FILE_LOGGER,"create a new node");
 							insert_and_update(new_node_val,0,collect_ins);
+							insertions.push_back(new_node_val);
 							final_offset=0;
 						}
 						final_genome_pos=new_node_val;
 						node_to_promote = new_node;
+
 						//if the initial position to be inserted already has an insertion
 						/*if (new_node_val == trav->prev->val) {
 							LOGDEBUG(FILE_LOGGER,"if the initial position to be inserted already has an insertion");
@@ -595,6 +627,12 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 						//traverse the skip list to update the upper levels if the insertion moves across a boundary
 
 					}
+					if(new_node){
+						for(long i=0;i<((new_node->offset)*-(1));i++){
+							deletions.push_back(i+new_node->val);
+
+						}
+					}
 					break;
 				}
 
@@ -623,7 +661,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 	 */
 	//promote the node up.
 
-	m_kmers=mod_kmers(initial_genome_pos,initial_offset,final_genome_pos,final_offset,num_kmers_moved);
+	m_kmers=mod_kmers(initial_genome_pos,initial_offset,final_genome_pos,final_offset,num_kmers_moved,insertions,deletions);
 	node *new_node = node_to_promote;
 	node *node_to_copy = new_node;
 	if (node_to_copy) {
@@ -631,6 +669,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 		val = node_to_copy->val;
 		offset = node_to_copy->offset;
 		while (coinToss()) {
+			LOGDEBUG(FILE_LOGGER,"promoting the node up");
 			node *temp = node_to_copy;
 			//find the closest upper level node.
 			long offset_sum = 0; //keeps track of offset in that level

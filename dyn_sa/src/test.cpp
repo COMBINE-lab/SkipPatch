@@ -168,7 +168,7 @@ void benchmark_edits(std::string genome_file, std::string edits_file,
 
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
-
+    num_edits=edit.size();
 	gettimeofday(&start, &tzp);
 
 	for (auto it : edit) {
@@ -515,7 +515,7 @@ int main(int argc, const char *argv[]) {
 		opt.get("--editsFile")->getString(editsFile);
 	}
 
-	long numEdits;
+	long numEdits=0;
 	if (opt.isSet("--numEdits")) {
 		opt.get("--numEdits")->getLong(numEdits);
 	}

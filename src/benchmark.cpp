@@ -80,7 +80,7 @@ void parse_edit_file(std::vector<std::tuple<std::string, std::string, std::strin
 void benchmark_edits(genome &g, std::string edits_file, const long number_of_edits) {
 
 	LOGINFO(FILE_LOGGER, "Start: Benchmarking Edits");
-
+	//string reference = g.get_reference();
 	benchmark_construction(g);
 
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
@@ -108,6 +108,7 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 			if (get<0>(it) == "I") {
 				g.insert_at(get<2>(it),stol(get<1>(it),nullptr,10));
+				//reference.insert(stol(std::get<1>(it))+1, std::get<2>(it));
 				ins_count++;
 			}
 
@@ -117,18 +118,23 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 					invalid_deletes.push_back(edit_index);
 					total_edits++;
 				}
+				//reference.erase(stol(std::get<1>(it)), stol(std::get<2>(it)) - stol(std::get<1>(it)) + 1);
 				del_count++;
 			}
 
 			if (get<0>(it) == "S") {
 				g.snp_at(stol(get<1>(it),nullptr,10), get<2>(it));
+				//reference.erase(stol(std::get<1>(it)), (std::get<2>(it)).length());
+				//reference.insert(stol(std::get<1>(it)), std::get<2>(it));
 				snp_count++;
 			}
-
+			//cout<<"Length sp: "<<g.read_reference_at(0,0,LONG_MAX).length();
+			//cout<<"Length naive: "<<reference.length();
+			//assert(reference==g.read_reference_at(0,0,LONG_MAX));
 			total_edits--;
 
 		} else {
-			std::cout << "Total edits: " << number_of_edits << std::endl;
+			//std::cout << "Total edits: " << number_of_edits << std::endl;
 			break;
 		}
 		edit_index++;

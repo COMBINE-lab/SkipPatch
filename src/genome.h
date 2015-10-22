@@ -10,7 +10,7 @@
 
 #include "./skip_list/skip_list.h"
 
-#define K 3 //user defined parameter
+#define K 20 //user defined parameter
 
 class genome {
 
@@ -29,7 +29,7 @@ public:
 
     //Get the reference sequence from input
     void get_input(std::string);
-
+    void check_node_correctness(long,long);
     //Getters and setters
     void set_reference(std::string);
     std::string get_reference();

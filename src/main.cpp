@@ -98,7 +98,7 @@ int main(int argc, const char* argv[]) {
 	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
 	LOGINFO(FILE_LOGGER, "Happy Cows!");
 	auto console_logger = spdlog::stdout_logger_mt("console");
-	spd::set_level(spd::level::debug); //level of logging
+	spd::set_level(spd::level::info); //level of logging
 	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
 
 	console_logger->info() << "Log path: " << logPath;
@@ -189,7 +189,7 @@ int main(int argc, const char* argv[]) {
 		outputPath += "SPGenome.fa";
 		ofstream myfile;
 		myfile.open(outputPath);
-		myfile << g.read_reference_at(0, 0, g.get_length());
+		myfile << g.read_reference_at(0, 0, LONG_MAX);
 		myfile.close();
 	}
 

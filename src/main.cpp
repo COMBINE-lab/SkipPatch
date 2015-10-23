@@ -98,7 +98,7 @@ int main(int argc, const char* argv[]) {
 	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
 	LOGINFO(FILE_LOGGER, "Happy Cows!");
 	auto console_logger = spdlog::stdout_logger_mt("console");
-	spd::set_level(spd::level::debug); //level of logging
+	spd::set_level(spd::level::info); //level of logging
 	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
 
 	console_logger->info() << "Log path: " << logPath;
@@ -166,17 +166,17 @@ int main(int argc, const char* argv[]) {
 	if (opt.isSet("--runTests")) {
 
 		LOGINFO(FILE_LOGGER, "Running tests..");
-		if (opt.isSet("--editsFile") && !opt.isSet("--substrFile")) {
-			LOGINFO(FILE_LOGGER, "Testing Naive Edits..");
-			if (fileExists(editsFile)) {
-				test_edits_naive(g, editsFile, numEdits);
-			}
-		}
 
 		if (opt.isSet("--substrFile") && opt.isSet("--editsFile")) {
 			LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
 			if (fileExists(substrFile) && fileExists(editsFile)) {
 				test_substr_naive(g, substrFile, editsFile, numEdits);
+			}
+		}
+		if (opt.isSet("--editsFile") && !(opt.isSet("--substrFile"))) {
+			LOGINFO(FILE_LOGGER, "Testing Naive Edits..");
+			if (fileExists(editsFile)) {
+				test_edits_naive(g, editsFile, numEdits);
 			}
 		}
 
@@ -188,8 +188,6 @@ int main(int argc, const char* argv[]) {
 						"There was a problem with one or more of the parameters provided for benchmarking search.");
 			}
 		}
-
-		//TODO: test substring
 
 		LOGINFO(FILE_LOGGER, "Completed all tests successfully!");
 		LOGINFO(FILE_LOGGER, "Quitting... Bye!");

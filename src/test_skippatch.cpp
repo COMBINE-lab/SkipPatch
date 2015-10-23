@@ -41,6 +41,8 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 
 	for (int j = 0; j < iterations; j++) {
 
+		LOGINFO(FILE_LOGGER,"BEGIN: Iteration " + std::to_string(j));
+
 		long c = j * queryFrequency;
 
 		for (int i = 0; i < queryFrequency; i++) {
@@ -54,43 +56,49 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 				std::string ins = std::get<2>(edit[i + c]);
 				long pos = stol(std::get<1>(edit[i + c]));
 				LOGDEBUG(FILE_LOGGER,"Inserting " + ins + " at " + std::to_string(pos));
-				reference.insert(pos+1, ins);
 				g.insert_at(ins, pos);
+				reference.insert(pos+1, ins);
 
 			} else if (std::get<0>(edit[i + c]) == "D") {
 
 				long pos = stol(std::get<1>(edit[i + c]));
 				long len = stol(std::get<2>(edit[i + c])) - stol(std::get<1>(edit[i + c])) + 1;
 				LOGDEBUG(FILE_LOGGER, "Deleting " + std::to_string(len) + " characters from position " + std::to_string(pos));
-				reference.erase(pos, len);
-				g.delete_at(pos, len);
+				if (g.delete_at(pos, len)) {
+					reference.erase(pos, len);
+				} else {
+					LOGALERT(FILE_LOGGER, "Invalid delete.");
+					continue;
+				}
 
 			} else if (std::get<0>(edit[i + c]) == "S") {
 
 				std::string snp = std::get<1>(edit[i + c]);
 				long pos = stol(std::get<2>(edit[i + c]));
 				LOGDEBUG(FILE_LOGGER,"Substituting " + snp + " at " + std::to_string(pos) );
-				reference.replace(pos, snp.length(), snp);
 				g.snp_at(pos, snp);
-
+				reference.replace(pos, snp.length(), snp);
 			}
 
-			LOGDEBUG(FILE_LOGGER, "After: "+ reference);
+			if (reference.length() <= 200) {
+				LOGDEBUG(FILE_LOGGER, "After: " + reference);
+			}
 
-			if (!(reference == g.read_reference_at(0, 0, reference.length()))) {
+			if (!(reference == g.read_reference_at(0, 0, LONG_MAX))) {
 				LOGALERT(FILE_LOGGER, "Testing Error...");
 				LOGALERT(FILE_LOGGER, "For: " + std::get<0>(edit[i + c])  + " " + std::get<1>(edit[i + c])+ " " + std::get<2>(edit[i + c]) );
+
 				if(reference.length()<=200){
-					LOGDEBUG(FILE_LOGGER, "Actual:   "+ g.read_reference_at(0, 0, reference.length()));
+					LOGDEBUG(FILE_LOGGER, "Actual:   "+ g.read_reference_at(0, 0, LONG_MAX));
 					LOGDEBUG(FILE_LOGGER, "Expected: "+ reference);
 				}
 				LOGALERT(FILE_LOGGER, "Quitting.");
 				exit(-1);
 			}
 
-			test_hash(g, reference);
-
 		}
+
+		test_hash(g, reference);
 
 		struct timeval start, end;
 		struct timezone tzp;
@@ -109,6 +117,7 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 			//Naive search for testing
 			std::vector<long> positions_naive;
 			long pos = reference.find(read,0);
+
 			while (pos != std::string::npos) {
 				positions_naive.push_back(pos);
 				pos = reference.find(read, pos + 1);
@@ -146,6 +155,7 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 		gettimeofday(&end, &tzp);
 		std::string message = "Search Iteration " + std::to_string(j);
 		print_time_elapsed(message, &start, &end);
+		LOGINFO(FILE_LOGGER,"COMPLETE: Iteration " + std::to_string(j));
 		LOGINFO(FILE_LOGGER,"----------------------------------------------------------------------");
 
 	}
@@ -205,10 +215,19 @@ void test_edits_naive(genome &g, std::string edits_file, const long number_of_ed
 				g.insert_at(std::get<2>(it),stol(std::get<1>(it)));
 				ins_count++;
 			} else if (std::get<0>(it) == "D") {
-				LOGDEBUG(FILE_LOGGER,"Deleting " + std::to_string(stol(std::get<2>(it)) - stol(std::get<1>(it)) + 1) + " characters from position " + std::get<1>(it));
-				reference.erase(stol(std::get<1>(it)), stol(std::get<2>(it))-stol(std::get<1>(it))+1);
-				g.delete_at(stol(std::get<1>(it)), stol(std::get<2>(it)) - stol(std::get<1>(it)) + 1);
+
+				long pos = stol(std::get<1>(it));
+				long len = stol(std::get<2>(it)) - stol(std::get<1>(it)) + 1;
+				LOGDEBUG(FILE_LOGGER, "Deleting " + std::to_string(len) + " characters from position " + std::to_string(pos));
+
+				if (g.delete_at(pos, len)) {
+					reference.erase(pos, len);
+				} else {
+					LOGALERT(FILE_LOGGER, "Invalid delete.");
+					continue;
+				}
 				del_count++;
+
 			} else if (std::get<0>(it) == "S") {
 				LOGDEBUG(FILE_LOGGER,"Substituting " + std::get<1>(it) + " at " + std::get<2>(it));
 				reference.replace(stol(std::get<1>(it)), std::get<2>(it).length(), std::get<2>(it));
@@ -218,7 +237,7 @@ void test_edits_naive(genome &g, std::string edits_file, const long number_of_ed
 
 			total_edits--;
 
-			if (reference != g.read_reference_at(0, 0, reference.length())) {
+			if (reference != g.read_reference_at(0, 0, LONG_MAX)) {
 				LOGALERT(FILE_LOGGER, "Testing Error...");
 				LOGALERT(FILE_LOGGER, "For: " + std::get<0>(it)  + " " + std::get<1>(it)+ " " + std::get<2>(it) );
 				LOGALERT(FILE_LOGGER, "Quitting.");
@@ -357,6 +376,7 @@ void test_hash(genome &g, std::string updated_reference) {
 
 	//Check if every k-mer in the hash actually exists in the updated genome
 	//Ensure that no kmer which should have been deleted from a position was actually deleted
+
 	LOGINFO(FILE_LOGGER,"Checking if every kmer in tha hash is present at valid positions and no nonexistent kmers are present in the hash");
 	for (auto entry : hash) {
 
@@ -390,12 +410,12 @@ void test_hash(genome &g, std::string updated_reference) {
 			for(auto p: p_found){
 				LOGALERT(FILE_LOGGER, key + " Found: " + std::to_string(p));
 			}
-
 			LOGALERT(FILE_LOGGER, "Quitting.. Bye!");
 			exit(-1);
 		}
 	}
-	LOGINFO(FILE_LOGGER,"SUCCESS. Every kmer in tha hash is present at valid positions and no nonexistent kmers are present in the hash");
+	LOGINFO(FILE_LOGGER,"SUCCESS. Every kmer in the hash is present at valid positions and no nonexistent kmers are present in the hash");
+
 
 	LOGINFO(FILE_LOGGER, "COMPLETE: Testing Hash");
 

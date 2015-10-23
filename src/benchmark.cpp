@@ -106,36 +106,48 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 			if (get<0>(it) == "I") {
 				g.insert_at(get<2>(it),stol(get<1>(it),nullptr,10));
-				//reference.insert(stol(std::get<1>(it))+1, std::get<2>(it));
 				ins_count++;
 			}
 
-			if (get<0>(it) == "D") {
+			else if (get<0>(it) == "D") {
 				//TODO: Fix corner cases and remove
 				if (!g.delete_at(stol(get<1>(it),nullptr,10), stol(get<2>(it),nullptr,10) - stol(get<1>(it),nullptr,10) + 1)) {
 					invalid_deletes.push_back(edit_index);
 					total_edits++;
 				}
-				//reference.erase(stol(std::get<1>(it)), stol(std::get<2>(it)) - stol(std::get<1>(it)) + 1);
 				del_count++;
 			}
 
-			if (get<0>(it) == "S") {
+			else if (get<0>(it) == "S") {
 				g.snp_at(stol(get<1>(it),nullptr,10), get<2>(it));
-				//reference.erase(stol(std::get<1>(it)), (std::get<2>(it)).length());
-				//reference.insert(stol(std::get<1>(it)), std::get<2>(it));
 				snp_count++;
 			}
-			//cout<<"Length sp: "<<g.read_reference_at(0,0,LONG_MAX).length();
-			//cout<<"Length naive: "<<reference.length();
-			//assert(reference==g.read_reference_at(0,0,LONG_MAX));
 			total_edits--;
-
-		} else {
-			//std::cout << "Total edits: " << number_of_edits << std::endl;
-			break;
 		}
 		edit_index++;
+
+		if (edit_index == total_edits / 500) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("0.01% Updates: ", &start, &end);
+		}
+		if (edit_index == total_edits / 50) {
+			gettimeofday(&end, &tzp);
+
+			print_time_elapsed("0.1% Updates: ", &start, &end);
+		}
+		if (edit_index == total_edits / 10) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("0.5% Updates: ", &start, &end);
+		}
+		if (edit_index == total_edits / 5) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("1% Updates: ", &start, &end);
+		}
+		if (edit_index > total_edits) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("5% Updates: ", &start, &end);
+			break;
+		}
 	}
 
 	gettimeofday(&end, &tzp);

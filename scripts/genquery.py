@@ -13,7 +13,7 @@ def random_deletion(numbases, medindel):
     # pick a random edit length
     delsize = max([int(round(random.gauss(medindel,medindel/2))),1])
     # pick a random location
-    delpos = random.randrange(20, numbases - 20 - delsize)
+    delpos = random.randrange(K*2, numbases - K*2 - delsize)
     return delpos, delsize
 
 def random_sequence(size):
@@ -21,12 +21,12 @@ def random_sequence(size):
 
 def random_insertion(numbases, medindel):
     inssize = max([int(round(random.gauss(medindel,medindel/2))),1])
-    inspos = random.randrange(20, numbases - 20)
+    inspos = random.randrange(K*2, numbases - K*2)
     seq = random_sequence(inssize)
     return inspos, inssize, seq
 
 def random_snp(numbases):
-    snppos = random.randrange(20, numbases - 20)
+    snppos = random.randrange(K*2, numbases - K*2)
     return snppos, random_sequence(1)
 
 def add_kmers_in_seq(S, seq):
@@ -96,7 +96,7 @@ def genquery(genomeFile, jellyFile, totedits, medindel, insprob, delprob, queryf
                     kmer = random.sample(effectedkmers, 1)[0]
                     editflag = 'I'
                 else:
-                    p = random.randrange(20, numbases - 20)
+                    p = random.randrange(K*2, numbases - K*2)
                     kmer = genome[p:p+K].upper()
                     editflag = 'N'
                 
@@ -107,6 +107,7 @@ def genquery(genomeFile, jellyFile, totedits, medindel, insprob, delprob, queryf
 
 def main():
     global EDIT_QUERY_PROB
+    global K
     parser = argparse.ArgumentParser(description="Generate random edits following a gaussian distribution.")
     parser.add_argument('--genome', type=argparse.FileType('r'), help='path to the genome')
     parser.add_argument('--jellyfile', type=str, help='path to the Jellyfish output file')
@@ -118,10 +119,12 @@ def main():
     parser.add_argument('--querycount', type=int, help='number of queries per query section')
     parser.add_argument('--output', type=argparse.FileType('w'), help='file where edits should be written')
     parser.add_argument('--editqueries', type=float, default=EDIT_QUERY_PROB, help='fraction of queries that hit an edit')
+    parser.add_argument('--kmer_size','-k', type=int, default=20, help='kmer size')
     args = parser.parse_args()
 
     EDIT_QUERY_PROB=args.editqueries
-
+    K=args.kmer_size
+    
     genquery(args.genome, args.jellyfile, args.totedits, args.meanindel, args.insprob, args.delprob, args.queryfreq, args.querycount, args.output)
 
 if __name__ == '__main__':

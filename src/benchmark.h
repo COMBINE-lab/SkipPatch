@@ -23,6 +23,6 @@ void parse_query_file(const std::string,
 
 void benchmark_search(genome&, const std::string, long, long, long);
 
-void benchmark_substring(genome&, std::string);
+void benchmark_substring(genome&, std::string, std::string, long);
 
 #endif

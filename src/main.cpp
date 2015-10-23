@@ -3,7 +3,7 @@
 #include "genome.h"
 #include "utils.h"
 #include "test.h"
-#include "test_prob.h"
+#include "test_skippatch.h"
 #include "benchmark.h"
 #include "ezOptionParser.hpp"
 #include "spdlog/spdlog.h"
@@ -81,7 +81,7 @@ int main(int argc, const char* argv[]) {
 	opt.add("", 0, 1, 0, "File path for writing the updated genome", "-o", "--output");
 	opt.add("", 0, 1, 0, "File path for writing the output queries or substrings", "-r", "--resultsPath");
 
-	opt.add("", 0, 1, 0, "Run unit tests", "-t", "--runUnitTests");
+	opt.add("", 0, 1, 0, "Run all the tests", "-t", "--runTests");
 	opt.add("", 0, 1, 0, "Path to save the hash", "-sh", "--saveHashPath");
 	opt.add("", 0, 1, 0, "Path from where to load the hash", "-lh", "--loadHashPath");
 
@@ -108,6 +108,14 @@ int main(int argc, const char* argv[]) {
 		opt.getUsage(usage, 80, ezOptionParser::ALIGN);
 		std::cerr << usage;
 		return 1;
+	}
+
+	if (S > K) {
+		console_logger->critical() << "The value of S(" << S << ")(sampling factor) cannot be greater than K(" << K << "). This will result in loss of data.";
+		LOGCRITICAL(FILE_LOGGER, "The value of S(" + std::to_string(S) + ")(sampling factor) cannot be greater than K(" + std::to_string(K) + "). This will result in loss of data.");
+		console_logger->info() << "Quitting... Bye!";
+		LOGINFO(FILE_LOGGER, "Quitting... Bye!");
+		exit(-1);
 	}
 
 	std::string genomeFile;
@@ -144,36 +152,74 @@ int main(int argc, const char* argv[]) {
 	if (opt.isSet("--resultsPath")) { opt.get("--resultsPath")->getString(resultsPath); }
 	else { resultsPath = logPath;}
 
-	if (opt.isSet("--runUnitTests")) {
-		LOGINFO(FILE_LOGGER, "running tests");
-		test();
-		return 0;
-	}
 
 	genome g;
 	g.get_input(genomeFile);
 
 
-	if (opt.isSet("--editsFile")) {
+	if (K > 32) {
+		console_logger->alert() << "K cannot be more than 32 because reads are stored as uint64_t in the hash.";
+		LOGALERT(FILE_LOGGER, "K cannot be more than 32 because reads are stored as uint64_t in the hash.");
+		exit(-1);
+	}
+
+	if (opt.isSet("--runTests")) {
+
+		LOGINFO(FILE_LOGGER, "Running tests..");
+
+		if (opt.isSet("--substrFile") && opt.isSet("--editsFile")) {
+			LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
+			if (fileExists(substrFile) && fileExists(editsFile)) {
+				test_substr_naive(g, substrFile, editsFile, numEdits);
+			}
+		}
+		if (opt.isSet("--editsFile") && !(opt.isSet("--substrFile"))) {
+			LOGINFO(FILE_LOGGER, "Testing Naive Edits..");
+			if (fileExists(editsFile)) {
+				test_edits_naive(g, editsFile, numEdits);
+			}
+		}
+
+		if (opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations")) {
+			if (queryFrequency > 0 && queryCount > 0 && iterations > 0) {
+				test_search_naive(g, editsQueriesFile, queryFrequency, queryCount, iterations);
+			} else {
+				LOGINFO(FILE_LOGGER,
+						"There was a problem with one or more of the parameters provided for benchmarking search.");
+			}
+		}
+
+		LOGINFO(FILE_LOGGER, "Completed all tests successfully!");
+		LOGINFO(FILE_LOGGER, "Quitting... Bye!");
+		exit(0);
+	}
+
+	if (opt.isSet("--editsFile") && !opt.isSet("--substrFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
 		if (fileExists(editsFile)) {
+			benchmark_construction(g);
 			benchmark_edits(g, editsFile, numEdits);
 		}
 	}
 
-	if (opt.isSet("--substrFile")) {
+	if (opt.isSet("--substrFile") && opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
-		if (fileExists(substrFile)) {
-			benchmark_substring(g, substrFile);
+		if (fileExists(substrFile) && fileExists(editsFile)) {
+			benchmark_construction(g);
+			benchmark_substring(g, substrFile, editsFile, numEdits);
 		}
 	}
 
 	if(opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations") ) {
-		if(queryFrequency>0 && queryCount>0 && iterations>0 ){
+		if(queryFrequency>0 && queryCount>0 && iterations>0 ) {
 			LOGINFO(FILE_LOGGER, "Benchmarking search");
 			if (fileExists(editsQueriesFile)) {
+				benchmark_construction(g);
+				if (S > K) {
+					//console_logger->alert() << "The search algorithm has not yet been modified to handle sampling. The results will be incorrect.";
+					//LOGALERT(FILE_LOGGER, "The search algorithm has not yet been modified to handle sampling. The results will be incorrect.");
+				}
 				benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
-				//test_search_naive(gt, editsQueriesFile, queryFrequency, queryCount, iterations);
 			}
 		} else {
 			LOGINFO(FILE_LOGGER,

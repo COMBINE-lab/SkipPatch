@@ -80,8 +80,6 @@ void parse_edit_file(std::vector<std::tuple<std::string, std::string, std::strin
 void benchmark_edits(genome &g, std::string edits_file, const long number_of_edits) {
 
 	LOGINFO(FILE_LOGGER, "Start: Benchmarking Edits");
-	//string reference = g.get_reference();
-	benchmark_construction(g);
 
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
@@ -150,7 +148,9 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 	//TODO: Remove after deletion corner case is fixed
 	//Store every invalid delete in a file
-	std::ofstream invalid_deletes_file("/home/komal/data/invalid_deletes");
+	LOGINFO(FILE_LOGGER, "Number of invalid deletes= "+ to_string(invalid_deletes.size()));;
+	std::ofstream invalid_deletes_file("/mnt/scratch2/nirm/invalid_deletes");
+	//LOGINFO(FILE_LOGGER, "Number of invalid deletes= "+ to_string(invalid_deletes.size()));;
 	for (auto invalid_delete : invalid_deletes)
 		invalid_deletes_file << invalid_delete << "\n";
 	invalid_deletes_file.close();
@@ -243,8 +243,6 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
 
 	LOGINFO(FILE_LOGGER, "Start: Benchmarking Search");
 
-	benchmark_construction(g);
-
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	std::vector<std::tuple<std::string, std::string, std::string, long>> query;
 
@@ -305,11 +303,12 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
  * 3887129,39
  *
  */
-void benchmark_substring(genome &g, std::string substr_file_path) {
+void benchmark_substring(genome &g, std::string substr_file_path, std::string edits_file_path, long num_edits) {
+
+	LOGINFO(FILE_LOGGER, "Editing the genome before extracting substrings");
+	benchmark_edits(g, edits_file_path, num_edits);
 
 	LOGINFO(FILE_LOGGER, "Starting: Benchmarking Substring Extraction");
-
-	benchmark_construction(g);
 
 	std::vector<std::pair<long, long>> substrings;
 	std::ifstream substr_file(substr_file_path);

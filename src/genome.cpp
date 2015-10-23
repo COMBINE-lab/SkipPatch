@@ -669,6 +669,7 @@ bool genome::is_kmer_hashed(std::string kmer, long position) {
  */
 
 //temporary sanity function
+/*
 void genome::check_node_correctness(long pos,long delete_pos_abs){
 
 	node *n=s.find(pos);
@@ -685,7 +686,7 @@ void genome::check_node_correctness(long pos,long delete_pos_abs){
 	else{
 		LOGWARN(FILE_LOGGER,"Node not found in skip list: genome_pos = "+to_string(pos)+ " abs position= "+to_string(delete_pos_abs));
 	}
-}
+}*/
 
 bool genome::delete_at(const unsigned long delete_pos_abs,
 		const unsigned long del_len) {
@@ -750,7 +751,7 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 
 	for(auto val:m_kmers.insertions){
 
-		check_node_correctness(val,delete_pos_abs);
+		//check_node_correctness(val,delete_pos_abs);
 		LOGDEBUG(FILE_LOGGER, "Insertions "+to_string(val));
 		ins[val]=1;
 		del[val]=0;

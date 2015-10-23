@@ -639,6 +639,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 						//traverse the skip list to update the upper levels if the insertion moves across a boundary
 
 					}
+					node_to_promote = new_node;
 					if(new_node){
 						for(long i=0;i<((new_node->offset)*-(1));i++){
 							deletions.push_back(i+new_node->val);
@@ -674,6 +675,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 	//promote the node up.
 
 	m_kmers=mod_kmers(initial_genome_pos,initial_offset,final_genome_pos,final_offset,num_kmers_moved,insertions,deletions);
+	node_to_promote=NULL;
 	node *new_node = node_to_promote;
 	node *node_to_copy = new_node;
 	if (node_to_copy) {

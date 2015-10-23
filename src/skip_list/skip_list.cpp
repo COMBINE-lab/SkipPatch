@@ -329,8 +329,16 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 				string collect_ins = "";
 				long initial_pos = 0;
 				long remaining_deletion = len;
+				long offset_copy = LONG_MIN;
+				if(abs_val==4292896){
+					cout<<"Hre";
+				}
+
 				if (abs_val <= (cumulative_count + temp->offset + temp->val)) { //the deletion starts from within an insertion
 					//TODO: what to do when all the bases in of the inserted segment get deleted?
+					if(abs_val==4292896){
+						cout<<"Here!";
+					}
 					LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion");
 					long deletion_start_offset = abs_val - temp->val- cumulative_count - 1;
 					long deletion_len  = len;
@@ -341,6 +349,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 					LOGDEBUG(FILE_LOGGER,"trying to erase the string: "+to_string(abs_val)+ " "+to_string(cumulative_count)+" "+to_string(temp->offset)+" "+to_string(temp->val));
 					LOGDEBUG(FILE_LOGGER,"trying to erase the string: "+to_string(deletion_start_offset)+ " "+to_string(len));
 					temp->str.erase(deletion_start_offset, len);
+					offset_copy=temp->offset;
 					temp->offset-=deletion_len;
 					remaining_deletion -= deletion_len;
 
@@ -373,25 +382,28 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 					LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position");
 					initial_pos = abs_val - (cumulative_count + temp->offset);
 				}
-					cumulative_count = cumulative_count + temp->offset;
+
+					cumulative_count = cumulative_count + max(temp->offset,offset_copy); //max - if the deletion begins from within insertion, the offset gets subtracted by len of deletion within offset
 					node *new_node=NULL;
 					if((temp->next->val == initial_pos) && temp->next->offset>0){
 						LOGDEBUG(FILE_LOGGER,"the deletion starts from a genome position which has an insertion");
 						if((abs_val + len) > (temp->next->val + temp->next->offset+ cumulative_count)) //the deletion spans over the next node
 						{
+							LOGDEBUG(FILE_LOGGER,"the deletion spans over the next node");
 							remaining_deletion-=temp->next->offset;
-
 							//deletions.push_back(temp->next->val);
 							temp->next = temp->next->next;
 							temp->next->prev=temp;
 						}
 						else{
+							LOGDEBUG(FILE_LOGGER,"the deletion DOES NOT spans over the next node");
 							 new_node = new node(initial_pos,
 														-1);
-							remaining_deletion=0;
-							collect_ins+=temp->next->str.substr(len-1,LONG_MAX);
+
+							collect_ins+=temp->next->str.substr(remaining_deletion-1,LONG_MAX);
 							initial_genome_pos = temp->next->val;
-							initial_offset=len-1;
+							initial_offset=remaining_deletion-1;
+							remaining_deletion=0;
 							num_kmers_moved=(temp->next->offset - initial_offset);
 							//delete temp->next and put new node instead
 

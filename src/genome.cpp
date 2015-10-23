@@ -184,9 +184,7 @@ long genome::get_virtual_position_from_genome_position(long genome_position,
 void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 
 	LOGDEBUG(FILE_LOGGER,"snp_at: " + std::to_string(snp_pos_abs) + " " + snp);
-	if(snp_pos_abs==17334){
-		cout<<"Here";
-	}
+
 	const long snp_len = snp.length();
 
 	auto kmer_pos_pair = get_kmers(snp_pos_abs - K + 1, snp_len + K - 1);
@@ -545,7 +543,7 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 	K - 1, genome_position);
 	//genome_position -= del_len; //will not work for generic case
 
-	LOGDEBUG(FILE_LOGGER, std::to_string(delete_pos_abs)+ " - "+std::to_string(delete_pos_abs+del_len) );
+	LOGDEBUG(FILE_LOGGER, std::to_string(delete_pos_abs)+ " - "+std::to_string(delete_pos_abs+del_len-1) );
 
 	for (auto it : kmers_to_replace) {
 		remove_kmer_from_hash_at(it.second, it.first);

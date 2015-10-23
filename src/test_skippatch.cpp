@@ -377,6 +377,7 @@ void test_hash(genome &g, std::string updated_reference) {
 	//Check if every k-mer in the hash actually exists in the updated genome
 	//Ensure that no kmer which should have been deleted from a position was actually deleted
 
+	/*
 	LOGINFO(FILE_LOGGER,"Checking if every kmer in tha hash is present at valid positions and no nonexistent kmers are present in the hash");
 	for (auto entry : hash) {
 
@@ -415,7 +416,7 @@ void test_hash(genome &g, std::string updated_reference) {
 		}
 	}
 	LOGINFO(FILE_LOGGER,"SUCCESS. Every kmer in the hash is present at valid positions and no nonexistent kmers are present in the hash");
-
+	*/
 
 	LOGINFO(FILE_LOGGER, "COMPLETE: Testing Hash");
 

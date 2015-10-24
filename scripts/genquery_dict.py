@@ -31,7 +31,7 @@ def random_snp(numbases):
 
 def add_kmers_in_seq(S, seq):
     for i in xrange(len(seq)-K):
-	S[seq[i:i+K].upper()] = 1
+	S[seq[i:i+K].upper()] = seq[i:i+K].upper()
         #S.add(seq[i:i+K].upper())
 
 def genquery(genomeFile, jellyFile, totedits, medindel, insprob, delprob, queryfreq, querycount,  outputFile):

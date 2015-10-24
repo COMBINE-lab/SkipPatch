@@ -4,6 +4,7 @@ import numpy
 import sys
 import argparse
 import jellyfish
+from randomdict import RandomDict
 
 LETTERS = "ACGT"
 K = 20
@@ -67,7 +68,8 @@ def genquery(genomeFile, jellyFile, totedits, medindel, insprob, delprob, queryf
 
     random.shuffle(editTypes)
     qcount = 0
-    effectedkmers = dict()
+    #effectedkmers = dict()
+    effectedkmers =  RandomDict()
     for val in editTypes:
         qcount += 1
         if val == 'I':
@@ -94,7 +96,8 @@ def genquery(genomeFile, jellyFile, totedits, medindel, insprob, delprob, queryf
             for qlist in xrange(querycount):
                 dart = random.random()
                 if dart <= EDIT_QUERY_PROB:
-                    kmer = random.choice(effectedkmers.keys())
+                    kmer = effectedkmers.random_key()
+		    #kmer = random.choice(effectedkmers.keys())
 		    #kmer = random.sample(effectedkmers, 1)[0]
                     editflag = 'I'
                 else:

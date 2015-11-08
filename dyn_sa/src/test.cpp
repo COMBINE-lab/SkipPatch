@@ -25,7 +25,11 @@ extern "C" {
 #include <sys/resource.h>
 #include <sys/time.h>
 
+#include "common.h"
+
 #include "../../src/include/ezOptionParser.hpp"
+
+string resultsPath="";
 
 using namespace ez;
 
@@ -395,6 +399,11 @@ void benchmark_search(std::string genome_file,
 	parse_query_file(path_to_query_file, edit, query, queryfreq, querycount,
 			iterations);
 
+	//std::string resultsFile = resultsPath + ".query.out";
+	//std::ofstream query_out_file(resultsFile);
+	//cout << "Queries output file: "<< resultsFile;
+
+
 	auto it = edit.begin();
 	auto q = query.begin();
 
@@ -425,8 +434,12 @@ void benchmark_search(std::string genome_file,
 		for (int j = 0; j < querycount; j++) {
 			uchar *query = new uchar[(get<1>(*q)).length() + 1];
 			strcpy((char*) query, (get<1>(*q)).c_str());
-			//std::cout << i*querycount+j << "   Locating: " << query << endl;
-			wt->locate(query);
+			//query_out_file << get<1>(*q) << "\t";
+				size_t* pos = wt->locate(query);
+				//for (unsigned int i = 0; i < sizeof(pos) / sizeof(size_t); i++) {
+				//	query_out_file << pos[i] << " ";
+				//}
+			//query_out_file << std::endl;
 			q++;
 		}
 		gettimeofday(&end, &tzp);
@@ -675,6 +688,13 @@ int main(int argc, const char *argv[]) {
           format_path(outputUpdatedGenomeFile);
           outputUpdatedGenomeFile+="SAGenome.fa";
     }
+
+	resultsPath = "../SA/";
+	if (opt.isSet("--logPath")) {
+		opt.get("--logPath")->getString(resultsPath);
+		format_path(resultsPath);
+		resultsPath +="SA.log";
+	}
 
     // EDITS AND SUBSTRING TESTS CANNOT BE RUN AT THE SAME TIME!
 	if (opt.isSet("--editsFile") && (!(opt.isSet("--substrFile")))) {

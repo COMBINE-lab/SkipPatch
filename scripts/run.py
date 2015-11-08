@@ -115,7 +115,8 @@ log_path = ""
 if args.log_path is not None:
     log_path = make_output_dir(args.log_path,timestamp,formatted_comments)
     log_path_formatted = format_args(format_path(log_path),'l')
-
+else:
+    log_path_formatted=output_path_formatted
 if args.SPBinary is not None:
     run_SP = args.SPBinary+output_path_formatted+log_path_formatted+ ' '+args.runCommand
 

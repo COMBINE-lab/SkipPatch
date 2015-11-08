@@ -87,28 +87,36 @@ int main(int argc, const char* argv[]) {
 
 	opt.parse(argc, argv);
 
-	//If the log file path is specified as an input parameter, use it, or use the default location.
-	std::string logPath = "../logs/SP.log";
-	if (opt.isSet("--logPath")) {
-		opt.get("--logPath")->getString(logPath);
-		format_path(logPath);
-		logPath+="SP.log";
-	}
-
-	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
-	LOGINFO(FILE_LOGGER, "Happy Cows!");
-	auto console_logger = spdlog::stdout_logger_mt("console");
-	spd::set_level(spd::level::debug); //level of logging
-	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
-
-	console_logger->info() << "Log path: " << logPath;
-
 	if (opt.isSet("-h")) {
 		std::string usage;
 		opt.getUsage(usage, 80, ezOptionParser::ALIGN);
 		std::cerr << usage;
 		return 1;
 	}
+	std::string logPath ="";
+	if (opt.isSet("--logPath")) {
+		opt.get("--logPath")->getString(logPath);
+    }
+    else{
+        if(opt.isSet("--output")){
+	        cout<< "Using the output path for writing the logs"<<endl;
+		    opt.get("--output")->getString(logPath);
+        }
+        else{
+            cout<< "Please specify log path or an output path (if you specify output path , the genome will also be wriiten to disk)"<<endl;
+            return -1;
+        }
+    }
+		format_path(logPath);
+		logPath+="SP.log";
+
+    
+	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
+	LOGINFO(FILE_LOGGER, "Happy Cows!");
+	auto console_logger = spdlog::stdout_logger_mt("console");
+	spd::set_level(spd::level::info); //level of logging
+	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
+	console_logger->info() << "Log path: " << logPath;
 
 	if (S > K) {
 		console_logger->critical() << "The value of S(" << S << ")(sampling factor) cannot be greater than K(" << K << "). This will result in loss of data.";

@@ -83,7 +83,7 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
-	LOGINFO(FILE_LOGGER,"Total number of edits to be performed: " + std::to_string(edit.size()));
+
 	long ins_count = 0, del_count = 0, snp_count = 0;
 
 	struct timeval start, end;
@@ -95,6 +95,7 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 	if (number_of_edits > 0) {
 		total_edits = number_of_edits;
 	}
+	LOGINFO(FILE_LOGGER,"Total number of edits to be performed: " + std::to_string(edit.size()));
 	std::vector<long> invalid_deletes;
 	long edit_index = 0;
 
@@ -108,13 +109,9 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 				g.insert_at(get<2>(it),stol(get<1>(it),nullptr,10));
 				ins_count++;
 			}
-
-			else if (get<0>(it) == "D") {
+ 			if (get<0>(it) == "D") {
 				//TODO: Fix corner cases and remove
-				if (!g.delete_at(stol(get<1>(it),nullptr,10), stol(get<2>(it),nullptr,10) - stol(get<1>(it),nullptr,10) + 1)) {
-					invalid_deletes.push_back(edit_index);
-					total_edits++;
-				}
+				g.delete_at(stol(get<1>(it),nullptr,10), stol(get<2>(it),nullptr,10) - stol(get<1>(it),nullptr,10) + 1);
 				del_count++;
 			}
 
@@ -122,33 +119,31 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 				g.snp_at(stol(get<1>(it),nullptr,10), get<2>(it));
 				snp_count++;
 			}
-			total_edits--;
 		}
 		edit_index++;
 
-		LOGDEBUG(FILE_LOGGER, "FOR 1% TOTAL UPDATES");
-		if (edit_index == total_edits / 100) {
+		if (edit_index == total_edits / 500) {
 			gettimeofday(&end, &tzp);
 			print_time_elapsed("0.01% Updates: ", &start, &end);
 		}
-		if (edit_index == total_edits / 10) {
+		if (edit_index == total_edits / 50) {
 			gettimeofday(&end, &tzp);
 
 			print_time_elapsed("0.1% Updates: ", &start, &end);
 		}
-		if (edit_index == total_edits / 2) {
+		if (edit_index == total_edits / 10) {
 			gettimeofday(&end, &tzp);
 			print_time_elapsed("0.5% Updates: ", &start, &end);
 		}
-		if (edit_index >= total_edits ) {
+		if (edit_index == total_edits / 5) {
 			gettimeofday(&end, &tzp);
 			print_time_elapsed("1% Updates: ", &start, &end);
 		}
-		//if (edit_index >= total_edits) {
-		//	gettimeofday(&end, &tzp);
-		//	print_time_elapsed("5% Updates: ", &start, &end);
-		//	break;
-		//}
+		if (edit_index >= total_edits) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("5% Updates: ", &start, &end);
+			break;
+		}
 	}
 
 	gettimeofday(&end, &tzp);
@@ -158,15 +153,6 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 	LOGINFO(FILE_LOGGER, "Total Insertions: " + std::to_string(ins_count));
 	LOGINFO(FILE_LOGGER, "Total Deletions: " + std::to_string(del_count));
 	LOGINFO(FILE_LOGGER, "Total SNPs: " + std::to_string(snp_count));
-
-	//TODO: Remove after deletion corner case is fixed
-	//Store every invalid delete in a file
-	LOGINFO(FILE_LOGGER, "Number of invalid deletes= "+ to_string(invalid_deletes.size()));;
-	std::ofstream invalid_deletes_file("/mnt/scratch2/nirm/invalid_deletes");
-	//LOGINFO(FILE_LOGGER, "Number of invalid deletes= "+ to_string(invalid_deletes.size()));;
-	for (auto invalid_delete : invalid_deletes)
-		invalid_deletes_file << invalid_delete << "\n";
-	invalid_deletes_file.close();
 
 	LOGINFO(FILE_LOGGER, "End: Benchmarking Edits");
 

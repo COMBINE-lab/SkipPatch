@@ -106,36 +106,49 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 			if (get<0>(it) == "I") {
 				g.insert_at(get<2>(it),stol(get<1>(it),nullptr,10));
-				//reference.insert(stol(std::get<1>(it))+1, std::get<2>(it));
 				ins_count++;
 			}
 
-			if (get<0>(it) == "D") {
+			else if (get<0>(it) == "D") {
 				//TODO: Fix corner cases and remove
 				if (!g.delete_at(stol(get<1>(it),nullptr,10), stol(get<2>(it),nullptr,10) - stol(get<1>(it),nullptr,10) + 1)) {
 					invalid_deletes.push_back(edit_index);
 					total_edits++;
 				}
-				//reference.erase(stol(std::get<1>(it)), stol(std::get<2>(it)) - stol(std::get<1>(it)) + 1);
 				del_count++;
 			}
 
-			if (get<0>(it) == "S") {
+			else if (get<0>(it) == "S") {
 				g.snp_at(stol(get<1>(it),nullptr,10), get<2>(it));
-				//reference.erase(stol(std::get<1>(it)), (std::get<2>(it)).length());
-				//reference.insert(stol(std::get<1>(it)), std::get<2>(it));
 				snp_count++;
 			}
-			//cout<<"Length sp: "<<g.read_reference_at(0,0,LONG_MAX).length();
-			//cout<<"Length naive: "<<reference.length();
-			//assert(reference==g.read_reference_at(0,0,LONG_MAX));
 			total_edits--;
-
-		} else {
-			//std::cout << "Total edits: " << number_of_edits << std::endl;
-			break;
 		}
 		edit_index++;
+
+		LOGDEBUG(FILE_LOGGER, "FOR 1% TOTAL UPDATES");
+		if (edit_index == total_edits / 100) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("0.01% Updates: ", &start, &end);
+		}
+		if (edit_index == total_edits / 10) {
+			gettimeofday(&end, &tzp);
+
+			print_time_elapsed("0.1% Updates: ", &start, &end);
+		}
+		if (edit_index == total_edits / 2) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("0.5% Updates: ", &start, &end);
+		}
+		if (edit_index >= total_edits ) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("1% Updates: ", &start, &end);
+		}
+		//if (edit_index >= total_edits) {
+		//	gettimeofday(&end, &tzp);
+		//	print_time_elapsed("5% Updates: ", &start, &end);
+		//	break;
+		//}
 	}
 
 	gettimeofday(&end, &tzp);
@@ -184,6 +197,8 @@ void parse_query_file(const std::string edits_queries_file_path,
 
 	std::ifstream edits_queries_file(edits_queries_file_path);
 
+	long line_number = 1;
+
 	if (edits_queries_file.is_open()) {
 
 		for (int j = 0; j < iterations; j++) {
@@ -200,10 +215,13 @@ void parse_query_file(const std::string edits_queries_file_path,
 					while (std::getline(edit_stream, e, ' ')) {
 						edit_details.push_back(e);
 					}
-					edits.push_back(
-							make_tuple(edit_details[0], edit_details[1], edit_details[2]));
+					edits.push_back(make_tuple(edit_details[0], edit_details[1], edit_details[2]));
 				}
+
+
+				line_number++;
 			}
+			LOGDEBUG(FILE_LOGGER, "E " + std::to_string(line_number));
 
 			for (int i = 0; i < queryCount; i++) {
 
@@ -215,12 +233,13 @@ void parse_query_file(const std::string edits_queries_file_path,
 					while (std::getline(query_stream, q, ' ')) {
 						query_details.push_back(q);
 					}
-					queries.push_back(
-							make_tuple(query_details[0], query_details[1],
-									query_details[2], stol(query_details[3], nullptr, 10)));
+					queries.push_back(make_tuple(query_details[0], query_details[1], query_details[2], stol(query_details[3], nullptr, 10)));
 				}
+				line_number++;
 			}
+			LOGDEBUG(FILE_LOGGER, "Q " + std::to_string(line_number));
 		}
+
 	}  else {
 		std::string error_message = "Failed to open file: " + edits_queries_file_path;
 		LOGALERT(FILE_LOGGER, error_message);
@@ -280,11 +299,14 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
 			}
 			query_out_file << std::endl;
 		}
+
 		gettimeofday(&end, &tzp);
 		std::string message = "Search Iteration " + std::to_string(j);
 		print_time_elapsed(message, &start, &end);
 
 	}
+
+
 
 	LOGINFO(FILE_LOGGER, "Complete: Benchmarking Search");
 }

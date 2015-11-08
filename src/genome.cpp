@@ -182,19 +182,23 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 	long genome_position;
 
 	//Edge cases: Use min, max to adjust these values for ends of genome
-	std::string snp_update = read_reference_abs_at(snp_pos_abs - K + 1,
-			2 * K - 2 + snp_len, genome_position);
+	std::string snp_update = read_reference_abs_at(snp_pos_abs - K + 1, 2 * K - 2 + snp_len, genome_position);
 	snp_update.replace(K - 1, snp_len, snp);
 
+	int sample = 0;
 	for (auto it : kmer_pos_pair) {
 		remove_kmer_from_hash_at(it.second, it.first);
 		string new_kmer = snp_update.substr(i, K);
 		if (it.first.length() == K) {
-			add_kmer_to_hash_at(it.second, new_kmer);
+		//	if (sample % S == 0) { //Sampling
+				add_kmer_to_hash_at(it.second, new_kmer);
+				LOGDEBUG(FILE_LOGGER,"Replaced " + it.first + " with " + new_kmer + " at " + std::to_string(it.second));
+		//	}
 		}
-		//LOGDEBUG(FILE_LOGGER,"Replaced " + it.first + " with " + new_kmer + " at " + std::to_string(it.second));
+		sample++;
 		i++;
 	}
+
 	//s.print_base_level();
 
 	//Update the genome itself
@@ -241,7 +245,9 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
  */
 std::vector<long> genome::search(std::string read) {
 
-	LOGDEBUG(FILE_LOGGER, "Read: " + read);
+	struct timeval start, a, b, c, d, e, end;
+	struct timezone tzp;
+	gettimeofday(&start, &tzp);
 
 	std::vector<std::string> subreads;
 	//STEP 1: Shred the read into overlapping subreads of length K
@@ -252,27 +258,28 @@ std::vector<long> genome::search(std::string read) {
 	//STEP 2: Find all the positions of all the kmers and merge them into a list
 	//Every position is stored along with the index of the subread it is derived from
 	std::vector<std::pair<long,int>> positions;
-
 	int read_index = 0;
 	for (std::string subread : subreads) {
+		//LOGDEBUG(FILE_LOGGER, "Subread: " + subread);
 		auto f = m.find(str_to_int(subread));
 		if (f != m.end()) {
 			for (long pos : f->second) {
 				positions.push_back(std::make_pair(pos,read_index));
+				//LOGDEBUG(FILE_LOGGER, "Pos: " + std::to_string(pos) + " " + std::to_string(read_index));
 			}
 		}
 		read_index++;
 	}
+
 	//Sort the list of positions. This is automatically sorted by first, the position, then index
 	std::sort(positions.begin(), positions.end());
-	LOGDEBUG(FILE_LOGGER, "Total number of positions found: " + std::to_string(positions.size()));
 
 	//STEP 3: Now run through the list of positions and find possible groups
 	//In a valid group, no two kmers would be more than S apart, and the group size would at least be (read.length()-K)/S
 	std::vector<std::vector<std::pair<long,int>>> groups;
 	std::vector<std::pair<long,int>> group;
 
-	for (auto curr = positions.begin(); curr != positions.end() && std::next(curr) != positions.end(); curr++) {
+	for (auto curr = positions.begin(); curr != positions.end(); curr++) {
 
 		auto next = std::next(curr);
 
@@ -280,25 +287,29 @@ std::vector<long> genome::search(std::string read) {
 			group.push_back(*curr); //If the group is empty, add the current position to it
 		}
 
-		if (next->second > curr->second) {
-			group.push_back(*next);
-		}
-
-		if (next->second < curr->second || std::next(next) == positions.end()) {
-			if (group.size() >= (read.length() - (S - 1 + K - 1)) / S) {
+		if (next->second < curr->second || next == positions.end()) {
+			if (group.size() >= (read.length() - K + 1) / S) {
 				std::string group_elements = "";
 				for (auto g : group) {
 					group_elements += std::to_string(g.first);
 					group_elements += " ";
 				}
-				LOGDEBUG(FILE_LOGGER, "Valid Group Found: " + group_elements);
+				LOGDEBUG(FILE_LOGGER, "Valid Group Found(size:" + std::to_string(group.size()) + "): " + group_elements);
 				groups.push_back(group); //If the group is valid, keep it
+			} else {
+				LOGDEBUG(FILE_LOGGER, "Invalid Group Found. ");
 			}
 			LOGDEBUG(FILE_LOGGER, "Clearing group.");
 			group.clear(); //The group was either a valid group, or not. Irrespective, clear it.
 		}
+
+		if (next->second > curr->second) {
+			group.push_back(*next);
+		}
+
 	}
 
+	gettimeofday(&d, &tzp);
 	//STEP 4: Translate the genome positions into current positions,
 	//read the subsequence to ensure that the positions found were valid
 	std::vector<long> mapped_positions;
@@ -334,17 +345,66 @@ std::vector<long> genome::search(std::string read) {
 			end = updated_rpos + K + read.length() - K - rpos.second;
 		}
 
-
 		long temp = 0;
-		//Finally, read off the length of the read starting from start to end and check if the read matches
-		std::string read_ext = read_reference_abs_at(start, end - start, temp);
-		LOGDEBUG(FILE_LOGGER, read_ext + " START " + std::to_string(start) + " END " + std::to_string(end));
-		long pos = read_ext.find(read);
-		while (pos != std::string::npos) {
-			LOGDEBUG(FILE_LOGGER, "FOUND: " + std::to_string(pos));
-			mapped_positions.push_back(start+pos);
-			pos = read_ext.find(read, pos + 1);
+		//So, it is straightforward if the end-start <2*read.length()
+		//This should be happenning in 99% of the cases
+		if (end - start <= 2 * read.length()) {
+			//Read off the length of the read starting from start to end and check if the read matches
+			std::string read_ext = read_reference_abs_at(start, end - start, temp);
+			long pos = read_ext.find(read);
+			while (pos != std::string::npos) {
+				LOGDEBUG(FILE_LOGGER, "FOUND: " + std::to_string(pos));
+				mapped_positions.push_back(start + pos);
+				pos = read_ext.find(read, pos + 1);
+			}
+		} else {
+			//If it isn't, then the group possibly contains some erroneous positions. Eliminate them.
+			//Translate all the positions to absolute positions
+			/*
+			LOGINFO(FILE_LOGGER, "\nCorner Case!");
+			LOGINFO(FILE_LOGGER, "START " + std::to_string(start) + " END " + std::to_string(end) + " --> " + std::to_string(end-start));
+			LOGINFO(FILE_LOGGER, "READ: " + read);
+			LOGINFO(FILE_LOGGER, "Positions: " + std::to_string(positions.size()));
+			LOGINFO(FILE_LOGGER, "Group Size: " + std::to_string(group.size()));
+			*/
+			std::vector<long> group_abs_positions;
+			for (auto pos : group) {
+				long offset = 0;
+				long abs_pos = 0;
+				long updated_pos = get_virtual_position_from_genome_position(pos.first, offset); //assuming an offset 0
+				if (ins[pos.first]) { //If the position is an insertion, find the actual offset
+					long ins_len = s.find(pos.first)->str.length();
+					std::string subread_ext = read_reference_at(pos.first, 0, subreads[pos.second].length()+ins_len);
+					offset = subread_ext.find(subreads[pos.second]);
+					abs_pos = get_virtual_position_from_genome_position(pos.first, offset);
+				} else {
+					abs_pos = updated_pos;
+				}
+				group_abs_positions.push_back(abs_pos);
+				//LOGINFO(FILE_LOGGER, "abs_pos  " + std::to_string(pos.first) + " " + std::to_string(abs_pos));
+				std::string read_ext = read_reference_abs_at(abs_pos, read.length(), temp);
+				if (read == read_ext) {
+					long fpos = abs_pos - pos.second;
+					if(std::find(mapped_positions.begin(), mapped_positions.end(), fpos)!=mapped_positions.end()){
+						mapped_positions.push_back(fpos);
+					}
+				}
+			}
 		}
+	}
+
+	gettimeofday(&end, &tzp);
+	float ex = get_time_elapsed(&d, &end);
+
+	gettimeofday(&end, &tzp);
+	float tx = get_time_elapsed(&start, &end);
+
+	if (tx > 0.01) {
+		LOGINFO(FILE_LOGGER, "READ: " + read);
+		LOGINFO(FILE_LOGGER, "Positions: " + std::to_string(positions.size()));
+		LOGINFO(FILE_LOGGER, "Groups: " + std::to_string(groups.size()));
+		LOGINFO(FILE_LOGGER, "E: " + std::to_string(ex));
+		print_time_elapsed("TOTAL: ", &start, &end);
 	}
 
 	return mapped_positions;
@@ -669,6 +729,7 @@ bool genome::is_kmer_hashed(std::string kmer, long position) {
  */
 
 //temporary sanity function
+/*
 void genome::check_node_correctness(long pos,long delete_pos_abs){
 
 	node *n=s.find(pos);
@@ -685,7 +746,7 @@ void genome::check_node_correctness(long pos,long delete_pos_abs){
 	else{
 		LOGWARN(FILE_LOGGER,"Node not found in skip list: genome_pos = "+to_string(pos)+ " abs position= "+to_string(delete_pos_abs));
 	}
-}
+}*/
 
 bool genome::delete_at(const unsigned long delete_pos_abs,
 		const unsigned long del_len) {
@@ -750,7 +811,7 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 
 	for(auto val:m_kmers.insertions){
 
-		check_node_correctness(val,delete_pos_abs);
+		//check_node_correctness(val,delete_pos_abs);
 		LOGDEBUG(FILE_LOGGER, "Insertions "+to_string(val));
 		ins[val]=1;
 		del[val]=0;

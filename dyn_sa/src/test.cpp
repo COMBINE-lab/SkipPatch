@@ -25,8 +25,6 @@ extern "C" {
 #include <sys/resource.h>
 #include <sys/time.h>
 
-#include "common.h"
-
 #include "../../src/include/ezOptionParser.hpp"
 
 string resultsPath="";

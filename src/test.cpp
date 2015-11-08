@@ -33,7 +33,7 @@ void test_hash_fwd(std::unordered_map<uint64_t, std::vector<long>> m_temp,
 		}
 
 		sort(it->second.begin(), it->second.end());
-		sort(m_genome[it->first].begin(), m_genome[it->first].end());
+		sort(m_genome[it->first].begin(), m_genome[it->first].end()); 
 
 		assert(it->second == m_genome[it->first]);
 	}
@@ -266,7 +266,10 @@ void check_delete_at(genome &g, long position, long len, string &reference) {
 	reference.erase(position, len);
 
 	//LOG_DEBUG(FILE_LOGGER, "Actual Reference: " + *reference);
-	//LOG_DEBUG(FILE_LOGGER, "Incorrect Reference: " + g.read_reference_at(0,0,reference.length())); //TODO: What?
+	//LOG_DEBUG(FILE_LOGGER, "Incorrect Reference: " + g.read_reference_at(0,0,reference.length()));
+	s.print_list();
+	cout<<reference<<endl;
+	cout<<g.read_reference_at(0, 0, reference.length())<<endl;
 	assert(reference == g.read_reference_at(0, 0, reference.length()));
 
 	//now check the hash
@@ -310,6 +313,7 @@ void test_delete_at() {
 			check_insert_at(g, ins, p, reference);
 			g.delete_at(p + 1, del_len);
 			check_delete_at(g, p + 1, del_len, reference);
+
 			g.delete_at(p, del_len);
 			check_delete_at(g, p, del_len, reference);
 			g.delete_at(p - 10, del_len);
@@ -735,6 +739,7 @@ void test() {
 
 	LOGINFO(FILE_LOGGER, "Starting.. ");
 
+	test_skip_list();
 	test_insert_at();
 	test_delete_at();
 	test_indels();

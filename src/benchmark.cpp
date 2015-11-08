@@ -81,11 +81,9 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 
 	LOGINFO(FILE_LOGGER, "Start: Benchmarking Edits");
 
-	benchmark_construction(g);
-
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
-	LOGINFO(FILE_LOGGER,"Total number of edits to be performed: " + std::to_string(edit.size()));
+
 	long ins_count = 0, del_count = 0, snp_count = 0;
 
 	struct timeval start, end;
@@ -97,6 +95,7 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 	if (number_of_edits > 0) {
 		total_edits = number_of_edits;
 	}
+	LOGINFO(FILE_LOGGER,"Total number of edits to be performed: " + std::to_string(edit.size()));
 	std::vector<long> invalid_deletes;
 	long edit_index = 0;
 
@@ -110,28 +109,41 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 				g.insert_at(get<2>(it),stol(get<1>(it),nullptr,10));
 				ins_count++;
 			}
-
-			if (get<0>(it) == "D") {
+ 			if (get<0>(it) == "D") {
 				//TODO: Fix corner cases and remove
-				if (!g.delete_at(stol(get<1>(it),nullptr,10), stol(get<2>(it),nullptr,10) - stol(get<1>(it),nullptr,10) + 1)) {
-					invalid_deletes.push_back(edit_index);
-					total_edits++;
-				}
+				g.delete_at(stol(get<1>(it),nullptr,10), stol(get<2>(it),nullptr,10) - stol(get<1>(it),nullptr,10) + 1);
 				del_count++;
 			}
 
-			if (get<0>(it) == "S") {
+			else if (get<0>(it) == "S") {
 				g.snp_at(stol(get<1>(it),nullptr,10), get<2>(it));
 				snp_count++;
 			}
-
-			total_edits--;
-
-		} else {
-			std::cout << "Total edits: " << number_of_edits << std::endl;
-			break;
 		}
 		edit_index++;
+
+		if (edit_index == total_edits / 500) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("0.01% Updates: ", &start, &end);
+		}
+		if (edit_index == total_edits / 50) {
+			gettimeofday(&end, &tzp);
+
+			print_time_elapsed("0.1% Updates: ", &start, &end);
+		}
+		if (edit_index == total_edits / 10) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("0.5% Updates: ", &start, &end);
+		}
+		if (edit_index == total_edits / 5) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("1% Updates: ", &start, &end);
+		}
+		if (edit_index >= total_edits) {
+			gettimeofday(&end, &tzp);
+			print_time_elapsed("5% Updates: ", &start, &end);
+			break;
+		}
 	}
 
 	gettimeofday(&end, &tzp);
@@ -141,15 +153,6 @@ void benchmark_edits(genome &g, std::string edits_file, const long number_of_edi
 	LOGINFO(FILE_LOGGER, "Total Insertions: " + std::to_string(ins_count));
 	LOGINFO(FILE_LOGGER, "Total Deletions: " + std::to_string(del_count));
 	LOGINFO(FILE_LOGGER, "Total SNPs: " + std::to_string(snp_count));
-
-	//TODO: Remove after deletion corner case is fixed
-	//Store every invalid delete in a file
-	LOGINFO(FILE_LOGGER, "Number of invalid deletes= "+ to_string(invalid_deletes.size()));;
-	std::ofstream invalid_deletes_file("/mnt/scratch2/nirm/invalid_deletes");
-	//LOGINFO(FILE_LOGGER, "Number of invalid deletes= "+ to_string(invalid_deletes.size()));;
-	for (auto invalid_delete : invalid_deletes)
-		invalid_deletes_file << invalid_delete << "\n";
-	invalid_deletes_file.close();
 
 	LOGINFO(FILE_LOGGER, "End: Benchmarking Edits");
 
@@ -180,6 +183,8 @@ void parse_query_file(const std::string edits_queries_file_path,
 
 	std::ifstream edits_queries_file(edits_queries_file_path);
 
+	long line_number = 1;
+
 	if (edits_queries_file.is_open()) {
 
 		for (int j = 0; j < iterations; j++) {
@@ -196,10 +201,13 @@ void parse_query_file(const std::string edits_queries_file_path,
 					while (std::getline(edit_stream, e, ' ')) {
 						edit_details.push_back(e);
 					}
-					edits.push_back(
-							make_tuple(edit_details[0], edit_details[1], edit_details[2]));
+					edits.push_back(make_tuple(edit_details[0], edit_details[1], edit_details[2]));
 				}
+
+
+				line_number++;
 			}
+			LOGDEBUG(FILE_LOGGER, "E " + std::to_string(line_number));
 
 			for (int i = 0; i < queryCount; i++) {
 
@@ -211,12 +219,13 @@ void parse_query_file(const std::string edits_queries_file_path,
 					while (std::getline(query_stream, q, ' ')) {
 						query_details.push_back(q);
 					}
-					queries.push_back(
-							make_tuple(query_details[0], query_details[1],
-									query_details[2], stol(query_details[3], nullptr, 10)));
+					queries.push_back(make_tuple(query_details[0], query_details[1], query_details[2], stol(query_details[3], nullptr, 10)));
 				}
+				line_number++;
 			}
+			LOGDEBUG(FILE_LOGGER, "Q " + std::to_string(line_number));
 		}
+
 	}  else {
 		std::string error_message = "Failed to open file: " + edits_queries_file_path;
 		LOGALERT(FILE_LOGGER, error_message);
@@ -238,8 +247,6 @@ void parse_query_file(const std::string edits_queries_file_path,
 void benchmark_search(genome &g, const std::string path_to_query_file, long queryFrequency, long queryCount, long iterations) {
 
 	LOGINFO(FILE_LOGGER, "Start: Benchmarking Search");
-
-	benchmark_construction(g);
 
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	std::vector<std::tuple<std::string, std::string, std::string, long>> query;
@@ -278,11 +285,14 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
 			}
 			query_out_file << std::endl;
 		}
+
 		gettimeofday(&end, &tzp);
 		std::string message = "Search Iteration " + std::to_string(j);
 		print_time_elapsed(message, &start, &end);
 
 	}
+
+
 
 	LOGINFO(FILE_LOGGER, "Complete: Benchmarking Search");
 }
@@ -301,11 +311,12 @@ void benchmark_search(genome &g, const std::string path_to_query_file, long quer
  * 3887129,39
  *
  */
-void benchmark_substring(genome &g, std::string substr_file_path) {
+void benchmark_substring(genome &g, std::string substr_file_path, std::string edits_file_path, long num_edits) {
+
+	LOGINFO(FILE_LOGGER, "Editing the genome before extracting substrings");
+	benchmark_edits(g, edits_file_path, num_edits);
 
 	LOGINFO(FILE_LOGGER, "Starting: Benchmarking Substring Extraction");
-
-	benchmark_construction(g);
 
 	std::vector<std::pair<long, long>> substrings;
 	std::ifstream substr_file(substr_file_path);

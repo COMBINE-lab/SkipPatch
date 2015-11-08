@@ -24,6 +24,7 @@
 #define LOGEMERGENCY(logger, msg) log_emergency(logger, __FILE__, __FUNCTION__, __LINE__, msg)
 
 void print_time_elapsed(std::string, struct timeval*, struct timeval*);
+float get_time_elapsed(struct timeval* start, struct timeval* end);
 
 void ignore_first_line();
 
@@ -40,6 +41,7 @@ void format_path(std::string &path);
 bool fileExists(std::string filePath);
 
 uint64_t str_to_int(std::string str);
+std::string int_to_str(const uint64_t);
 
 inline void log_trace(const std::string& logger, const std::string& file, const std::string& function, const int& line, const std::string& msg){
 		spdlog::get(logger)->trace() << file << " " << function << "() line " << line << ": " << msg;

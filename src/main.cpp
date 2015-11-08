@@ -3,7 +3,7 @@
 #include "genome.h"
 #include "utils.h"
 #include "test.h"
-#include "test_prob.h"
+#include "test_skippatch.h"
 #include "benchmark.h"
 #include "ezOptionParser.hpp"
 #include "spdlog/spdlog.h"
@@ -87,27 +87,43 @@ int main(int argc, const char* argv[]) {
 
 	opt.parse(argc, argv);
 
-	//If the log file path is specified as an input parameter, use it, or use the default location.
-	std::string logPath = "../logs/SP.log";
-	if (opt.isSet("--logPath")) {
-		opt.get("--logPath")->getString(logPath);
-		format_path(logPath);
-		logPath+="SP.log";
-	}
-
-	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
-	LOGINFO(FILE_LOGGER, "Happy Cows!");
-	auto console_logger = spdlog::stdout_logger_mt("console");
-	spd::set_level(spd::level::info); //level of logging
-	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
-
-	console_logger->info() << "Log path: " << logPath;
-
 	if (opt.isSet("-h")) {
 		std::string usage;
 		opt.getUsage(usage, 80, ezOptionParser::ALIGN);
 		std::cerr << usage;
 		return 1;
+	}
+	std::string logPath ="";
+	if (opt.isSet("--logPath")) {
+		opt.get("--logPath")->getString(logPath);
+    }
+    else{
+        if(opt.isSet("--output")){
+	        cout<< "Using the output path for writing the logs"<<endl;
+		    opt.get("--output")->getString(logPath);
+        }
+        else{
+            cout<< "Please specify log path or an output path (if you specify output path , the genome will also be wriiten to disk)"<<endl;
+            return -1;
+        }
+    }
+		format_path(logPath);
+		logPath+="SP.log";
+
+    
+	auto file_logger = spdlog::daily_logger_mt(FILE_LOGGER, logPath, true);
+	LOGINFO(FILE_LOGGER, "Happy Cows!");
+	auto console_logger = spdlog::stdout_logger_mt("console");
+	spd::set_level(spd::level::info); //level of logging
+	spdlog::set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v ");
+	console_logger->info() << "Log path: " << logPath;
+
+	if (S > K) {
+		console_logger->critical() << "The value of S(" << S << ")(sampling factor) cannot be greater than K(" << K << "). This will result in loss of data.";
+		LOGCRITICAL(FILE_LOGGER, "The value of S(" + std::to_string(S) + ")(sampling factor) cannot be greater than K(" + std::to_string(K) + "). This will result in loss of data.");
+		console_logger->info() << "Quitting... Bye!";
+		LOGINFO(FILE_LOGGER, "Quitting... Bye!");
+		exit(-1);
 	}
 
 	std::string genomeFile;
@@ -144,18 +160,32 @@ int main(int argc, const char* argv[]) {
 	if (opt.isSet("--resultsPath")) { opt.get("--resultsPath")->getString(resultsPath); }
 	else { resultsPath = logPath;}
 
-	//checkHashSize(loadHashPath);
 
 	genome g;
 	g.get_input(genomeFile);
 
 
+	if (K > 32) {
+		console_logger->alert() << "K cannot be more than 32 because reads are stored as uint64_t in the hash.";
+		LOGALERT(FILE_LOGGER, "K cannot be more than 32 because reads are stored as uint64_t in the hash.");
+		exit(-1);
+	}
+
 	if (opt.isSet("--runTests")) {
 
 		LOGINFO(FILE_LOGGER, "Running tests..");
-		if (opt.isSet("--editsFile") && fileExists(editsFile)) {
+
+		if (opt.isSet("--substrFile") && opt.isSet("--editsFile")) {
+			LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
+			if (fileExists(substrFile) && fileExists(editsFile)) {
+				test_substr_naive(g, substrFile, editsFile, numEdits);
+			}
+		}
+		if (opt.isSet("--editsFile") && !(opt.isSet("--substrFile"))) {
 			LOGINFO(FILE_LOGGER, "Testing Naive Edits..");
-			test_edits_naive(g, editsFile, numEdits);
+			if (fileExists(editsFile)) {
+				test_edits_naive(g, editsFile, numEdits);
+			}
 		}
 
 		if (opt.isSet("--editsQueriesFile") && opt.isSet("--queryFrequency") && opt.isSet("--queryCount") && opt.isSet("--iterations")) {
@@ -172,17 +202,19 @@ int main(int argc, const char* argv[]) {
 		exit(0);
 	}
 
-	if (opt.isSet("--editsFile")) {
+	if (opt.isSet("--editsFile") && !opt.isSet("--substrFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking edits");
 		if (fileExists(editsFile)) {
+			benchmark_construction(g);
 			benchmark_edits(g, editsFile, numEdits);
 		}
 	}
 
-	if (opt.isSet("--substrFile")) {
+	if (opt.isSet("--substrFile") && opt.isSet("--editsFile")) {
 		LOGINFO(FILE_LOGGER, "Benchmarking substring extraction");
-		if (fileExists(substrFile)) {
-			benchmark_substring(g, substrFile);
+		if (fileExists(substrFile) && fileExists(editsFile)) {
+			benchmark_construction(g);
+			benchmark_substring(g, substrFile, editsFile, numEdits);
 		}
 	}
 
@@ -190,6 +222,11 @@ int main(int argc, const char* argv[]) {
 		if(queryFrequency>0 && queryCount>0 && iterations>0 ) {
 			LOGINFO(FILE_LOGGER, "Benchmarking search");
 			if (fileExists(editsQueriesFile)) {
+				benchmark_construction(g);
+				if (S > K) {
+					//console_logger->alert() << "The search algorithm has not yet been modified to handle sampling. The results will be incorrect.";
+					//LOGALERT(FILE_LOGGER, "The search algorithm has not yet been modified to handle sampling. The results will be incorrect.");
+				}
 				benchmark_search(g, editsQueriesFile, queryFrequency, queryCount, iterations);
 			}
 		} else {

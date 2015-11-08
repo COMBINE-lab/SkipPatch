@@ -1,6 +1,13 @@
 #ifndef TEST_H
 #define TEST_H
 
+#include <bits/functional_hash.h>
+#include <cstdint>
+#include <unordered_map>
+#include <vector>
+
+class skip_list;
+
 void test_hash_fwd(std::unordered_map<uint64_t, std::vector<long>>,
 		std::unordered_map<uint64_t, std::vector<long>>, skip_list);
 void test_hash_rev(std::unordered_map<uint64_t, std::vector<long>>,

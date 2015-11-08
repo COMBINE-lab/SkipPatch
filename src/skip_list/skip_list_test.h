@@ -1,6 +1,10 @@
 #ifndef SKIP_LIST_TEST_H
 #define SKIP_LIST_TEST_H
 
+#include <string>
+
+class skip_list;
+
 using namespace std;
 void test_find_ordered();
 void test_find_unordered();

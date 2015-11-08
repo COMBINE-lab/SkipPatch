@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include "genome.h"
 #include "utils.h"
 
 std::string alphabet = "AGCT"; //used for generating random string
@@ -38,6 +39,29 @@ void print_time_elapsed(std::string desc, struct timeval* start,
 	spdlog::get(FILE_LOGGER)->info() << message;
 
 	return;
+}
+
+/**
+ *
+ */
+float get_time_elapsed(struct timeval* start, struct timeval* end) {
+
+	/*
+	 struct timeval {
+	 time_t      tv_sec;
+	 suseconds_t tv_usec;
+	 }*/
+	struct timeval elapsed;
+
+	if (start->tv_usec > end->tv_usec) {
+		end->tv_usec += 1000000;
+		end->tv_sec--;
+	}
+	elapsed.tv_usec = end->tv_usec - start->tv_usec;
+	elapsed.tv_sec = end->tv_sec - start->tv_sec;
+	float time_elapsed = (elapsed.tv_sec * 1000000 + elapsed.tv_usec)/1000000.f;
+
+	return time_elapsed;
 }
 
 /**
@@ -118,7 +142,9 @@ std::vector<std::pair<long, char>> generate_random_inserts(int insert_count,
 }
 
 void format_path(std::string &path){
-	if(path[path.length()-1]!='/')
+	if(path.length()==0)
+        return;
+    if(path[path.length()-1]!='/')
 		path+="/";
 }
 
@@ -136,6 +162,10 @@ bool fileExists(std::string filePath) {
 	return true;
 }
 
+/**
+ * Converts a string of "ATCG" to a uint64_t
+ * where each character is represented by using only two bits
+ */
 uint64_t str_to_int(std::string str) {
 
 	uint64_t strint = 0;
@@ -170,4 +200,52 @@ uint64_t str_to_int(std::string str) {
 	}
 
 	return strint >> 2;
+}
+
+/**
+ * Converts a uint64_t consisting of alphabets ATCG (represented using two bits each)
+ * into a readable string containing the alphabets as characters
+ */
+std::string int_to_str(const uint64_t strint) {
+
+	std::string str = "";
+	uint64_t intstr;
+
+	int shift = 64 - 2*K;
+
+	int i = 0;
+	while (i < K) {
+
+		intstr = strint;
+		intstr = intstr >> (K-i-1)*2;
+		intstr = intstr & 3;
+
+		char curr;
+		switch (intstr) {
+		case 0: {
+			curr = 'A';
+			break;
+		}
+		case 1: {
+			curr = 'T';
+			break;
+		}
+		case 2: {
+			curr = 'C';
+			break;
+		}
+		case 3: {
+			curr = 'G';
+			break;
+		}
+		default: {
+			///?
+		}
+		}
+
+		str += curr;
+		i++;
+	}
+
+	return str;
 }

@@ -164,21 +164,21 @@ void benchmark_edits(std::string genome_file, std::string edits_file,
 	gettimeofday(&end, &tzp);
 	print_time_elapsed("DynSA: Building Index: ", &start, &end);
 
-	int test_count = 1;
+	int test_count = 0;
 
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
 
-	//if(num_edits==0){
+	if(num_edits>0){
 		num_edits=edit.size();
-	//}
+	}
 
 	cout<<"Number of edits: "<<num_edits<<endl;
 	gettimeofday(&start, &tzp);
 
 	for (auto it : edit) {
 
-		if (test_count > num_edits)
+		if (test_count >= num_edits)
 		{
 			gettimeofday(&end, &tzp);
 			std::string message = std::string("DynSA: 5% Updates: ");

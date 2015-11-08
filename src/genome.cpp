@@ -87,6 +87,7 @@ void genome::construct_hash() {
 	for (auto it = reference.begin(); it <= reference.end() - K; it+=S) {
 		std::string temp(it, it + K);
         //TODO: this if needed?
+		LOGINFO(FILE_LOGGER, "Inserting kmers into the hash..");
 		if (!(temp.find('n') != std::string::npos)
 				&& !(temp.find('N') != std::string::npos)){
             if(std::distance(reference.begin(),it)%10000000 == 0){

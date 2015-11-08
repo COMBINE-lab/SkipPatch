@@ -109,6 +109,7 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 			std::string read = std::get<1>(query[i + c]);
 
 			//Search substring
+			LOGDEBUG(FILE_LOGGER, "Searching for " + read);
 			std::vector<long> positions = g.search(read);
 			for(auto p: positions){
 				LOGDEBUG(FILE_LOGGER, read + " Found: " + std::to_string(p));
@@ -142,8 +143,9 @@ void test_search_naive(genome &g, const std::string path_to_query_file, long que
 				for(auto p: positions){
 					LOGALERT(FILE_LOGGER, read + " Actual: " + std::to_string(p));
 				}
-
 				err_count++;
+				LOGALERT(FILE_LOGGER, "Quitting... Bye!");
+				exit(-1);
 			}
 
 			query_out_file << read << "\t";
@@ -215,19 +217,12 @@ void test_edits_naive(genome &g, std::string edits_file, const long number_of_ed
 				g.insert_at(std::get<2>(it),stol(std::get<1>(it)));
 				ins_count++;
 			} else if (std::get<0>(it) == "D") {
-
 				long pos = stol(std::get<1>(it));
 				long len = stol(std::get<2>(it)) - stol(std::get<1>(it)) + 1;
 				LOGDEBUG(FILE_LOGGER, "Deleting " + std::to_string(len) + " characters from position " + std::to_string(pos));
-
-				if (g.delete_at(pos, len)) {
-					reference.erase(pos, len);
-				} else {
-					LOGALERT(FILE_LOGGER, "Invalid delete.");
-					continue;
-				}
+				g.delete_at(pos, len);
+				reference.erase(pos, len);
 				del_count++;
-
 			} else if (std::get<0>(it) == "S") {
 				LOGDEBUG(FILE_LOGGER,"Substituting " + std::get<1>(it) + " at " + std::get<2>(it));
 				reference.replace(stol(std::get<1>(it)), std::get<2>(it).length(), std::get<2>(it));
@@ -352,21 +347,25 @@ void test_hash(genome &g, std::string updated_reference) {
 	LOGINFO(FILE_LOGGER,"Checking if at least every Sth k-mer is hashed");
 	bool valid_hash = true;
 	int off = 0;
+	std::string last_found_kmer;
+	long last_found_at;
 	for (auto it = updated_reference.begin(); it < updated_reference.end()-K-1; it++) {
 
 		std::string kmer(it, it + K);
 
 		auto f = hash.find(str_to_int(kmer));
 		if (f != hash.end()) { //kmer is found
-			LOGTRACE(FILE_LOGGER, kmer);
 			valid_hash = true;
 			off = 0;
+			last_found_kmer = kmer;
+			last_found_at = it - updated_reference.begin();
 		} else {
 			off++;
 			if (off > S) {
 				valid_hash = false;
-				LOGALERT(FILE_LOGGER, "Invalid hash. Two hashed kmers are more than S apart.");
-				LOGDEBUG(FILE_LOGGER, kmer);
+				LOGALERT(FILE_LOGGER, "Couldn't find " + kmer + " at " + std::to_string(it-updated_reference.begin()));
+				LOGALERT(FILE_LOGGER, "Last found: " + kmer + " at " + std::to_string(last_found_at));
+				LOGALERT(FILE_LOGGER, "Invalid hash. Two hashed kmers are " + std::to_string(off) + " apart.");
 				LOGALERT(FILE_LOGGER, "Quitting.. Bye!");
 				exit(-1);
 			}

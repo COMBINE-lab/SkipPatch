@@ -42,6 +42,29 @@ void print_time_elapsed(std::string desc, struct timeval* start,
 }
 
 /**
+ *
+ */
+float get_time_elapsed(struct timeval* start, struct timeval* end) {
+
+	/*
+	 struct timeval {
+	 time_t      tv_sec;
+	 suseconds_t tv_usec;
+	 }*/
+	struct timeval elapsed;
+
+	if (start->tv_usec > end->tv_usec) {
+		end->tv_usec += 1000000;
+		end->tv_sec--;
+	}
+	elapsed.tv_usec = end->tv_usec - start->tv_usec;
+	elapsed.tv_sec = end->tv_sec - start->tv_sec;
+	float time_elapsed = (elapsed.tv_sec * 1000000 + elapsed.tv_usec)/1000000.f;
+
+	return time_elapsed;
+}
+
+/**
  * Skips reading one line of the input
  */
 void ignore_first_line() {

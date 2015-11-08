@@ -24,6 +24,7 @@
 #define LOGEMERGENCY(logger, msg) log_emergency(logger, __FILE__, __FUNCTION__, __LINE__, msg)
 
 void print_time_elapsed(std::string, struct timeval*, struct timeval*);
+float get_time_elapsed(struct timeval* start, struct timeval* end);
 
 void ignore_first_line();
 

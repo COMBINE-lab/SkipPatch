@@ -173,7 +173,7 @@ void benchmark_edits(std::string genome_file, std::string edits_file,
 	std::vector<std::tuple<std::string, std::string, std::string>> edit;
 	parse_edit_file(edit, edits_file);
 
-	if(num_edits>0){
+	if(num_edits<=0){
 		num_edits=edit.size();
 	}
 

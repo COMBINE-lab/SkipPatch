@@ -70,14 +70,17 @@ def genquery(genomeFile, jellyFile, totedits, medindel, insprob, delprob, queryf
     qcount = 0
     #effectedkmers = dict()
     effectedkmers =  RandomDict()
+    count=0
+    sample=10
     for val in editTypes:
         qcount += 1
         if val == 'I':
             p, s, seq = random_insertion(numbases, medindel)
             numbases += s
             outputFile.write('I %d %s\n' % (p, seq))
-            add_kmers_in_seq(effectedkmers, seq)
-            add_kmers_in_seq(effectedkmers, genome[p-K+1:p+K])
+            if ((qcount-1)%sample)==0:
+                add_kmers_in_seq(effectedkmers, seq)
+                add_kmers_in_seq(effectedkmers, genome[p-K+1:p+K])
 
         elif val == 'D':
             p, s = random_deletion(numbases, medindel)
@@ -88,7 +91,9 @@ def genquery(genomeFile, jellyFile, totedits, medindel, insprob, delprob, queryf
         else:
             p, seq = random_snp(numbases)
             outputFile.write('S %d %s\n' % (p, seq))
-            add_kmers_in_seq(effectedkmers, genome[p-K+1:p+K-1])
+
+            if ((qcount-1)%sample)==0:
+                add_kmers_in_seq(effectedkmers, genome[p-K+1:p+K-1])
 
         # if it's time to output some queries
         if qcount == queryfreq:

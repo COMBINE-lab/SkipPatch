@@ -86,13 +86,9 @@ void genome::save_hash(const std::string& fname) {
 void genome::construct_hash() {
 	for (auto it = reference.begin(); it <= reference.end() - K; it+=S) {
 		std::string temp(it, it + K);
-        //TODO: this if needed?
-		LOGINFO(FILE_LOGGER, "Inserting kmers into the hash..");
-		if (!(temp.find('n') != std::string::npos)
-				&& !(temp.find('N') != std::string::npos)){
+		if (!(temp.find('n') != std::string::npos) && !(temp.find('N') != std::string::npos)){
             if(std::distance(reference.begin(),it)%10000000 == 0){
                 LOGINFO(FILE_LOGGER, std::to_string(std::distance(reference.begin(),it))+" k mers inserted");
-                //display_load();
             }
 			m[str_to_int(temp)].push_back(it - reference.begin());
 	}
@@ -136,6 +132,7 @@ void genome::remove_kmer_from_hash_at(long position_to_remove, std::string kmer)
 
 	if (!m[curr_kmer].empty()) {
 		if (std::find(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove) != m[curr_kmer].end()) {
+			LOGDEBUG(FILE_LOGGER, "Removed " + kmer + " from position " + std::to_string(position_to_remove));
 			m[curr_kmer].erase(std::find(m[curr_kmer].begin(), m[curr_kmer].end(), position_to_remove));
 		}
 	}
@@ -149,6 +146,7 @@ void genome::remove_kmer_from_hash_at(long position_to_remove, std::string kmer)
 
 void genome::add_kmer_to_hash_at(long position, std::string new_kmer) {
 	m[str_to_int(new_kmer)].push_back(position);
+	LOGDEBUG(FILE_LOGGER, "Added " + new_kmer + " from position " + std::to_string(position));
 }
 
 long genome::get_genome_position_from_virtual_position(long virtual_position) {
@@ -174,16 +172,14 @@ long genome::get_virtual_position_from_genome_position(long genome_position, lon
 void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 
 	LOGDEBUG(FILE_LOGGER,"snp_at: " + std::to_string(snp_pos_abs) + " " + snp);
-
 	const long snp_len = snp.length();
-
-	auto kmer_pos_pair = get_kmers(snp_pos_abs - K + 1, snp_len + K - 1);
+	auto kmer_pos_pair = get_kmers(snp_pos_abs - K + 1, snp_len + K - 1 + S);
 	int i = 0;
 
 	long genome_position;
 
 	//Edge cases: Use min, max to adjust these values for ends of genome
-	std::string snp_update = read_reference_abs_at(snp_pos_abs - K + 1, 2 * K - 2 + snp_len, genome_position);
+	std::string snp_update = read_reference_abs_at(snp_pos_abs - K + 1, 2 * K - 2 + snp_len + S, genome_position);
 	snp_update.replace(K - 1, snp_len, snp);
 
 	int sample = 0;
@@ -191,16 +187,20 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
 		remove_kmer_from_hash_at(it.second, it.first);
 		string new_kmer = snp_update.substr(i, K);
 		if (it.first.length() == K) {
-		//	if (sample % S == 0) { //Sampling
+			if (sample % S == 0) { //Sampling
 				add_kmer_to_hash_at(it.second, new_kmer);
-				LOGDEBUG(FILE_LOGGER,"Replaced " + it.first + " with " + new_kmer + " at " + std::to_string(it.second));
-		//	}
+			}
 		}
 		sample++;
 		i++;
 	}
 
-	//s.print_base_level();
+	//Anchor the edit by hashing the k-mer occurring right after the SNP location
+	auto anchor = get_kmers(snp_pos_abs + K, 1).front();
+	LOGDEBUG(FILE_LOGGER, "Anchor: " + anchor.first + " at " + std::to_string(anchor.second));
+	if(!is_kmer_hashed(anchor.first, anchor.second)){
+		add_kmer_to_hash_at(anchor.second, anchor.first);
+	}
 
 	//Update the genome itself
 	//At every SNP, investigate if it is inside an inserted segment
@@ -245,6 +245,14 @@ void genome::snp_at(const long snp_pos_abs, const std::string snp) {
  * This function handles sampling, and hence replaces the earlier search function.
  */
 std::vector<long> genome::search(std::string read) {
+
+	std::vector<long> mapped_positions;
+	if (read.length()==0) {
+		return mapped_positions;
+	} else if (read.length() < K + S){
+		LOGALERT(FILE_LOGGER,"A read of length less than K+S cannot be searched for an exact match");
+		exit(-1);
+	}
 
 	struct timeval start, a, b, c, d, e, end;
 	struct timezone tzp;
@@ -313,8 +321,6 @@ std::vector<long> genome::search(std::string read) {
 	gettimeofday(&d, &tzp);
 	//STEP 4: Translate the genome positions into current positions,
 	//read the subsequence to ensure that the positions found were valid
-	std::vector<long> mapped_positions;
-
 	for (auto group : groups) {
 
 		//Find the exact starting position wrt the current genome
@@ -410,69 +416,6 @@ std::vector<long> genome::search(std::string read) {
 
 	return mapped_positions;
 }
-
-
-/*
- *
- * WARNING: DEPRECATED
-std::vector<long> genome::search(std::string read) {
-
-	std::vector<long> positions;
-
-	//Read the first k-mer of the read and find all the positions it occurs at
-	std::string read_kmer = read.substr(0, K);
-	auto f = m.find(str_to_int(read_kmer));
-
-	if (f != m.end()) {
-		auto& search = f->second;
-
-		//if(!search.empty()){
-
-		//Remove duplicates, take care of multiple occurrences of a read starting from within an insertion later
-		std::sort(search.begin(), search.end());
-		search.erase(std::unique(search.begin(), search.end()), search.end());
-
-		for (long pos : search) {
-
-			long offset = 0;
-
-			if (!ins[pos]) { //If the position doesn't start from within an insertion
-				LOGDEBUG(FILE_LOGGER,"POS(G): " + std::to_string(pos));
-				if (::memcmp(read.c_str(),
-						read_reference_at(pos, offset, read.length()).c_str(),
-						read.length()) == 0) {
-					positions.push_back(
-							get_virtual_position_from_genome_position(pos, offset));
-					LOGDEBUG(FILE_LOGGER,"Adding at(1): " + std::to_string(get_virtual_position_from_genome_position(pos,offset)));
-				} else {
-					// TODO: What happens in this case? It is an error, right?
-				}
-			} else {
-				LOGDEBUG(FILE_LOGGER,"POS(I): " + std::to_string(pos));
-
-				//A read can occur multiple times within an insertion itself
-				//And hence might have different offsets for those locations
-				//Eureka! It works! ;) And that's how horrible some test cases can get :P
-
-				//Read off length of insertion + K - 1, and find all the offsets of the first k-mer of the read
-				long insertion_length = (s.find(pos)->str).length();
-				std::string insertion_ext = read_reference_at(pos, offset,
-						insertion_length + K);
-				offset = insertion_ext.find(read_kmer);
-				while (offset != std::string::npos) {
-					LOGDEBUG(FILE_LOGGER,"read_ext: " + std::to_string(pos) + " " + std::to_string(offset) + " " + std::to_string(read.length()) + " " + read_reference_at(pos, offset, read.length()));
-					if (::memcmp(read.c_str(), read_reference_at(pos, offset, read.length()).c_str(), read.length()) == 0) {
-						positions.push_back(get_virtual_position_from_genome_position(pos, offset));
-						LOGDEBUG(FILE_LOGGER,"Adding at(2): " + std::to_string(get_virtual_position_from_genome_position(pos,offset)));
-					}
-					offset = insertion_ext.find(read_kmer, offset + 1);
-				}
-			}
-		}
-	}
-
-	return positions;
-} */
 
 /*
  * reads the reference from the specified genome(original) position and offset (in the skip list)
@@ -749,12 +692,8 @@ void genome::check_node_correctness(long pos,long delete_pos_abs){
 	}
 }*/
 
-bool genome::delete_at(const unsigned long delete_pos_abs,
-		const unsigned long del_len) {
-	/*if (!s.is_valid_delete(delete_pos_abs, del_len)) {
-		cout << ".";
-		return false;
-	}*/
+bool genome::delete_at(const unsigned long delete_pos_abs, const unsigned long del_len) {
+
 	auto kmers_to_replace = get_kmers(delete_pos_abs - K + 1, K - 1);
 	int i = 0;
 
@@ -788,13 +727,6 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 		string kmer = get<0>(*it);
 		remove_kmer_from_hash_at(g_pos, kmer);
 		del[g_pos] = 1;
-		/*
-		 if(!(get<2>(*kmers_to_delete.begin())) && get<1>(it)==(get<1>(*kmers_to_delete.begin())))
-		 {
-		 del[(get<1>(*kmers_to_delete.begin()))]=0
-		 reference[(get<1>(*kmers_to_delete.begin()))] =
-		 }*/
-		//std::cout << "Removed " << it.first << " from " << it.second << std::endl;
 	}
 
 	//case where the kmers must be "moved in"
@@ -807,7 +739,6 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 	}
 
 	//Update the skip list
-
 	mod_kmers m_kmers = s.delete_and_update_abs(delete_pos_abs, del_len);
 
 	for(auto val:m_kmers.insertions){
@@ -827,26 +758,25 @@ bool genome::delete_at(const unsigned long delete_pos_abs,
 
 	if(m_kmers.num_kmers_moved>0){
 
-	//sanity checks
-		ins[m_kmers.final_genome_pos]=1;
-		del[m_kmers.final_genome_pos]=0;
+		//sanity checks
+			ins[m_kmers.final_genome_pos]=1;
+			del[m_kmers.final_genome_pos]=0;
 
-		ins[m_kmers.initial_genome_pos]=0;
-		del[m_kmers.initial_genome_pos]=1;
+			ins[m_kmers.initial_genome_pos]=0;
+			del[m_kmers.initial_genome_pos]=1;
 
-	//check_node_correctness(m_kmers.final_genome_pos,delete_pos_abs);
-	LOGDEBUG(FILE_LOGGER, "Final genome pos "+to_string(m_kmers.final_genome_pos));
-	//check_node_correctness(m_kmers.initial_genome_pos,delete_pos_abs);
-	LOGDEBUG(FILE_LOGGER, "Initial genome pos "+to_string(m_kmers.initial_genome_pos));
+		//check_node_correctness(m_kmers.final_genome_pos,delete_pos_abs);
+		LOGDEBUG(FILE_LOGGER, "Final genome pos "+to_string(m_kmers.final_genome_pos));
+		//check_node_correctness(m_kmers.initial_genome_pos,delete_pos_abs);
+		LOGDEBUG(FILE_LOGGER, "Initial genome pos "+to_string(m_kmers.initial_genome_pos));
 
-	string ref=read_reference_at(m_kmers.final_genome_pos,m_kmers.final_offset+1,m_kmers.num_kmers_moved+K-1);
+		string ref=read_reference_at(m_kmers.final_genome_pos,m_kmers.final_offset+1,m_kmers.num_kmers_moved+K-1);
 
-	for(int i=0;i<m_kmers.num_kmers_moved;i++){
-		remove_kmer_from_hash_at(m_kmers.initial_genome_pos,ref.substr(i,K));
-		add_kmer_to_hash_at(m_kmers.final_genome_pos,ref.substr(i,K));
+		for(int i=0;i<m_kmers.num_kmers_moved;i++){
+			remove_kmer_from_hash_at(m_kmers.initial_genome_pos,ref.substr(i,K));
+			add_kmer_to_hash_at(m_kmers.final_genome_pos,ref.substr(i,K));
+		}
 	}
-	}
-
 
 	//Sampling - anchoring the deletion by hashing the kmer appearing right after the insertion
 	auto anchor = get_kmers(delete_pos_abs + 1, 1).front();

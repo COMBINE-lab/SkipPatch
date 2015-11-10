@@ -224,9 +224,11 @@ void test_edits_naive(genome &g, std::string edits_file, const long number_of_ed
 				reference.erase(pos, len);
 				del_count++;
 			} else if (std::get<0>(it) == "S") {
-				LOGDEBUG(FILE_LOGGER,"Substituting " + std::get<1>(it) + " at " + std::get<2>(it));
-				reference.replace(stol(std::get<1>(it)), std::get<2>(it).length(), std::get<2>(it));
-				g.snp_at(stol(std::get<1>(it)), std::get<2>(it));
+				std::string snp = std::get<2>(it);
+				long pos = stol(std::get<1>(it));
+				LOGDEBUG(FILE_LOGGER,"Substituting " + snp + " at " + std::to_string(pos));
+				reference.replace(pos, snp.length(), snp);
+				g.snp_at(pos, snp);
 				snp_count++;
 			}
 
@@ -364,8 +366,9 @@ void test_hash(genome &g, std::string updated_reference) {
 			if (off > S) {
 				valid_hash = false;
 				LOGALERT(FILE_LOGGER, "Couldn't find " + kmer + " at " + std::to_string(it-updated_reference.begin()));
-				LOGALERT(FILE_LOGGER, "Last found: " + kmer + " at " + std::to_string(last_found_at));
+				LOGALERT(FILE_LOGGER, "Last found: " + last_found_kmer + " at " + std::to_string(last_found_at));
 				LOGALERT(FILE_LOGGER, "Invalid hash. Two hashed kmers are " + std::to_string(off) + " apart.");
+				LOGALERT(FILE_LOGGER, "Genome nearby " + std::string(it-3*K,it+4*K));
 				LOGALERT(FILE_LOGGER, "Quitting.. Bye!");
 				exit(-1);
 			}

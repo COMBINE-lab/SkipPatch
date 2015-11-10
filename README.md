@@ -1,27 +1,15 @@
-Dynamically Updatable Index for Indexed Text Search
----------------------------------------------------
 
-How to Run:
+SkipPatch: A Dynamically Updatable Index for Text Search 
+---------------------------------------------------------
 
-1. Place the following files in a folder:
+SkipPatch, is a data structure which can be used for maintaining a k-mer-based index over a dynamically changing text.
+SkipPatch pairs a hash-based k-mer index with a skip list to efficiently maintain the set of edits that have been applied to the original text.
 
-	main.cpp
-	genome.cpp
-	genome.h
-	bechmark.cpp
-	bechmark.h
-	test.cpp
-	test.h
-	utils.cpp
-	utils.h
-	data/input.txt (or some input file)
-	Makefile
+Running SkipPatch:
 
-2. Run "make" on your terminal from the this folder
+1. Once you do a 'git clone' of this repository, generate the binary 'main' by running "make" from the 'src' folder.
 
-3. Run "./main < ../data/input.txt" from your terminal
-	
-(Ensure that the value of k defined in "genome.h" is what you require --- let's make this a parameter)
+2. Then, do './main --help' to see the command line arguments which can be used to run SkipPatch 
 
 Dependencies:
 C++11

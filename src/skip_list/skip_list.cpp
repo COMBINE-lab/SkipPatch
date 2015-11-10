@@ -103,28 +103,6 @@ void skip_list::get_prev_node(long abs_val, long &val, unsigned long &pos,
 	}
 
 }
-//TODO: remove this function after implementing generic deletions
-bool skip_list::is_valid_delete(const long abs_val, const unsigned long len) {
-	long val;
-	unsigned long pos;
-	node *prev;
-	get_prev_node(abs_val, val, pos, &prev);
-
-	if (prev->next->val == val) //if the value already exists
-			{
-		//update the offset pointers..
-		if (((pos + len - 1) > (prev->next->str).length())
-				|| (len > (prev->next->str).length())
-				|| ((pos == 1) && (len >= (prev->next->str).length()))) {
-			cout << ".";
-			//  cout<<" len "<<len<<" (prev->next->str).length() "<<(prev->next->str).length()<<endl;
-			// cout<<"Invalid value exists..pos = "<<pos<<" value "<<prev->next->val<<" Inconsistent value caught!"<<endl;
-			return false;
-		}
-
-	}
-	return true;
-}
 
 /*
  * inserts at initial position val, offset pos a string str.
@@ -330,7 +308,7 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 				long initial_pos = 0;
 				long remaining_deletion = len;
 				long offset_copy = LONG_MIN;
-				if(abs_val==4292896){
+				if(abs_val==3416732){
 					cout<<"Hre";
 				}
 
@@ -359,22 +337,17 @@ mod_kmers skip_list::delete_and_update_abs(const long abs_val,
 					//find out where to create the new node
 					//node *trav = temp;
 					initial_pos = temp->val+1;
+					if(temp->next->val==initial_pos){
 					while(temp->next->offset<0){
+						LOGDEBUG(FILE_LOGGER,"the deletion starts from within an insertion, and the next node is a deletion");
+						temp=temp->next;
 						long next_valid_pos =(temp->offset*(-1)) + temp->val;
-						if( next_valid_pos > temp->next->val){
-							temp=temp->next;
-						}
-						else{
-							if(temp->offset>=0){
-								initial_pos = temp->val+1;
-							}
-							else{
-								initial_pos = next_valid_pos;
-							}
+						initial_pos = next_valid_pos;
+						if( next_valid_pos < temp->next->val){
 							break;
 						}
 					}
-
+					}
 				} //TODO: change the variable names - temp and abs_pos, len, collect_ins
 
 				else { //deletion starts from a position where there has been no insertion (or deletion) EXCEPT the case where the deletion starts from the a genome position (of a node) that has an insertion
